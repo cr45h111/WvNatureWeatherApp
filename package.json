@@ -8,6 +8,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
+    "build:web": "echo 'Web version ready for deployment'",
     "dev": "electron . --enable-logging",
     "cap:init": "npx cap init",
     "cap:add:android": "npx cap add android",
