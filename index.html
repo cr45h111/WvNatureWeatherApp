@@ -4456,8 +4456,8 @@ function draw(){
         f.y = waterY + 10 + Math.random() * 30;
         splashes.push({x: f.x, y: waterY + Math.sin(f.x * 0.01) * 5, radius: 3 + Math.random()*3, alpha:0.6, life:16, speed:1.8});
         createSplashSound(); // Play splash sound when fish surfaces
-        // Play eating sound when fish surfaces (30% chance)
-        if(Math.random() < 0.3) createFishEatingSound();
+        // Only larger fish (not minnows) make eating sounds
+        if(f.type !== 'minnow' && Math.random() < 0.3) createFishEatingSound();
       }
     }else if(f.jumpState === 'arch'){
       const t = f.jumpTimer / f.jumpDuration;
