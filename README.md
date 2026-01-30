@@ -110,7 +110,7 @@ See [COMPLETION-SUMMARY.md](COMPLETION-SUMMARY.md) for full development history.
 
 ## 🌐 Live Demo
 
-- **Web:** [WV Nature & Weather](https://wvnature.vercel.app)
+- **Web:** [WV Nature & Weather](https://fancy-kitsune-945d17.netlify.app/)
 - **Desktop:** Available in releases
 - **Mobile:** Coming soon to App Store & Google Play
 

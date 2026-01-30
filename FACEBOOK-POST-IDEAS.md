@@ -16,7 +16,7 @@ Our free nature simulation features:
 Explore Appalachian landscapes, learn about native species, 
 and relax with nature - all in one app.
 
-[APP LINK HERE]
+https://fancy-kitsune-945d17.netlify.app/
 
 #WVNature #WeatherApp #NatureSimulation #FreeApp
 ```
@@ -34,7 +34,7 @@ Can you identify all of them? 🤔
 
 Download WV Nature & Weather today and become a bird expert!
 
-[APP LINK HERE]
+https://fancy-kitsune-945d17.netlify.app/
 
 #BirdWatching #WestVirginia #NatureApp #Wildlife
 ```
@@ -50,7 +50,7 @@ exactly what's happening in West Virginia skies RIGHT NOW.
 
 Download WV Nature & Weather and explore the cosmos! 🌟
 
-[APP LINK HERE]
+https://fancy-kitsune-945d17.netlify.app/
 
 #Astronomy #MoonPhase #WestVirginia #StarGazing
 ```
@@ -66,7 +66,7 @@ listen to ambient nature sounds, and watch seasons change.
 
 Your digital nature escape is just one click away.
 
-[APP LINK HERE]
+https://fancy-kitsune-945d17.netlify.app/
 
 #MentalWellness #Relaxation #NatureTherapy #Wellness
 ```
@@ -83,8 +83,8 @@ and ecosystem simulations all powered by cutting-edge technology!
 Check out our GitHub to see the code:
 https://github.com/cr45h111/WvNatureWeatherApp
 
-Download the app:
-[APP LINK HERE]
+Play the app:
+https://fancy-kitsune-945d17.netlify.app/
 
 #IndieGame #Development #WebApp #OpenSource
 ```
@@ -112,7 +112,7 @@ Use these for maximum reach:
 
 ## Links to Share
 - **GitHub:** https://github.com/cr45h111/WvNatureWeatherApp
-- **Live App:** [To be added once deployed to Netlify]
+- **Live App:** https://fancy-kitsune-945d17.netlify.app/
 - **Facebook Page:** [Create and link your business page]
 
 ---
