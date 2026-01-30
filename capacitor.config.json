@@ -1,0 +1,21 @@
+{
+  "appId": "com.wvnature.app",
+  "appName": "WV Nature & Weather",
+  "webDir": ".",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0a1628",
+      "showSpinner": true,
+      "spinnerColor": "#00ffff"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0a1628"
+    }
+  }
+}

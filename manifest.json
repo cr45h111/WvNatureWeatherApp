@@ -1,0 +1,70 @@
+{
+  "name": "WV Nature & Weather",
+  "short_name": "WV Nature",
+  "description": "Experience the beauty of West Virginia nature with real-time weather, astronomy, and interactive ecosystem simulation",
+  "start_url": "/WvW.html",
+  "display": "fullscreen",
+  "orientation": "portrait-primary",
+  "background_color": "#000",
+  "theme_color": "#00ffff",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["lifestyle", "entertainment"],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "540x720",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshot-2.png",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Plant Health",
+      "short_name": "Health",
+      "description": "Check plant health status",
+      "url": "/WvW.html#plantHealth",
+      "icons": [
+        {
+          "src": "icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Bird Guide",
+      "short_name": "Birds",
+      "description": "View bird species guide",
+      "url": "/WvW.html#birds",
+      "icons": [
+        {
+          "src": "icon-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
