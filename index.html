@@ -7027,11 +7027,100 @@ async function fetchWikipediaData(town, county){
 
 function getHistoricalAstronomy(lat, lon, historicalYear){
   if(!historicalYear || historicalYear < 1700) return null;
-  const visibleConstellations = ['Orion', 'Ursa Major', 'Ursa Minor', 'Cassiopeia', 'Lyra', 'Cygnus', 'Aquila', 'Sagittarius'];
-  const brightStars = ['Sirius', 'Vega', 'Altair', 'Deneb', 'Polaris', 'Arcturus'];
-  const randomConstellation = visibleConstellations[Math.floor(Math.random() * visibleConstellations.length)];
-  const randomStar = brightStars[Math.floor(Math.random() * brightStars.length)];
-  return { year: historicalYear, constellation: randomConstellation, star: randomStar };
+  
+  const astronomyFacts = [
+    {
+      type: 'light-travel',
+      generate: (year) => {
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - year;
+        const lightYears = Math.round(yearsAgo * 0.0000001); // approximate conversion
+        const stars = ['Betelgeuse', 'Rigel', 'Deneb', 'Antares', 'Spica'];
+        const distances = [550, 860, 2600, 550, 250];
+        let selectedStar, selectedDistance;
+        for(let i = 0; i < stars.length; i++){
+          if(distances[i] > yearsAgo){
+            selectedStar = stars[i];
+            selectedDistance = distances[i];
+            break;
+          }
+        }
+        if(!selectedStar){ selectedStar = 'Deneb'; selectedDistance = 2600; }
+        return `Light from the star <strong>${selectedStar}</strong> (${selectedDistance} light-years away) left its surface ${yearsAgo < selectedDistance ? 'long before' : 'around when'} this community was founded.`;
+      }
+    },
+    {
+      type: 'constellation-rising',
+      generate: (year) => {
+        const constellations = [
+          { name: 'Orion', detail: 'the Hunter, with its distinctive belt of three stars' },
+          { name: 'Ursa Major', detail: 'the Great Bear, containing the Big Dipper' },
+          { name: 'Cassiopeia', detail: 'the Queen, forming a W-shape in the northern sky' },
+          { name: 'Cygnus', detail: 'the Swan, flying along the Milky Way' },
+          { name: 'Lyra', detail: 'home to Vega, one of the brightest stars in our sky' }
+        ];
+        const c = constellations[Math.floor(Math.random() * constellations.length)];
+        return `The constellation <strong>${c.name}</strong> (${c.detail}) rises in the same position as it did in ${year}.`;
+      }
+    },
+    {
+      type: 'moon-phases',
+      generate: (year) => {
+        return `The Moon completes its cycle of phases every 29.5 days—the same rhythm observed by settlers in ${year}.`;
+      }
+    },
+    {
+      type: 'stellar-motion',
+      generate: (year) => {
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - year;
+        const arcSeconds = Math.round(yearsAgo * 0.01); // typical proper motion
+        return `Since ${year}, the stars have barely moved—shifting less than ${arcSeconds} arc-seconds, imperceptible to the naked eye.`;
+      }
+    },
+    {
+      type: 'planetary-cycles',
+      generate: (year) => {
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - year;
+        const jupiterCycles = Math.floor(yearsAgo / 12);
+        const saturnCycles = Math.floor(yearsAgo / 29);
+        if(jupiterCycles > 0){
+          return `Jupiter has completed ${jupiterCycles} orbits around the Sun since ${year}, while Saturn has circled ${saturnCycles} times.`;
+        }
+        return `The planets follow the same celestial paths they traced in ${year}, though their positions along those paths change nightly.`;
+      }
+    },
+    {
+      type: 'pole-star',
+      generate: (year) => {
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - year;
+        if(yearsAgo < 200){
+          return `<strong>Polaris</strong>, the North Star, has guided travelers in the same direction since ${year}—it will remain our pole star for centuries to come.`;
+        }else{
+          return `<strong>Polaris</strong> points north today as it did in ${year}, though Earth's axis slowly wobbles over 26,000 years.`;
+        }
+      }
+    },
+    {
+      type: 'milky-way',
+      generate: (year) => {
+        return `The misty band of the Milky Way you see tonight—our galaxy viewed edge-on—appeared identical to observers in ${year}.`;
+      }
+    },
+    {
+      type: 'cosmic-scale',
+      generate: (year) => {
+        const currentYear = new Date().getFullYear();
+        const yearsAgo = currentYear - year;
+        return `In cosmic terms, ${yearsAgo} years is a blink—the stars you see are essentially unchanged since ${year}.`;
+      }
+    }
+  ];
+  
+  const randomFact = astronomyFacts[Math.floor(Math.random() * astronomyFacts.length)];
+  return { year: historicalYear, factText: randomFact.generate(historicalYear) };
 }
 
 function extractYearFromWiki(text){
@@ -7101,8 +7190,8 @@ function displayCommunityHistoryModal(data){
   historyHTML += `<p style="margin:0 0 8px 0; font-size:14px; line-height:1.6;">Did you know? ${fact}</p>`;
   historyContent.innerHTML = historyHTML;
   let astronomyHTML = '🌟 <strong>Astronomical Connection:</strong><br>';
-  if(data.astronomy){
-    astronomyHTML += `You are seeing the same stars tonight as those who founded this community. Look for <strong>${data.astronomy.constellation}</strong> and the bright star <strong>${data.astronomy.star}</strong>.`;
+  if(data.astronomy && data.astronomy.factText){
+    astronomyHTML += data.astronomy.factText;
   }else{
     astronomyHTML += 'Tonight, you share the same starry sky with those who came before.';
   }
