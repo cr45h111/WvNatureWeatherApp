@@ -365,12 +365,6 @@ canvas:fullscreen{background:#000;}
     </div>
   </div>
   <div class="modal-body">
-    <h3>Test Triggers</h3>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
-      <button class="modal-btn" onclick="testSpawnBunny()">🐰 Spawn Bunny</button>
-      <button class="modal-btn" onclick="testCatfishFeeding()">🐟 Test Catfish Feeding (9PM)</button>
-      <button class="modal-btn" onclick="showFishDebug()">👁️ Show Fish Debug Info</button>
-    </div>
     <h3>Sound Controls</h3>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px">
       <div>
@@ -1211,126 +1205,6 @@ function toggleCrowSound(){
   btn.textContent = muteCrows ? '🐦 Crows: OFF' : '🐦 Crows: ON';
   btn.classList.toggle('active', !muteCrows);
   saveSettings();
-}
-
-function testSpawnCrow(){
-  if(typeof spawnCrow === 'function') spawnCrow();
-}
-
-function testSpawnDeer(){
-  if(window._spawnDeer) {
-    window._spawnDeer();
-    console.log('Test deer spawned');
-  } else {
-    console.error('Deer spawn function not available');
-  }
-}
-
-function testSpawnBunny(){
-  if(window._spawnBunny) {
-    window._spawnBunny();
-    console.log('Test bunny spawned');
-  } else {
-    console.error('Bunny spawn function not available');
-  }
-}
-
-function testCatfishFeeding(){
-  // Temporarily override the hour to 9pm (21:00) for testing
-  const originalGetHours = Date.prototype.getHours;
-  Date.prototype.getHours = function() { return 21; };
-  
-  console.log('🐟 CATFISH FEEDING TEST: Time set to 9PM for 30 seconds');
-  console.log('Watch the bottom of the water - catfish should rise to surface');
-  
-  // Log current catfish positions
-  const catfishList = fish.filter(f => f.type === 'catfish');
-  console.log(`Found ${catfishList.length} catfish`);
-  catfishList.forEach((f, i) => {
-    console.log(`Catfish ${i+1}: depth=${f.depth.toFixed(2)} (0=surface, 1=bottom)`);
-  });
-  
-  alert('⏰ Time set to 9PM!\nCatfish should rise to surface.\nCheck console for details.\nTime will reset in 30 seconds.');
-  
-  // Restore normal time after 30 seconds
-  setTimeout(() => {
-    Date.prototype.getHours = originalGetHours;
-    console.log('Time restored to normal');
-    alert('✅ Test complete - time restored to normal');
-  }, 30000);
-}
-
-function showFishDebug(){
-  console.log('=== FISH DEBUG INFO ===');
-  const currentHour = new Date().getHours();
-  console.log(`Current time: ${currentHour}:00 (${currentHour >= 21 && currentHour < 23 ? 'CATFISH FEEDING TIME' : 'normal'})`);
-  console.log(`Total fish: ${fish.length}`);
-  
-  const byType = {};
-  fish.forEach(f => {
-    if(!byType[f.type]) byType[f.type] = [];
-    byType[f.type].push(f);
-  });
-  
-  Object.keys(byType).forEach(type => {
-    console.log(`\n${type.toUpperCase()} (${byType[type].length}):`);
-    byType[type].forEach((f, i) => {
-      console.log(`  #${i+1}: depth=${f.depth.toFixed(2)}, y=${f.y.toFixed(0)}, size=${f.size.toFixed(1)}, jumpState=${f.jumpState}`);
-    });
-  });
-  
-  alert('Fish debug info logged to console (F12)');
-}
-
-function testSpawnOwl(){
-  if(!owl){
-    const treesWithOwl = items.filter(item => item.type === 'plant' && !item.isBush && item.maxH > 80);
-    if(treesWithOwl.length > 0){
-      const tree = treesWithOwl[Math.floor(Math.random() * treesWithOwl.length)];
-      owl = {
-        tree: tree,
-        x: tree.screenX,
-        y: tree.screenY - tree.maxH * 0.7,
-        blink: Math.random() * Math.PI * 2,
-        blinkRate: 0.005,
-        hootTimer: Math.random() * 200,
-        nextHoot: 300 + Math.random() * 600
-      };
-      // Play hoot immediately on appearance for testing
-      createOwlHoot();
-    }
-  }
-}
-
-function testSpawnBats(){
-  if(window._spawnBat){
-    for(let i = 0; i < 5; i++){
-      setTimeout(() => window._spawnBat(), i * 200);
-    }
-  }
-}
-
-function testTriggerFishJump(){
-  if(fish && fish.length > 0){
-    const f = fish[Math.floor(Math.random() * fish.length)];
-    if(f.jumpState === 'idle'){
-      if(f.isSmall){
-        f.jumpState = 'surface';
-        f.jumpTimer = 0;
-        f.jumpDuration = 20 + Math.floor(Math.random() * 20);
-      }else{
-        f.jumpState = 'arch';
-        f.jumpTimer = 0;
-        f.jumpDuration = 60 + Math.floor(Math.random() * 60);
-        f.jumpStartX = f.x;
-        f.jumpStartY = f.y;
-        f.jumpPeakX = f.x + f.direction * (80 + Math.random() * 140);
-        const waterY = H * 0.78;
-        f.jumpPeakY = waterY - (30 + Math.random() * 40);
-        createFishJumpExitSound();
-      }
-    }
-  }
 }
 
 function testAlarmSound(){
