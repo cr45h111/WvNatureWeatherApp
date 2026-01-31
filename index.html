@@ -6981,6 +6981,8 @@ function hidePlantTooltip(){
 }
 // ========== COMMUNITY HISTORY FEATURE ==========
 let communityHistoryData = null;
+let communityFacts = [];
+let currentFactIndex = 0;
 let lastCommunityHistoryShow = 0;
 const COMMUNITY_HISTORY_INTERVAL = 30 * 60 * 1000; // 30 minutes
 
@@ -7009,7 +7011,9 @@ async function fetchWikipediaData(town, county){
       for(let pageId in pages){
         const page = pages[pageId];
         if(page.extract){
-          const extract = page.extract.substring(0, 800);
+          let extract = page.extract.substring(0, 1200);
+          const lastPeriod = extract.lastIndexOf('.');
+          if(lastPeriod > 0) extract = extract.substring(0, lastPeriod + 1);
           const foundingMatch = extract.match(/founded|established|settled|incorporated/i);
           return { title: page.title, extract: extract, hasInfo: !!foundingMatch };
         }
@@ -7037,6 +7041,28 @@ function extractYearFromWiki(text){
   return justYear ? parseInt(justYear[1]) : null;
 }
 
+function extractFacts(text, town){
+  if(!text) return [];
+  const facts = [];
+  const parts = text.split('.');
+  for(let i = 0; i < parts.length; i++){
+    const sentence = parts[i].trim();
+    if(sentence.length > 20 && sentence.length < 250){
+      const lowerSentence = sentence.toLowerCase();
+      if(lowerSentence.indexOf('founded') >= 0 || lowerSentence.indexOf('established') >= 0 || 
+         lowerSentence.indexOf('settled') >= 0 || lowerSentence.indexOf('incorporated') >= 0 ||
+         lowerSentence.indexOf('known for') >= 0 || lowerSentence.indexOf('county seat') >= 0 ||
+         lowerSentence.indexOf('population') >= 0 || lowerSentence.indexOf('located') >= 0){
+        facts.push(sentence + '.');
+      } else if(facts.length < 2 && i < 3){
+        facts.push(sentence + '.');
+      }
+    }
+  }
+  if(facts.length === 0) facts.push(town + ' is a community in West Virginia.');
+  return facts;
+}
+
 function formatWikiExtract(text){
   if(!text) return '';
   const trimmed = text.replace(/\n+/g, '\n').trim();
@@ -7048,8 +7074,12 @@ function displayCommunityHistoryModal(data){
   const historyContent = document.getElementById('historyContent');
   const astronomyConnection = document.getElementById('astronomyConnection');
   const scrollBox = document.getElementById('communityHistoryScroll');
-  let historyHTML = `<h3 style="color:#0ff;margin-top:0;">📍 ${data.town}, ${data.county || 'West Virginia'}</h3>`;
-  historyHTML += formatWikiExtract(data.wikiData.extract);
+  
+  let fact = communityFacts[currentFactIndex] || (data.town + ' is a community in West Virginia.');
+  currentFactIndex = (currentFactIndex + 1) % Math.max(communityFacts.length, 1);
+  
+  let historyHTML = `<h3 style="color:#0ff;margin-top:0;">📍 ${data.town}</h3>`;
+  historyHTML += `<p style="margin:0 0 8px 0; font-size:14px; line-height:1.6;">Did you know? ${fact}</p>`;
   historyContent.innerHTML = historyHTML;
   let astronomyHTML = '🌟 <strong>Astronomical Connection:</strong><br>';
   if(data.astronomy){
@@ -7071,6 +7101,9 @@ async function showCommunityHistory(){
     if(!geoData) return;
     const wikiData = await fetchWikipediaData(geoData.town, geoData.county);
     if(!wikiData || !wikiData.hasInfo) return;
+    
+    communityFacts = extractFacts(wikiData.extract, geoData.town);
+    
     communityHistoryData = {
       town: geoData.town,
       county: geoData.county,
