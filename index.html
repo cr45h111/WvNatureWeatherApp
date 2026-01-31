@@ -7043,23 +7043,42 @@ function extractYearFromWiki(text){
 
 function extractFacts(text, town){
   if(!text) return [];
+  
+  // First fix abbreviations so they don't break sentence splitting
+  let fixedText = text.replace(/U\.S\.A\./g, 'USA').replace(/U\.S\./g, 'US').replace(/U\.K\./g, 'UK');
+  fixedText = fixedText.replace(/\bSt\./g, 'Saint').replace(/\bMt\./g, 'Mount');
+  
   const facts = [];
-  const parts = text.split('.');
-  for(let i = 0; i < parts.length; i++){
-    const sentence = parts[i].trim();
-    if(sentence.length > 20 && sentence.length < 250){
-      const lowerSentence = sentence.toLowerCase();
-      if(lowerSentence.indexOf('founded') >= 0 || lowerSentence.indexOf('established') >= 0 || 
-         lowerSentence.indexOf('settled') >= 0 || lowerSentence.indexOf('incorporated') >= 0 ||
-         lowerSentence.indexOf('known for') >= 0 || lowerSentence.indexOf('county seat') >= 0 ||
-         lowerSentence.indexOf('population') >= 0 || lowerSentence.indexOf('located') >= 0){
-        facts.push(sentence + '.');
-      } else if(facts.length < 2 && i < 3){
-        facts.push(sentence + '.');
-      }
+  const sentences = fixedText.split('.');
+  
+  for(let i = 0; i < sentences.length; i++){
+    let sentence = sentences[i].trim();
+    if(sentence.length < 20 || sentence.length > 250) continue;
+    
+    const lowerSentence = sentence.toLowerCase();
+    
+    // Skip generic/obvious facts
+    if(lowerSentence.indexOf('is a county') >= 0 || lowerSentence.indexOf('is a town') >= 0 || 
+       lowerSentence.indexOf('is a city') >= 0 || lowerSentence.indexOf('is a village') >= 0 ||
+       lowerSentence.indexOf('is an unincorporated') >= 0 || lowerSentence.indexOf('is located in') >= 0){
+      continue;
+    }
+    
+    // Keep interesting facts
+    if(lowerSentence.indexOf('founded') >= 0 || lowerSentence.indexOf('established') >= 0 || 
+       lowerSentence.indexOf('settled') >= 0 || lowerSentence.indexOf('incorporated in') >= 0 ||
+       lowerSentence.indexOf('known for') >= 0 || lowerSentence.indexOf('famous for') >= 0 ||
+       lowerSentence.indexOf('county seat') >= 0 || lowerSentence.indexOf('named after') >= 0 ||
+       lowerSentence.indexOf('historic') >= 0 || lowerSentence.indexOf('population of') >= 0){
+      
+      // Restore abbreviations in the final sentence
+      sentence = sentence.replace(/\bUSA\b/g, 'U.S.A.').replace(/\bUS\b/g, 'U.S.').replace(/\bUK\b/g, 'U.K.');
+      sentence = sentence.replace(/\bSaint\b/g, 'St.').replace(/\bMount\b/g, 'Mt.');
+      facts.push(sentence + '.');
     }
   }
-  if(facts.length === 0) facts.push(town + ' is a community in West Virginia.');
+  
+  if(facts.length === 0) facts.push(town + ' is a historic community in West Virginia.');
   return facts;
 }
 
