@@ -1552,27 +1552,8 @@ function createRainSound(intensity = 1){
 }
 
 function createSplashSound(){
-  if(!soundEnabled || muteFishSplashes) return;
-  if(!audioCtx) return;
-  // stronger, fuller splash so it's audible at normal volumes
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-  osc.type = 'triangle';
-  filter.type = 'lowpass';
-  filter.frequency.value = 1200;
-  filter.Q.value = 0.7;
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-  const now = audioCtx.currentTime;
-  osc.frequency.setValueAtTime(900 + Math.random()*200, now);
-  osc.frequency.exponentialRampToValueAtTime(250 + Math.random()*100, now + 0.25);
-  // Use volume variable
-  gain.gain.setValueAtTime(0.06 * fishSplashVolume, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-  osc.start(now);
-  osc.stop(now + 0.45);
+  // Water surface splash uses the fish eating sound asset
+  createFishEatingSound();
 }
 
 function createFishEatingSound(){
