@@ -5606,11 +5606,12 @@ init();
   ];
 
   function nearestStar(x,y,maxDist=16){
-    const s = (window.stars || []).filter(st => st && st.bright);
+    const starArray = window.stars || stars || [];
+    const s = starArray.filter(st => st && st.bright);
     if(!s.length) return null;
     let best=null,bd=Infinity;
     for(let st of s){
-      if(!st || !st.x || !st.y) continue;
+      if(!st || typeof st.x !== 'number' || typeof st.y !== 'number') continue;
       const dx=st.x - x, dy=st.y - y;
       const d = Math.sqrt(dx*dx+dy*dy);
       if(d<bd && d<=maxDist){bd=d;best=st}
@@ -5620,15 +5621,16 @@ init();
 
   // Helper function to show tooltips
   function showTooltipsAt(clientX, clientY){
+    if(!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const mx = clientX - rect.left;
     const my = clientY - rect.top;
     
     // Check for plant hover
-    checkPlantHover(mx, my);
+    if(typeof checkPlantHover === 'function') checkPlantHover(mx, my);
     
     const star = nearestStar(mx,my,18);
-    if(star){
+    if(star && tip){
       const name = star.name || ('Mag '+(star.mag||'?'));
       const cons = star.constellation || star.con || 'Unknown constellation';
       const info = CONSTELLATION_INFO[cons] || '';
@@ -5639,7 +5641,7 @@ init();
       const meta = [mag, alt].filter(Boolean).join(' • ');
       tip.innerHTML = `<strong>${name}</strong><div style="font-size:12px;margin-top:6px">${cons}</div><div style="font-size:11px;color:#cfe8ff;margin-top:4px">${meta}</div><div style="margin-top:6px;font-size:11px;color:#cfe8ff">${info}</div>`;
       tip.style.display='block';
-    }else{ tip.style.display='none'; }
+    }else if(tip){ tip.style.display='none'; }
   }
 
   // Mouse events
