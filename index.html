@@ -357,6 +357,26 @@ canvas:fullscreen{background:#000;}
     </div>
   </div>
 </div>
+
+<div id="signModal" class="modal">
+  <div class="modal-header">
+    <h2>✏️ Custom Sign</h2>
+    <div class="modal-controls">
+      <button onclick="closeSignModal()">✕</button>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+      <label for="signText">Sign Text:</label>
+      <input id="signText" type="text" maxlength="12" placeholder="Enter text (max 12 chars)">
+    </div>
+    <div class="modal-btn-wrapper">
+      <button class="modal-btn" onclick="applySignText()">Create Sign</button>
+      <button class="modal-btn" onclick="closeSignModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div id="settingsModal" class="modal">
   <div class="modal-header">
     <h2>⚙️ Settings</h2>
@@ -6428,6 +6448,48 @@ init();
     window.open('https://buymeacoffee.com/ctf57918', '_blank');
   };
 
+  window.saveSceneFromModal = function(){
+    const sceneName = document.getElementById('sceneName').value.trim();
+    if(sceneName){
+      window.saveScene(sceneName);
+      document.getElementById('saveSceneModal').classList.remove('visible');
+    }
+  };
+
+  window.saveScene = function(name){
+    const sceneData = {
+      name: name,
+      timestamp: new Date().toISOString(),
+      location: {
+        lat: LAT,
+        lon: LON,
+        name: LOCATION_NAME,
+        tempOffset: tempOffset
+      },
+      terrainType: terrainType,
+      items: items.map(item => ({
+        type: item.type,
+        subtype: item.subtype,
+        x: item.baseX,
+        y: item.baseY,
+        age: item.age,
+        maxAge: item.maxAge,
+        customText: item.customText
+      }))
+    };
+    
+    const dataStr = JSON.stringify(sceneData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    if(typeof showNotification === 'function') showNotification(`💾 Scene "${name}" downloaded!`);
+  };
+
   window.closeTutorial = function(){
     document.getElementById('tutorialOverlay').classList.remove('visible');
     localStorage.setItem('tutorialShown', 'true');
@@ -7053,47 +7115,7 @@ window.addEventListener('load', function(){
 });
 
 // 3. SCREENSHOT FEATURE (moved to script 2 for early availability)
-function saveSceneFromModal(){
-  const sceneName = document.getElementById('sceneName').value.trim();
-  if(sceneName){
-    saveScene(sceneName);
-    document.getElementById('saveSceneModal').classList.remove('visible');
-  }
-}
-function saveScene(name){
-  const sceneData = {
-    name: name,
-    timestamp: new Date().toISOString(),
-    location: {
-      lat: LAT,
-      lon: LON,
-      name: LOCATION_NAME,
-      tempOffset: tempOffset
-    },
-    terrainType: terrainType,
-    items: items.map(item => ({
-      type: item.type,
-      subtype: item.subtype,
-      x: item.baseX,
-      y: item.baseY,
-      age: item.age,
-      maxAge: item.maxAge,
-      customText: item.customText
-    }))
-  };
-  
-  // Download as JSON file instead of localStorage
-  const dataStr = JSON.stringify(sceneData, null, 2);
-  const dataBlob = new Blob([dataStr], {type: 'application/json'});
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${name.replace(/[^a-z0-9]/gi, '_')}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
-  
-  showNotification(`💾 Scene "${name}" downloaded!`);
-}
+// saveSceneFromModal and saveScene moved to Script 2 for early availability
 // NOTE: showLoadSceneModal moved to Script 2 (line 6397)
 
 function loadSceneFromFile(event){
