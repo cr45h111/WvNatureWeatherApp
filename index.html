@@ -461,8 +461,7 @@ canvas:fullscreen{background:#000;}
       <button id="openBirdGuideBtn" class="modal-btn">Open Bird Guide</button>
       <button id="openFishGuideBtn" class="modal-btn">Open Fish Guide</button>
       <button id="openTreeGuideBtn" class="modal-btn">Open Tree Guide</button>
-      <button class="modal-btn" onclick="alert('Test click works')">🧪 Test</button>
-      <button class="modal-btn" onclick="alert('Screenshot button clicked'); try { alert('captureScreenshot=' + typeof captureScreenshot); if(typeof captureScreenshot === 'function') { captureScreenshot(); } else { alert('captureScreenshot is not a function'); } } catch(e) { alert('Error: ' + e.message); }">📸 Screenshot</button>
+      <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
@@ -6351,18 +6350,16 @@ init();
   // ============== QUICK ACTION BUTTON FUNCTIONS ==============
   // Define these in script 2 so they're available early
   window.showTutorial = function(){
-    alert('showTutorial called');
+  window.showTutorial = function(){
     try{
       const overlay = document.getElementById('tutorialOverlay');
       if(overlay) overlay.classList.add('visible');
     }catch(e){
       console.error('showTutorial error:', e);
-      alert('Error opening tutorial: ' + e.message);
     }
   };
   
   window.captureScreenshot = function(){
-    alert('captureScreenshot called');
     try {
       if(!canvas) throw new Error('Canvas not found');
       const link = document.createElement('a');
@@ -6373,12 +6370,10 @@ init();
     }catch(e){
       console.error('Screenshot failed:', e);
       if(typeof showNotification === 'function') showNotification('❌ Screenshot failed: ' + e.message);
-      alert('Screenshot error: ' + e.message);
     }
   };
   
   window.showSaveSceneModal = function(){
-    alert('showSaveSceneModal called');
     try{
       const now = new Date();
       const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
@@ -6390,12 +6385,10 @@ init();
       if(qmodal) qmodal.classList.remove('visible');
     }catch(e){
       console.error('showSaveSceneModal error:', e);
-      alert('Error opening save scene modal: ' + e.message);
     }
   };
   
   window.showLoadSceneModal = function(){
-    alert('showLoadSceneModal called');
     try{
       const sceneList = document.getElementById('sceneList');
       if(!sceneList) throw new Error('Scene list element not found');
@@ -6414,7 +6407,6 @@ init();
       if(qmodal) qmodal.classList.remove('visible');
     }catch(e){
       console.error('showLoadSceneModal error:', e);
-      alert('Error opening load scene modal: ' + e.message);
     }
   };
 
