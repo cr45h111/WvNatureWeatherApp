@@ -4192,6 +4192,17 @@ function draw(){
     window.ctx = targetCtx;
     item.drawShadow(foregroundLight);
     item.draw(foregroundLight, foregroundDarken, snowCover);
+    
+    // Draw hover highlight if this item is hovered
+    if(typeof hoveredPlant !== 'undefined' && hoveredPlant && hoveredPlant === item){
+      targetCtx.save();
+      targetCtx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+      targetCtx.lineWidth = 2;
+      targetCtx.beginPath();
+      targetCtx.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
+      targetCtx.stroke();
+      targetCtx.restore();
+    }
   }
   
   // Restore original context
