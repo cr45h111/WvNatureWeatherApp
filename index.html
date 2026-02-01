@@ -6956,13 +6956,6 @@ function showTutorial(){
   }
 }
 window.showTutorial = showTutorial;
-window._debug_functions = {
-  showTutorial: typeof showTutorial,
-  captureScreenshot: typeof captureScreenshot,
-  showSaveSceneModal: typeof showSaveSceneModal,
-  showLoadSceneModal: typeof showLoadSceneModal
-};
-console.log('Functions available:', window._debug_functions);
 function closeTutorial(){
   document.getElementById('tutorialOverlay').classList.remove('visible');
   localStorage.setItem('tutorialShown', 'true');
@@ -7575,6 +7568,15 @@ if ('serviceWorker' in navigator && !window.isElectron) {
     }
   });
 }
+
+// ============== DEBUG INFO ==============
+window._debug_functions = {
+  showTutorial: typeof showTutorial,
+  captureScreenshot: typeof captureScreenshot,
+  showSaveSceneModal: typeof showSaveSceneModal,
+  showLoadSceneModal: typeof showLoadSceneModal
+};
+console.log('Functions available:', window._debug_functions);
 </script>
 </body>
 </html>
