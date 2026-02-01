@@ -833,6 +833,14 @@ function loadSettings(){
       tempOffset = settings.tempOffset !== undefined ? settings.tempOffset : 0;
       alarmSoundType = settings.alarmSoundType || 'birds';
       
+      // Restore temperature offset in both inputs
+      const settingsInput = document.getElementById('tempOffsetSettings');
+      const modalInput = document.getElementById('tempOffset');
+      if(settingsInput) settingsInput.value = tempOffset;
+      if(modalInput) modalInput.value = tempOffset;
+      const display = document.getElementById('tempOffsetDisplay');
+      if(display) display.textContent = `Current: ${tempOffset > 0 ? '+' : ''}${tempOffset}°F`;
+      
       // Restore terrain conditions
       snowCover = settings.snowCover !== undefined ? settings.snowCover : 0;
 
@@ -912,7 +920,10 @@ function loadSettings(){
 
 
 function saveSettings(){
-  tempOffset = parseInt(document.getElementById('tempOffset').value) || 0;
+  // Use the main tempOffsetSettings input, fallback to tempOffset if needed
+  const settingsInput = document.getElementById('tempOffsetSettings');
+  const modalInput = document.getElementById('tempOffset');
+  tempOffset = parseInt(settingsInput?.value || modalInput?.value || 0) || 0;
   try{
     const settings = {
       lat: LAT,
@@ -1120,6 +1131,12 @@ function updateTempOffset(val){
   // Update display
   const display = document.getElementById('tempOffsetDisplay');
   if(display) display.textContent = `Current: ${tempOffset > 0 ? '+' : ''}${tempOffset}°F`;
+  
+  // Sync both input fields
+  const settingsInput = document.getElementById('tempOffsetSettings');
+  const modalInput = document.getElementById('tempOffset');
+  if(settingsInput) settingsInput.value = tempOffset;
+  if(modalInput) modalInput.value = tempOffset;
   
   // Recalculate temperature from base temp + offset (prevents compounding)
   if(weatherData.baseTemp !== undefined) {
@@ -3266,6 +3283,28 @@ function init(){
     requestAnimationFrame(draw);
   }, 2200);
 }
+
+// ============== FPS MONITORING ==============
+let frameCount = 0;
+let lastTime = Date.now();
+let fps = 0;
+function updateFPS(){
+  frameCount++;
+  const now = Date.now();
+  if(now - lastTime >= 1000){
+    fps = frameCount;
+    document.getElementById('fpsCounter').textContent = `FPS: ${fps}`;
+    frameCount = 0;
+    lastTime = now;
+    // Show FPS counter on lower-end devices (FPS < 30)
+    if(fps < 30){
+      document.getElementById('fpsCounter').classList.add('visible');
+    }else{
+      document.getElementById('fpsCounter').classList.remove('visible');
+    }
+  }
+}
+
 function draw(){
   if(!ready){ requestAnimationFrame(draw); return; }
   try{
@@ -5440,6 +5479,106 @@ init();
   const openFishGuideBtn = document.getElementById('openFishGuideBtn');
   const openTreeGuideBtn = document.getElementById('openTreeGuideBtn');
 
+  // Define guide opening functions BEFORE they're used in event listeners
+  function openBirdGuide(){
+    const birdArray = Array.isArray(window.birds) ? window.birds : [];
+    const types = Array.from(new Set(birdArray.map(b=>b.type||'Unknown')));
+    if(!types.length) types.push('cardinal','sparrow','robin','crow');
+    const descriptions = {
+      'robin':'Small red-breasted songbird often found on lawns. Eats worms and insects.',
+      'crow':'Large omnivorous bird, black plumage, loud caws. Highly social and intelligent.',
+      'cardinal':'West Virginia\'s State Bird! Males are vivid red with a crest; females are tan/olive with red accents. Found in woodlands, gardens, and thickets year-round.',
+      'sparrow':'Small brownish bird; often found near human habitation.'
+    };
+    const birdImages = {
+      robin:{src:'images/birds/robin.jpg', fallback:'./WestVirginia game data/robin.jpg'},
+      crow:{src:'images/birds/crow.jpg', fallback:'./WestVirginia game data/crow.jpg'},
+      cardinal:{src:'images/birds/cardinals.jpg', fallback:'./WestVirginia game data/cardinals.jpg'},
+      sparrow:{src:'images/birds/sparrow.jpg', fallback:'./WestVirginia game data/sparrow.jpg'}
+    };
+    if(birdGuideContent) {
+      birdGuideContent.innerHTML = types.map(t=>{
+        const imgInfo = birdImages[t];
+        const imgTag = imgInfo ? `<img src="${imgInfo.src}" data-fallback="${imgInfo.fallback}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}">` : '';
+        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A local bird species.'}</div></div>`;
+      }).join('');
+    }
+    birdGuideModal.style.display='block';
+  }
+  try{ window.openBirdGuide = openBirdGuide; }catch(e){}
+  
+  function openFishGuide(){
+    const fishArray = Array.isArray(window.fish) ? window.fish : [];
+    const types = Array.from(new Set(fishArray.map(f=>f.type||'Unknown')));
+    if(!types.length) types.push('bluegill','bass','trout','catfish');
+    const descriptions = {
+      'bluegill':'A popular panfish with distinctive blue coloring on gill covers. Found in lakes and ponds.',
+      'bass':'Largemouth or smallmouth bass. Prized gamefish known for aggressive strikes and fighting ability.',
+      'trout':'Brook, brown, or rainbow trout. Cold-water fish found in West Virginia streams and rivers.',
+      'catfish':'Bottom-feeding fish with distinctive whisker-like barbels. Common in rivers and lakes.'
+    };
+    const fishImages = {
+      bluegill:{src:'images/fish/blue-gill.jpg', fallback:'./WestVirginia game data/blue-gill.jpg'},
+      bass:{src:'images/fish/bass.jpg', fallback:'./WestVirginia game data/bass.jpg'},
+      trout:{src:'images/fish/trout.jpg', fallback:'./WestVirginia game data/trout.jpg'},
+      catfish:{src:'images/fish/catfish.jpg', fallback:'./WestVirginia game data/catfish.jpg'}
+    };
+    if(fishGuideContent) {
+      fishGuideContent.innerHTML = types.map(t=>{
+        const imgInfo = fishImages[t];
+        const imgTag = imgInfo ? `<img src="${imgInfo.src}" data-fallback="${imgInfo.fallback}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}">` : '';
+        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A local fish species.'}</div></div>`;
+      }).join('');
+    }
+    fishGuideModal.style.display='block';
+  }
+  try{ window.openFishGuide = openFishGuide; }catch(e){}
+  
+  function openTreeGuide(){
+    const types = ['oak', 'pine', 'willow', 'maple', 'birch', 'beech', 'basswood', 'laurel', 'walnut', 'hickory', 'chestnut', 'poplar', 'sycamore'];
+    const descriptions = {
+      'oak': 'Sturdy hardwood tree with lobed leaves. Produces acorns and has strong, durable wood. Common throughout West Virginia forests.',
+      'pine': 'Evergreen conifer with needle-like leaves. Stays green year-round. Fast-growing and produces pinecones.',
+      'willow': 'Graceful tree with drooping branches and narrow leaves. Often found near water. Known for its flexibility and medicinal properties.',
+      'maple': 'Deciduous tree famous for brilliant fall colors and sweet sap. Produces distinctive winged seeds called samaras.',
+      'birch': 'Distinguished by white, papery bark that peels in layers. Slender tree with delicate leaves that turn golden in fall.',
+      'beech': 'Smooth gray bark and oval leaves. Produces small triangular nuts. Wood is strong and used for furniture.',
+      'basswood': 'Also called American Linden. Heart-shaped leaves and fragrant flowers. Soft wood popular for carving.',
+      'laurel': 'Evergreen shrub or small tree. Dense foliage stays green year-round. Native to Appalachian mountains.',
+      'walnut': 'Valuable hardwood tree producing edible nuts. Dark brown wood prized for furniture. Compound leaves with many leaflets.',
+      'hickory': 'Strong hardwood tree with compound leaves. Produces edible nuts. Wood is extremely tough and used for tool handles.',
+      'chestnut': 'Once dominant tree in Appalachia. Produces sweet, edible nuts in spiny burrs. American chestnut nearly extinct due to blight.',
+      'poplar': 'Also called tulip tree. Tall, fast-growing with distinctive tulip-shaped flowers. Soft wood used in construction.',
+      'sycamore': 'Large tree with distinctive mottled bark that flakes off in patches. Big maple-like leaves and round seed balls.'
+    };
+    const treeImageCandidates = (name) => {
+      const baseName = name.toLowerCase();
+      return [
+        `./WestVirginia game data/${baseName}.jpg`,
+        `./WestVirginia game data/${baseName}.png`,
+        `./WestVirginia game data/${baseName}.jpeg`,
+        `./WestVirginia game data/${baseName}.webp`,
+        `./WestVirginia game data/trees/${baseName}.jpg`,
+        `./WestVirginia game data/trees/${baseName}.png`,
+        `./WestVirginia game data/trees/${baseName}.jpeg`,
+        `./WestVirginia game data/trees/${baseName}.webp`,
+        `images/trees/${baseName}.jpg`,
+        `images/trees/${baseName}.png`,
+        `images/trees/${baseName}.jpeg`,
+        `images/trees/${baseName}.webp`
+      ];
+    };
+    if(treeGuideContent) {
+      treeGuideContent.innerHTML = types.map(t=>{
+        const [primary, ...fallbacks] = treeImageCandidates(t);
+        const imgTag = `<img src="${primary}" data-fallbacks="${fallbacks.join('|')}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="(function(img){const list=(img.dataset.fallbacks||'').split('|').filter(Boolean); if(!list.length){img.style.display='none';return;} const next=list.shift(); img.dataset.fallbacks=list.join('|'); img.src=next;})(this)">`;
+        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t.charAt(0).toUpperCase() + t.slice(1)}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A native tree species.'}</div></div>`;
+      }).join('');
+    }
+    treeGuideModal.style.display='block';
+  }
+  try{ window.openTreeGuide = openTreeGuide; }catch(e){}
+
   const CONSTELLATION_INFO = {
     'Orion':'A prominent winter constellation containing Betelgeuse and Rigel, recognizable by the three-star belt.',
     'Ursa Major':'Contains the Big Dipper asterism; useful for finding north.',
@@ -6063,110 +6202,6 @@ init();
     else{ copyShareLink(); alert('Share link copied to clipboard'); }
   }
   window.copyShareLink = function(){ navigator.clipboard && navigator.clipboard.writeText(location.href); }
-  // Bird guide modal content (simple, derived from in-game bird types)
-  function openBirdGuide(){
-    const birdArray = Array.isArray(window.birds) ? window.birds : [];
-    const types = Array.from(new Set(birdArray.map(b=>b.type||'Unknown')));
-    if(!types.length) types.push('cardinal','sparrow','robin','crow');
-    const descriptions = {
-      'robin':'Small red-breasted songbird often found on lawns. Eats worms and insects.',
-      'crow':'Large omnivorous bird, black plumage, loud caws. Highly social and intelligent.',
-      'cardinal':'West Virginia\'s State Bird! Males are vivid red with a crest; females are tan/olive with red accents. Found in woodlands, gardens, and thickets year-round.',
-      'sparrow':'Small brownish bird; often found near human habitation.'
-    };
-    const birdImages = {
-      robin:{src:'images/birds/robin.jpg', fallback:'./WestVirginia game data/robin.jpg'},
-      crow:{src:'images/birds/crow.jpg', fallback:'./WestVirginia game data/crow.jpg'},
-      cardinal:{src:'images/birds/cardinals.jpg', fallback:'./WestVirginia game data/cardinals.jpg'},
-      sparrow:{src:'images/birds/sparrow.jpg', fallback:'./WestVirginia game data/sparrow.jpg'}
-    };
-    if(birdGuideContent) {
-      birdGuideContent.innerHTML = types.map(t=>{
-        const imgInfo = birdImages[t];
-        const imgTag = imgInfo ? `<img src="${imgInfo.src}" data-fallback="${imgInfo.fallback}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}">` : '';
-        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A local bird species.'}</div></div>`;
-      }).join('');
-    }
-    birdGuideModal.style.display='block';
-  }
-  // expose to global so external handlers won't fail
-  try{ window.openBirdGuide = openBirdGuide; }catch(e){}
-  
-  function openFishGuide(){
-    const fishArray = Array.isArray(window.fish) ? window.fish : [];
-    const types = Array.from(new Set(fishArray.map(f=>f.type||'Unknown')));
-    if(!types.length) types.push('bluegill','bass','trout','catfish');
-    const descriptions = {
-      'bluegill':'A popular panfish with distinctive blue coloring on gill covers. Found in lakes and ponds.',
-      'bass':'Largemouth or smallmouth bass. Prized gamefish known for aggressive strikes and fighting ability.',
-      'trout':'Brook, brown, or rainbow trout. Cold-water fish found in West Virginia streams and rivers.',
-      'catfish':'Bottom-feeding fish with distinctive whisker-like barbels. Common in rivers and lakes.'
-    };
-    const fishImages = {
-      bluegill:{src:'images/fish/blue-gill.jpg', fallback:'./WestVirginia game data/blue-gill.jpg'},
-      bass:{src:'images/fish/bass.jpg', fallback:'./WestVirginia game data/bass.jpg'},
-      trout:{src:'images/fish/trout.jpg', fallback:'./WestVirginia game data/trout.jpg'},
-      catfish:{src:'images/fish/catfish.jpg', fallback:'./WestVirginia game data/catfish.jpg'}
-    };
-    if(fishGuideContent) {
-      fishGuideContent.innerHTML = types.map(t=>{
-        const imgInfo = fishImages[t];
-        const imgTag = imgInfo ? `<img src="${imgInfo.src}" data-fallback="${imgInfo.fallback}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}">` : '';
-        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A local fish species.'}</div></div>`;
-      }).join('');
-    }
-    fishGuideModal.style.display='block';
-  }
-  // expose to global so external handlers won't fail
-  try{ window.openFishGuide = openFishGuide; }catch(e){}
-  
-  function openTreeGuide(){
-    const types = ['oak', 'pine', 'willow', 'maple', 'birch', 'beech', 'basswood', 'laurel', 'walnut', 'hickory', 'chestnut', 'poplar', 'sycamore'];
-    const descriptions = {
-      'oak': 'Sturdy hardwood tree with lobed leaves. Produces acorns and has strong, durable wood. Common throughout West Virginia forests.',
-      'pine': 'Evergreen conifer with needle-like leaves. Stays green year-round. Fast-growing and produces pinecones.',
-      'willow': 'Graceful tree with drooping branches and narrow leaves. Often found near water. Known for its flexibility and medicinal properties.',
-      'maple': 'Deciduous tree famous for brilliant fall colors and sweet sap. Produces distinctive winged seeds called samaras.',
-      'birch': 'Distinguished by white, papery bark that peels in layers. Slender tree with delicate leaves that turn golden in fall.',
-      'beech': 'Smooth gray bark and oval leaves. Produces small triangular nuts. Wood is strong and used for furniture.',
-      'basswood': 'Also called American Linden. Heart-shaped leaves and fragrant flowers. Soft wood popular for carving.',
-      'laurel': 'Evergreen shrub or small tree. Dense foliage stays green year-round. Native to Appalachian mountains.',
-      'walnut': 'Valuable hardwood tree producing edible nuts. Dark brown wood prized for furniture. Compound leaves with many leaflets.',
-      'hickory': 'Strong hardwood tree with compound leaves. Produces edible nuts. Wood is extremely tough and used for tool handles.',
-      'chestnut': 'Once dominant tree in Appalachia. Produces sweet, edible nuts in spiny burrs. American chestnut nearly extinct due to blight.',
-      'poplar': 'Also called tulip tree. Tall, fast-growing with distinctive tulip-shaped flowers. Soft wood used in construction.',
-      'sycamore': 'Large tree with distinctive mottled bark that flakes off in patches. Big maple-like leaves and round seed balls.'
-    };
-    const treeImageCandidates = (name) => {
-      const baseName = name.toLowerCase();
-      return [
-        `./WestVirginia game data/${baseName}.jpg`,
-        `./WestVirginia game data/${baseName}.png`,
-        `./WestVirginia game data/${baseName}.jpeg`,
-        `./WestVirginia game data/${baseName}.webp`,
-        `./WestVirginia game data/trees/${baseName}.jpg`,
-        `./WestVirginia game data/trees/${baseName}.png`,
-        `./WestVirginia game data/trees/${baseName}.jpeg`,
-        `./WestVirginia game data/trees/${baseName}.webp`,
-        `images/trees/${baseName}.jpg`,
-        `images/trees/${baseName}.png`,
-        `images/trees/${baseName}.jpeg`,
-        `images/trees/${baseName}.webp`
-      ];
-    };
-    if(treeGuideContent) {
-      treeGuideContent.innerHTML = types.map(t=>{
-        const [primary, ...fallbacks] = treeImageCandidates(t);
-        const imgTag = `<img src="${primary}" data-fallbacks="${fallbacks.join('|')}" alt="${t}" style="width:100%;max-width:200px;border-radius:6px;display:block;margin:6px 0" onerror="(function(img){const list=(img.dataset.fallbacks||'').split('|').filter(Boolean); if(!list.length){img.style.display='none';return;} const next=list.shift(); img.dataset.fallbacks=list.join('|'); img.src=next;})(this)">`;
-        return `<div style="margin-bottom:12px"><strong style="color:#0ff">${t.charAt(0).toUpperCase() + t.slice(1)}</strong>${imgTag}<div style="font-size:12px;color:#dfe8ff">${descriptions[t]||'A native tree species.'}</div></div>`;
-      }).join('');
-    }
-    treeGuideModal.style.display='block';
-  }
-  // expose to global so external handlers won't fail
-  try{ window.openTreeGuide = openTreeGuide; }catch(e){}
-  // birdGuideBtn removed; Settings button calls openBirdGuide()
-
   // Moon phases calendar for current month
   function moonPhase(date){
     const synodic = 29.530588853;
@@ -6910,30 +6945,15 @@ init();
 
 // ============== NEW FEATURES ==============
 
-// 1. FRAME RATE MONITORING
-let frameCount = 0;
-let lastTime = Date.now();
-let fps = 0;
-function updateFPS(){
-  frameCount++;
-  const now = Date.now();
-  if(now - lastTime >= 1000){
-    fps = frameCount;
-    document.getElementById('fpsCounter').textContent = `FPS: ${fps}`;
-    frameCount = 0;
-    lastTime = now;
-    // Show FPS counter on lower-end devices (FPS < 30)
-    if(fps < 30){
-      document.getElementById('fpsCounter').classList.add('visible');
-    }else{
-      document.getElementById('fpsCounter').classList.remove('visible');
-    }
-  }
-}
-
 // 2. TUTORIAL OVERLAY
 function showTutorial(){
-  document.getElementById('tutorialOverlay').classList.add('visible');
+  try{
+    const overlay = document.getElementById('tutorialOverlay');
+    if(overlay) overlay.classList.add('visible');
+  }catch(e){
+    console.error('showTutorial error:', e);
+    alert('Error opening tutorial: ' + e.message);
+  }
 }
 function closeTutorial(){
   document.getElementById('tutorialOverlay').classList.remove('visible');
@@ -6960,24 +6980,34 @@ window.addEventListener('load', function(){
 // 3. SCREENSHOT FEATURE
 function captureScreenshot(){
   try {
+    if(!canvas) throw new Error('Canvas not found');
     const link = document.createElement('a');
     link.href = canvas.toDataURL('image/png');
     link.download = `wv-nature-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.png`;
     link.click();
-    showNotification('📸 Screenshot saved!');
+    if(typeof showNotification === 'function') showNotification('📸 Screenshot saved!');
   }catch(e){
     console.error('Screenshot failed:', e);
-    showNotification('❌ Screenshot failed');
+    if(typeof showNotification === 'function') showNotification('❌ Screenshot failed: ' + e.message);
+    alert('Screenshot error: ' + e.message);
   }
 }
 
 // 4. SAVE/LOAD SCENES
 function showSaveSceneModal(){
-  const now = new Date();
-  const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
-  document.getElementById('sceneName').value = defaultName;
-  document.getElementById('saveSceneModal').classList.add('visible');
-  document.getElementById('quickActionsModal').classList.remove('visible');
+  try{
+    const now = new Date();
+    const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
+    const input = document.getElementById('sceneName');
+    if(input) input.value = defaultName;
+    const modal = document.getElementById('saveSceneModal');
+    if(modal) modal.classList.add('visible');
+    const qmodal = document.getElementById('quickActionsModal');
+    if(qmodal) qmodal.classList.remove('visible');
+  }catch(e){
+    console.error('showSaveSceneModal error:', e);
+    alert('Error opening save scene modal: ' + e.message);
+  }
 }
 function saveSceneFromModal(){
   const sceneName = document.getElementById('sceneName').value.trim();
@@ -7021,18 +7051,26 @@ function saveScene(name){
   showNotification(`💾 Scene "${name}" downloaded!`);
 }
 function showLoadSceneModal(){
-  const sceneList = document.getElementById('sceneList');
-  
-  sceneList.innerHTML = `
-    <div style="text-align:center;padding:20px;">
-      <p style="color:#0cf;margin-bottom:15px;">Click below to select a saved scene file (.json)</p>
-      <input type="file" id="sceneFileInput" accept=".json" style="display:none;" onchange="loadSceneFromFile(event)">
-      <button class="modal-btn" onclick="document.getElementById('sceneFileInput').click()">📂 Choose Scene File</button>
-    </div>
-  `;
-  
-  document.getElementById('loadSceneModal').classList.add('visible');
-  document.getElementById('quickActionsModal').classList.remove('visible');
+  try{
+    const sceneList = document.getElementById('sceneList');
+    if(!sceneList) throw new Error('Scene list element not found');
+    
+    sceneList.innerHTML = `
+      <div style="text-align:center;padding:20px;">
+        <p style="color:#0cf;margin-bottom:15px;">Click below to select a saved scene file (.json)</p>
+        <input type="file" id="sceneFileInput" accept=".json" style="display:none;" onchange="loadSceneFromFile(event)">
+        <button class="modal-btn" onclick="document.getElementById('sceneFileInput').click()">📂 Choose Scene File</button>
+      </div>
+    `;
+    
+    const modal = document.getElementById('loadSceneModal');
+    if(modal) modal.classList.add('visible');
+    const qmodal = document.getElementById('quickActionsModal');
+    if(qmodal) qmodal.classList.remove('visible');
+  }catch(e){
+    console.error('showLoadSceneModal error:', e);
+    alert('Error opening load scene modal: ' + e.message);
+  }
 }
 
 function loadSceneFromFile(event){
