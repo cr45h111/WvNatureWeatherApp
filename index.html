@@ -1228,14 +1228,28 @@ function playAlarmSound(type){
 
 async function setLocation(){
   const nameInput = document.getElementById('locName').value.trim();
-  const lat = parseFloat(document.getElementById('locLat').value);
-  const lon = parseFloat(document.getElementById('locLon').value);
+  let lat = parseFloat(document.getElementById('locLat').value);
+  let lon = parseFloat(document.getElementById('locLon').value);
   
   // West Virginia bounds: roughly Lat 37.2 to 40.6, Lon -82.6 to -77.7
   const wvLatMin = 37.2, wvLatMax = 40.6, wvLonMin = -82.6, wvLonMax = -77.7;
   
+  // If nameInput is provided but lat/lon are missing, try geocoding
+  if(nameInput && (isNaN(lat) || isNaN(lon))){
+    const coords = await geocodeCityState(nameInput);
+    if(coords){
+      lat = coords.lat;
+      lon = coords.lon;
+      document.getElementById('locLat').value = lat;
+      document.getElementById('locLon').value = lon;
+    }else{
+      alert('❌ Could not find "' + nameInput + '". Please check the spelling or enter coordinates manually.');
+      return;
+    }
+  }
+  
   if(isNaN(lat) || isNaN(lon)){
-    alert('Please enter valid latitude and longitude values.');
+    alert('Please enter valid latitude and longitude values, or enter a city name.');
     return;
   }
   if(lat < wvLatMin || lat > wvLatMax || lon < wvLonMin || lon > wvLonMax){
@@ -1257,12 +1271,18 @@ async function setLocation(){
   LON = lon;
   document.getElementById('locationName').textContent = name;
   
+  // Reset community history data when location changes
+  communityHistoryData = null;
+  
   buildTerrain();
   generateGrassPatches();
   generateStars();
   generateClouds();
   fetchWeather();
   updateAstronomy();
+  
+  // Force immediate redraw
+  setTimeout(() => generateStars(), 100);
   saveSettings();
   closeLocationModal();
 }
@@ -2611,18 +2631,47 @@ function generateStars(){
     });
   }
   
+  // Calculate proper Local Sidereal Time using the same method as updateAstronomy
   const now = new Date();
-  const lst = (now.getHours() + now.getMinutes() / 60 + LON / 15) % 24;
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const day = now.getUTCDate();
+  const hours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+  
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  const JDN = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  const JD = JDN + (hours - 12) / 24;
+  const n = JD - 2451545.0;
+  
+  // GMST in degrees
+  const GMST = (280.46061837 + 360.98564736629 * n) % 360;
+  // LST = GMST + LON
+  const LST = (GMST + LON + 360) % 360;
+  const lstHours = LST / 15; // Convert degrees to hours
+  
+  let brightStarCount = 0;
   
   for(let star of brightStars){
-    const ha = (lst - star.ra) * 15;
-    const alt = Math.asin(Math.sin(LAT * Math.PI / 180) * Math.sin(star.dec * Math.PI / 180) +
-      Math.cos(LAT * Math.PI / 180) * Math.cos(star.dec * Math.PI / 180) * Math.cos(ha * Math.PI / 180)) * 180 / Math.PI;
+    // Calculate Hour Angle in degrees
+    const sunRA = star.ra * 15; // Convert hours to degrees
+    const HA = (LST - sunRA + 360) % 360;
+    const normalizedHA = HA > 180 ? HA - 360 : HA;
+    
+    // Calculate altitude
+    const latRad = LAT * Math.PI / 180;
+    const decRad = star.dec * Math.PI / 180;
+    const haRad = normalizedHA * Math.PI / 180;
+    
+    const alt = Math.asin(Math.sin(latRad) * Math.sin(decRad) + 
+      Math.cos(latRad) * Math.cos(decRad) * Math.cos(haRad)) * 180 / Math.PI;
     
     if(alt > 10){
-      const az = Math.atan2(Math.sin(ha * Math.PI / 180),
-        Math.cos(ha * Math.PI / 180) * Math.sin(LAT * Math.PI / 180) -
-        Math.tan(star.dec * Math.PI / 180) * Math.cos(LAT * Math.PI / 180)) * 180 / Math.PI + 180;
+      // Calculate azimuth
+      const azRad = Math.atan2(Math.sin(haRad),
+        Math.cos(haRad) * Math.sin(latRad) - Math.tan(decRad) * Math.cos(latRad));
+      const az = (azRad * 180 / Math.PI + 180) % 360;
       
       const pos = altAzToScreen(alt, az);
       if(pos.x > 0 && pos.x < W && pos.y > 0 && pos.y < H * 0.6){
@@ -2642,6 +2691,7 @@ function generateStars(){
           alt,
           az
         });
+        brightStarCount++;
       }
     }
   }
@@ -3056,9 +3106,9 @@ function calculateLighting(){
     light = 0.005;
   }
   
-  // Add moonlight when sun is down
+  // Add moonlight when sun is down (reduced for darker nights)
   if(moonAlt > 0 && sunAlt < -6){
-    const moonBright = moonPhase > 0.4 && moonPhase < 0.6 ? 0.20 : 0.10;
+    const moonBright = moonPhase > 0.4 && moonPhase < 0.6 ? 0.08 : 0.04;
     light += moonAlt / 90 * moonBright;
   }
   
@@ -3153,6 +3203,7 @@ function init(){
     // Sound is always OFF on page load - user must click to enable (browser requirement)
     
     setInterval(updateAstronomy, 60000);
+    setInterval(generateStars, 300000); // Update star positions every 5 minutes
     setInterval(fetchWeather, 120000);
     setInterval(updateClock, 1000);
     setInterval(spawnBird, 8000);
@@ -3209,9 +3260,10 @@ function draw(){
     skyGrad.addColorStop(0, `rgb(${70*i},${140*i},${220*i})`);
     skyGrad.addColorStop(1, `rgb(${135*i},${195*i},${235*i})`);
   }else{
-    const ni = Math.max(0, light / 0.3);
-    skyGrad.addColorStop(0, `rgb(${8+12*ni},${12+18*ni},${28+32*ni})`);
-    skyGrad.addColorStop(1, `rgb(${18+12*ni},${22+18*ni},${55+35*ni})`);
+    // Much darker night sky with minimal moonlight influence
+    const ni = Math.pow(light / 0.3, 2); // Quadratic falloff for darker nights
+    skyGrad.addColorStop(0, `rgb(${3+8*ni},${5+12*ni},${12+20*ni})`);
+    skyGrad.addColorStop(1, `rgb(${8+10*ni},${10+15*ni},${25+30*ni})`);
   }
   
   ctx.fillStyle = skyGrad;
@@ -6984,7 +7036,22 @@ let communityHistoryData = null;
 let communityFacts = [];
 let currentFactIndex = 0;
 let lastCommunityHistoryShow = 0;
-const COMMUNITY_HISTORY_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const COMMUNITY_HISTORY_INTERVAL = 120 * 60 * 1000; // 2 hours
+
+async function geocodeCityState(cityState){
+  try{
+    const query = cityState.includes(',') ? cityState : `${cityState}, West Virginia`;
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+    const data = await response.json();
+    if(data && data.length > 0){
+      return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    }
+    return null;
+  }catch(e){
+    console.error('Geocode error:', e);
+    return null;
+  }
+}
 
 async function reverseGeocode(lat, lon){
   try{
@@ -7225,7 +7292,7 @@ async function showCommunityHistory(){
   displayCommunityHistoryModal(communityHistoryData);
 }
 
-setInterval(() => { if(ready) showCommunityHistory(); }, 60000);
+setInterval(() => { if(ready) showCommunityHistory(); }, 600000); // Check every 10 minutes
 
 // 6. SEASONAL NOTIFICATIONS
 function checkSeasonalNotifications(){
