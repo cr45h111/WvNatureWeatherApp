@@ -6955,6 +6955,14 @@ function showTutorial(){
     alert('Error opening tutorial: ' + e.message);
   }
 }
+window.showTutorial = showTutorial;
+window._debug_functions = {
+  showTutorial: typeof showTutorial,
+  captureScreenshot: typeof captureScreenshot,
+  showSaveSceneModal: typeof showSaveSceneModal,
+  showLoadSceneModal: typeof showLoadSceneModal
+};
+console.log('Functions available:', window._debug_functions);
 function closeTutorial(){
   document.getElementById('tutorialOverlay').classList.remove('visible');
   localStorage.setItem('tutorialShown', 'true');
@@ -6992,6 +7000,7 @@ function captureScreenshot(){
     alert('Screenshot error: ' + e.message);
   }
 }
+window.captureScreenshot = captureScreenshot;
 
 // 4. SAVE/LOAD SCENES
 function showSaveSceneModal(){
@@ -7009,6 +7018,7 @@ function showSaveSceneModal(){
     alert('Error opening save scene modal: ' + e.message);
   }
 }
+window.showSaveSceneModal = showSaveSceneModal;
 function saveSceneFromModal(){
   const sceneName = document.getElementById('sceneName').value.trim();
   if(sceneName){
@@ -7072,6 +7082,7 @@ function showLoadSceneModal(){
     alert('Error opening load scene modal: ' + e.message);
   }
 }
+window.showLoadSceneModal = showLoadSceneModal;
 
 function loadSceneFromFile(event){
   const file = event.target.files[0];
