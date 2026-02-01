@@ -6948,6 +6948,7 @@ init();
 
 // 2. TUTORIAL OVERLAY
 function showTutorial(){
+  alert('showTutorial called');
   try{
     const overlay = document.getElementById('tutorialOverlay');
     if(overlay) overlay.classList.add('visible');
@@ -6981,6 +6982,7 @@ window.addEventListener('load', function(){
 
 // 3. SCREENSHOT FEATURE
 function captureScreenshot(){
+  alert('captureScreenshot called');
   try {
     if(!canvas) throw new Error('Canvas not found');
     const link = document.createElement('a');
@@ -6998,6 +7000,7 @@ window.captureScreenshot = captureScreenshot;
 
 // 4. SAVE/LOAD SCENES
 function showSaveSceneModal(){
+  alert('showSaveSceneModal called');
   try{
     const now = new Date();
     const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
@@ -7055,6 +7058,7 @@ function saveScene(name){
   showNotification(`💾 Scene "${name}" downloaded!`);
 }
 function showLoadSceneModal(){
+  alert('showLoadSceneModal called');
   try{
     const sceneList = document.getElementById('sceneList');
     if(!sceneList) throw new Error('Scene list element not found');
