@@ -401,7 +401,10 @@ canvas:fullscreen{background:#000;}
     <h3>Temperature</h3>
     <div class="form-group" style="margin-bottom:12px">
       <label for="tempOffsetSettings">Temperature Offset (°F):</label>
-      <input id="tempOffsetSettings" type="number" min="-10" max="10" step="1" value="0" oninput="updateTempOffset(this.value)">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="tempOffsetSettings" type="number" min="-10" max="10" step="1" value="0" oninput="updateTempOffset(this.value)" style="flex:1;">
+        <span id="tempOffsetDisplay" style="font-size:12px;color:#0ff;min-width:100px;">Current: 0°F</span>
+      </div>
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast. Common in hollows/valleys.</small>
     </div>
     <h3>Share</h3>
@@ -1114,12 +1117,17 @@ function updateOwlVolume(val){
 function updateTempOffset(val){
   tempOffset = parseInt(val) || 0;
   console.log(`Temperature offset changed to: ${tempOffset}°F`);
+  // Update display
+  const display = document.getElementById('tempOffsetDisplay');
+  if(display) display.textContent = `Current: ${tempOffset > 0 ? '+' : ''}${tempOffset}°F`;
+  
+  // Recalculate temperature from base temp + offset (prevents compounding)
+  if(weatherData.baseTemp !== undefined) {
+    weatherData.temp = weatherData.baseTemp + tempOffset;
+    weatherData.temperature_current = weatherData.baseTemp + tempOffset;
+  }
+  
   saveSettings();
-  // Clear weather cache and refetch to apply new offset
-  weatherCache.clear();
-  fetchWeather();
-  // Force clock update
-  updateClock();
 }
 
 function updateFishSplashVolume(val){
@@ -2975,7 +2983,8 @@ async function fetchWeather(){
       console.log('Using cached weather data from', new Date(weatherCache.timestamp).toLocaleTimeString());
     }
     
-    weatherData.temp = Math.round(d.current.temperature_2m) + tempOffset;
+    weatherData.baseTemp = Math.round(d.current.temperature_2m); // Store base temp without offset
+    weatherData.temp = weatherData.baseTemp + tempOffset;
     weatherData.temperature_current = d.current.temperature_2m + tempOffset; // Store raw temp for forecast
     weatherData.windSpeed = Math.round(d.current.wind_speed_10m);
     weatherData.precipitation = d.current.precipitation || 0;
@@ -5341,8 +5350,8 @@ init();
 <!-- Small buttons placed below the main control buttons to match existing style -->
 <button id="forecastBtn" class="btn">Forecast</button>
 <button id="moonBtn" class="btn">Moon</button>
-<div id="forecastPanel" class="modal" style="display:none;left:50%;top:50%;transform:translate(-50%,-50%);width:260px;padding:10px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+<div id="forecastPanel" class="modal" style="display:none;left:50%;top:50%;transform:translate(-50%,-50%);width:260px;padding:10px;max-height:80vh;overflow-y:auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:sticky;top:0;background:rgba(0,0,0,0.95);padding:4px 0;z-index:10;">
     <h4 style="margin:0">Next 3 Hours</h4>
     <button class="modal-btn" onclick="document.getElementById('forecastPanel').style.display='none'">✕</button>
   </div>
@@ -5963,7 +5972,9 @@ init();
         updateSoundButtonStates();
         // Load current temp offset value
         const tempOffsetInput = document.getElementById('tempOffsetSettings');
+        const tempOffsetDisplay = document.getElementById('tempOffsetDisplay');
         if(tempOffsetInput) tempOffsetInput.value = tempOffset;
+        if(tempOffsetDisplay) tempOffsetDisplay.textContent = `Current: ${tempOffset > 0 ? '+' : ''}${tempOffset}°F`;
       }
     });
   }
@@ -6979,6 +6990,13 @@ function saveScene(name){
   const sceneData = {
     name: name,
     timestamp: new Date().toISOString(),
+    location: {
+      lat: LAT,
+      lon: LON,
+      name: LOCATION_NAME,
+      tempOffset: tempOffset
+    },
+    terrainType: terrainType,
     items: items.map(item => ({
       type: item.type,
       subtype: item.subtype,
@@ -6989,43 +7007,77 @@ function saveScene(name){
       customText: item.customText
     }))
   };
-  let scenes = JSON.parse(localStorage.getItem('savedScenes')) || [];
-  scenes.push(sceneData);
-  localStorage.setItem('savedScenes', JSON.stringify(scenes));
-  showNotification(`💾 Scene "${name}" saved!`);
+  
+  // Download as JSON file instead of localStorage
+  const dataStr = JSON.stringify(sceneData, null, 2);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${name.replace(/[^a-z0-9]/gi, '_')}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  
+  showNotification(`💾 Scene "${name}" downloaded!`);
 }
 function showLoadSceneModal(){
-  let scenes = JSON.parse(localStorage.getItem('savedScenes')) || [];
   const sceneList = document.getElementById('sceneList');
   
-  if(scenes.length === 0){
-    sceneList.innerHTML = '<p style="text-align:center;color:#0cf;padding:20px;">No saved scenes yet. Save one first!</p>';
-  } else {
-    let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
-    scenes.forEach((s, i) => {
-      const date = new Date(s.timestamp).toLocaleString();
-      html += `<button class="modal-btn" onclick="loadSceneByIndex(${i});document.getElementById('loadSceneModal').classList.remove('visible')">
-        <strong>${s.name}</strong><br>
-        <small style="opacity:0.7;font-size:10px;">${date} - ${s.items.length} items</small>
-      </button>`;
-    });
-    html += '</div>';
-    sceneList.innerHTML = html;
-  }
+  sceneList.innerHTML = `
+    <div style="text-align:center;padding:20px;">
+      <p style="color:#0cf;margin-bottom:15px;">Click below to select a saved scene file (.json)</p>
+      <input type="file" id="sceneFileInput" accept=".json" style="display:none;" onchange="loadSceneFromFile(event)">
+      <button class="modal-btn" onclick="document.getElementById('sceneFileInput').click()">📂 Choose Scene File</button>
+    </div>
+  `;
   
   document.getElementById('loadSceneModal').classList.add('visible');
   document.getElementById('quickActionsModal').classList.remove('visible');
 }
 
+function loadSceneFromFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const sceneData = JSON.parse(e.target.result);
+      loadScene(sceneData);
+      document.getElementById('loadSceneModal').classList.remove('visible');
+    }catch(err){
+      alert('Error loading scene file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
 function loadSceneByIndex(idx){
-  let scenes = JSON.parse(localStorage.getItem('savedScenes')) || [];
-  if(idx >= 0 && idx < scenes.length){
-    loadScene(scenes[idx]);
-  }
+  // Legacy function - no longer used
 }
 function loadScene(sceneData){
   items = [];
   console.log('Loading scene:', sceneData.name, 'with', sceneData.items.length, 'items');
+  
+  // Restore location and settings if available
+  if(sceneData.location){
+    LAT = sceneData.location.lat || LAT;
+    LON = sceneData.location.lon || LON;
+    LOCATION_NAME = sceneData.location.name || LOCATION_NAME;
+    tempOffset = sceneData.location.tempOffset !== undefined ? sceneData.location.tempOffset : 0;
+    document.getElementById('locationName').textContent = LOCATION_NAME;
+    
+    // Update weather for new location
+    weatherCache.clear();
+    fetchWeather();
+    updateAstronomy();
+  }
+  
+  if(sceneData.terrainType){
+    terrainType = sceneData.terrainType;
+    buildTerrain();
+  }
+  
   sceneData.items.forEach((itemData, idx) => {
     console.log(`Item ${idx}: ${itemData.type} ${itemData.subtype} at (${itemData.x}, ${itemData.y})`);
     const item = new Item(itemData.x, itemData.y, itemData.type, itemData.subtype);
@@ -7037,6 +7089,8 @@ function loadScene(sceneData){
   });
   console.log('Items array after load:', items.length, 'items');
   saveSettings();
+  showNotification(`✅ Scene "${sceneData.name}" loaded!`);
+}
   showNotification(`📂 Scene "${sceneData.name}" loaded!`);
 }
 
