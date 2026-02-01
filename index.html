@@ -5595,10 +5595,11 @@ init();
   ];
 
   function nearestStar(x,y,maxDist=16){
-    const s = (stars || window.stars || window._stars || []).filter(st => st.bright);
+    const s = (window.stars || []).filter(st => st && st.bright);
     if(!s.length) return null;
     let best=null,bd=Infinity;
     for(let st of s){
+      if(!st || !st.x || !st.y) continue;
       const dx=st.x - x, dy=st.y - y;
       const d = Math.sqrt(dx*dx+dy*dy);
       if(d<bd && d<=maxDist){bd=d;best=st}
