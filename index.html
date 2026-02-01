@@ -6413,6 +6413,18 @@ init();
     window.open('https://buymeacoffee.com/ctf57918', '_blank');
   };
 
+  window.closeTutorial = function(){
+    document.getElementById('tutorialOverlay').classList.remove('visible');
+    localStorage.setItem('tutorialShown', 'true');
+    if(document.getElementById('quickActionsModal')){
+      document.getElementById('quickActionsModal').classList.remove('visible');
+    }
+  };
+
+  window.skipTutorial = function(){
+    window.closeTutorial();
+  };
+
 })();
 </script>
 
@@ -7012,16 +7024,7 @@ init();
 // ============== NEW FEATURES ==============
 
 // 2. TUTORIAL OVERLAY (moved to script 2 for early availability)
-function closeTutorial(){
-  document.getElementById('tutorialOverlay').classList.remove('visible');
-  localStorage.setItem('tutorialShown', 'true');
-  if(document.getElementById('quickActionsModal')){
-    document.getElementById('quickActionsModal').classList.remove('visible');
-  }
-}
-function skipTutorial(){
-  closeTutorial();
-}
+
 // Show tutorial on first visit
 window.addEventListener('load', function(){
   // Check if tutorial has ever been shown (allow re-showing for testing)
