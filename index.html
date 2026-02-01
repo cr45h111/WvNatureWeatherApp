@@ -398,6 +398,12 @@ canvas:fullscreen{background:#000;}
       <label><input type="checkbox" id="highContrastCheckbox"> High Contrast</label>
       <label><input type="checkbox" id="largeTextCheckbox"> Larger UI Text</label>
     </div>
+    <h3>Temperature</h3>
+    <div class="form-group" style="margin-bottom:12px">
+      <label for="tempOffsetSettings">Temperature Offset (°F):</label>
+      <input id="tempOffsetSettings" type="number" min="-10" max="10" step="1" value="0" oninput="updateTempOffset(this.value)">
+      <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast. Common in hollows/valleys.</small>
+    </div>
     <h3>Share</h3>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="modal-btn" onclick="shareScene()">Share</button>
@@ -551,6 +557,11 @@ canvas:fullscreen{background:#000;}
     <div class="form-group">
       <label for="locLon">Longitude:</label>
       <input id="locLon" type="number" step="0.0001" placeholder="-80.2435">
+    </div>
+    <div class="form-group">
+      <label for="tempOffset">Temperature Offset (for hollow/valley):</label>
+      <input id="tempOffset" type="number" min="-10" max="10" step="1" placeholder="0">
+      <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast</small>
     </div>
     <div class="modal-btn-wrapper">
       <button class="modal-btn" onclick="setLocation()">Save</button>
@@ -730,6 +741,7 @@ let creatures = [], splashes = [], cloudShadows = [];
 let weatherData = {temp:70, condition:'Clear', windSpeed:5, precipitation:0, humidity:50, cloudCover:20};
 let sunAlt = 45, sunAz = 180, moonAlt = -20, moonAz = 0, moonPhase = 0.5;
 let snowCover = 0, terrainType = 'hills';
+let tempOffset = 0; // Temperature offset for microclimate (hollow, valley, etc.)
 let lightning = {active:false, intensity:0, countdown:0, x:0};
 let season = 'spring';
 let moonCraters = [];
@@ -815,6 +827,7 @@ function loadSettings(){
       // soundEnabled = settings.soundEnabled || false;
       infoPanelVisible = settings.infoPanelVisible !== undefined ? settings.infoPanelVisible : true;
       terrainType = settings.terrainType || 'hills';
+      tempOffset = settings.tempOffset !== undefined ? settings.tempOffset : 0;
       alarmSoundType = settings.alarmSoundType || 'birds';
       
       // Restore terrain conditions
@@ -896,6 +909,7 @@ function loadSettings(){
 
 
 function saveSettings(){
+  tempOffset = parseInt(document.getElementById('tempOffset').value) || 0;
   try{
     const settings = {
       lat: LAT,
@@ -905,6 +919,7 @@ function saveSettings(){
       soundEnabled: soundEnabled,
       infoPanelVisible: infoPanelVisible,
       terrainType: terrainType,
+      tempOffset: tempOffset,
       cloudSettings: cloudSettings,
       alarmSoundType: alarmSoundType,
       muteCrows: muteCrows,
@@ -1096,6 +1111,17 @@ function updateOwlVolume(val){
   saveSettings();
 }
 
+function updateTempOffset(val){
+  tempOffset = parseInt(val) || 0;
+  console.log(`Temperature offset changed to: ${tempOffset}°F`);
+  saveSettings();
+  // Clear weather cache and refetch to apply new offset
+  weatherCache.clear();
+  fetchWeather();
+  // Force clock update
+  updateClock();
+}
+
 function updateFishSplashVolume(val){
   fishSplashVolume = val / 100;
   document.getElementById('fishSplashVolVal').textContent = val + '%';
@@ -1273,6 +1299,9 @@ async function setLocation(){
   
   // Reset community history data when location changes
   communityHistoryData = null;
+  
+  // Clear weather cache to force fresh data for new location
+  weatherCache.clear();
   
   buildTerrain();
   generateGrassPatches();
@@ -2331,6 +2360,7 @@ document.getElementById('locationBtn').addEventListener('click', () => {
   document.getElementById('locName').value = LOCATION_NAME;
   document.getElementById('locLat').value = LAT;
   document.getElementById('locLon').value = LON;
+  document.getElementById('tempOffset').value = tempOffset;
   document.getElementById('locationModal').classList.add('visible');
 });
 
@@ -2945,11 +2975,14 @@ async function fetchWeather(){
       console.log('Using cached weather data from', new Date(weatherCache.timestamp).toLocaleTimeString());
     }
     
-    weatherData.temp = Math.round(d.current.temperature_2m);
+    weatherData.temp = Math.round(d.current.temperature_2m) + tempOffset;
+    weatherData.temperature_current = d.current.temperature_2m + tempOffset; // Store raw temp for forecast
     weatherData.windSpeed = Math.round(d.current.wind_speed_10m);
     weatherData.precipitation = d.current.precipitation || 0;
     weatherData.humidity = d.current.relative_humidity_2m;
     weatherData.cloudCover = d.current.cloud_cover || 0;
+    
+    console.log(`Weather updated: ${weatherData.temp}°F (API: ${Math.round(d.current.temperature_2m)}°F + offset: ${tempOffset}°F) at LAT=${LAT.toFixed(2)}, LON=${LON.toFixed(2)}`);
     
     const code = d.current.weather_code;
     if(code === 0) weatherData.condition = 'Clear';
@@ -2973,7 +3006,7 @@ async function fetchWeather(){
     console.log('Weather fetch failed:', e.message);
     weatherCache.clear(); // Clear cache on error
     weatherData = {
-      temp: 65,
+      temp: 65 + tempOffset,
       condition: 'Clear',
       windSpeed: 5,
       precipitation: 0,
@@ -5492,7 +5525,8 @@ init();
     
     for(let i=0;i<5;i++){
       const h = new Date(now.getTime() + i*60*60*1000);
-      let temp = Math.round(baseTemp + (Math.random()*3-1.5) + (i*0.5)); // Slight temp change over hours
+      // First entry (i=0) should match current temp exactly, then add variation for future hours
+      let temp = i === 0 ? (wd.temp || Math.round(baseTemp)) : Math.round(baseTemp + (Math.random()*3-1.5) + (i*0.5));
       const precip = Math.random()< (wd.precipitation_probability || 0.12) ? (Math.random()*60|0) : 0;
       const sky = precip>20 ? 'Rain' : (Math.random()<0.2 ? 'Cloudy' : 'Clear');
       
@@ -5927,6 +5961,9 @@ init();
       // Update button states when opening settings
       if(settingsModal && settingsModal.classList.contains('visible')){
         updateSoundButtonStates();
+        // Load current temp offset value
+        const tempOffsetInput = document.getElementById('tempOffsetSettings');
+        if(tempOffsetInput) tempOffsetInput.value = tempOffset;
       }
     });
   }
