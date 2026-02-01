@@ -842,6 +842,14 @@ function loadSettings(){
     const saved = localStorage.getItem('wvNatureSettings');
     if(saved){
       const settings = JSON.parse(saved);
+      const setValue = (id, value) => {
+        const el = document.getElementById(id);
+        if(el) el.value = value;
+      };
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if(el) el.textContent = value;
+      };
       LAT = settings.lat || LAT;
       LON = settings.lon || LON;
       LOCATION_NAME = settings.locName || LOCATION_NAME;
@@ -869,7 +877,7 @@ function loadSettings(){
       owlHootsDone = settings.owlHootsDone || 0;
       
       if(settings.alarmSoundType){
-        document.getElementById('alarmSound').value = settings.alarmSoundType;
+        setValue('alarmSound', settings.alarmSoundType);
       }
       
       if(settings.cloudSettings){
@@ -888,38 +896,38 @@ function loadSettings(){
       // Load volume settings
       if(settings.owlVolume !== undefined){
         owlVolume = settings.owlVolume;
-        document.getElementById('owlVolume').value = Math.round(owlVolume * 100);
-        document.getElementById('owlVolVal').textContent = Math.round(owlVolume * 100) + '%';
+        setValue('owlVolume', Math.round(owlVolume * 100));
+        setText('owlVolVal', Math.round(owlVolume * 100) + '%');
       }
       if(settings.fishSplashVolume !== undefined){
         fishSplashVolume = settings.fishSplashVolume;
-        document.getElementById('fishSplashVolume').value = Math.round(fishSplashVolume * 100);
-        document.getElementById('fishSplashVolVal').textContent = Math.round(fishSplashVolume * 100) + '%';
+        setValue('fishSplashVolume', Math.round(fishSplashVolume * 100));
+        setText('fishSplashVolVal', Math.round(fishSplashVolume * 100) + '%');
       }
       if(settings.fishEatingVolume !== undefined){
         fishEatingVolume = settings.fishEatingVolume;
-        document.getElementById('fishEatingVolume').value = Math.round(fishEatingVolume * 100);
-        document.getElementById('fishEatingVolVal').textContent = Math.round(fishEatingVolume * 100) + '%';
+        setValue('fishEatingVolume', Math.round(fishEatingVolume * 100));
+        setText('fishEatingVolVal', Math.round(fishEatingVolume * 100) + '%');
       }
       if(settings.fishJumpingVolume !== undefined){
         fishJumpingVolume = settings.fishJumpingVolume;
-        document.getElementById('fishJumpingVolume').value = Math.round(fishJumpingVolume * 100);
-        document.getElementById('fishJumpingVolVal').textContent = Math.round(fishJumpingVolume * 100) + '%';
+        setValue('fishJumpingVolume', Math.round(fishJumpingVolume * 100));
+        setText('fishJumpingVolVal', Math.round(fishJumpingVolume * 100) + '%');
       }
       if(settings.batsVolume !== undefined){
         batsVolume = settings.batsVolume;
-        document.getElementById('batsVolume').value = Math.round(batsVolume * 100);
-        document.getElementById('batsVolVal').textContent = Math.round(batsVolume * 100) + '%';
+        setValue('batsVolume', Math.round(batsVolume * 100));
+        setText('batsVolVal', Math.round(batsVolume * 100) + '%');
       }
       if(settings.ambienceVolume !== undefined){
         ambienceVolume = settings.ambienceVolume;
-        document.getElementById('ambienceVolume').value = Math.round(ambienceVolume * 100);
-        document.getElementById('ambienceVolVal').textContent = Math.round(ambienceVolume * 100) + '%';
+        setValue('ambienceVolume', Math.round(ambienceVolume * 100));
+        setText('ambienceVolVal', Math.round(ambienceVolume * 100) + '%');
       }
       if(settings.crowsVolume !== undefined){
         crowsVolume = settings.crowsVolume;
-        document.getElementById('crowsVolume').value = Math.round(crowsVolume * 100);
-        document.getElementById('crowsVolVal').textContent = Math.round(crowsVolume * 100) + '%';
+        setValue('crowsVolume', Math.round(crowsVolume * 100));
+        setText('crowsVolVal', Math.round(crowsVolume * 100) + '%');
       }
       
       if(settings.items){
@@ -1104,7 +1112,9 @@ function applySignText(){
   
   newSignDiv.addEventListener('click', function(){
     if(removeMode) return;
-    document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
+      // Close store when custom sign is clicked
+      document.getElementById('store').classList.remove('visible');
+      document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
     this.classList.add('selected');
     selectedType = 'accessory';
     selectedSubtype = 'customsaved';
@@ -1113,11 +1123,16 @@ function applySignText(){
   });
   
   customSignsList.appendChild(newSignDiv);
+  document.getElementById('signText').value = ''; // Clear input
   closeSignModal();
+  
+    // Reopen store to show the new sign
+    document.getElementById('store').classList.add('visible');
   
   selectedType = 'accessory';
   selectedSubtype = 'customsaved';
   document.getElementById('selected').textContent = customSignText;
+  console.log(`✏️ Custom sign created: "${customSignText}", ready to place (selectedType=${selectedType})`);
 }
 
 function setAlarm(){
@@ -2448,6 +2463,9 @@ document.querySelectorAll('.item').forEach(item => {
       return;
     }
     
+    // Close store for all other selections
+    document.getElementById('store').classList.remove('visible');
+    
     if(type === 'accessory' && subtype === 'custom'){
       document.getElementById('signModal').classList.add('visible');
       return;
@@ -2567,10 +2585,13 @@ canvas.addEventListener('click', e => {
     const animalWalkY = H * 0.65;
     const itemY = y; // Use clicked Y position directly
     
-    console.log(`Click: selectedType=${selectedType}, y=${Math.round(y)}, itemY=${Math.round(itemY)}, animalWalkY=${Math.round(animalWalkY)}, threshold=${Math.round(animalWalkY + 60)}, pass=${itemY < animalWalkY + 60}`);
+    // Accessories (like custom signs) can be placed anywhere
+    const isAccessory = selectedType === 'accessory';
+    const canPlace = isAccessory || itemY < animalWalkY + 60;
     
-    // Allow placement in background areas (anywhere Y < animalWalkY + 60)
-    if(itemY < animalWalkY + 60){
+    console.log(`Click: selectedType=${selectedType}, isAccessory=${isAccessory}, y=${Math.round(y)}, itemY=${Math.round(itemY)}, animalWalkY=${Math.round(animalWalkY)}, threshold=${Math.round(animalWalkY + 60)}, canPlace=${canPlace}`);
+    
+    if(canPlace){
       items.push(new Item(x, itemY, selectedType, selectedSubtype));
       console.log(`✅ Item placed!`);
       saveSettings();
@@ -4946,7 +4967,11 @@ class Item{
         this.screenY = currentTerrainY;
         this.baseY = currentTerrainY; // Update baseY too
       }
+    } else if(this.type === 'accessory'){
+      // Accessories stay exactly where placed
+      this.screenY = this.baseY;
     } else {
+      // Other items snap to terrain
       this.screenY = currentTerrainY;
       this.baseY = currentTerrainY;
     }
@@ -5643,12 +5668,14 @@ init();
   function showTooltipsAt(clientX, clientY){
     if(!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const mx = clientX - rect.left;
-    const my = clientY - rect.top;
+    // Apply the same coordinate scaling as the click handler
+    const mx = (clientX - rect.left) * (W / rect.width);
+    const my = (clientY - rect.top) * (H / rect.height);
     
-    // Check for plant hover
+    // Check for plant hover first
     if(typeof checkPlantHover === 'function') checkPlantHover(mx, my);
     
+    // Check for star hover
     const star = nearestStar(mx,my,18);
     if(star && tip){
       const name = star.name || ('Mag '+(star.mag||'?'));
@@ -5661,7 +5688,11 @@ init();
       const meta = [mag, alt].filter(Boolean).join(' • ');
       tip.innerHTML = `<strong>${name}</strong><div style="font-size:12px;margin-top:6px">${cons}</div><div style="font-size:11px;color:#cfe8ff;margin-top:4px">${meta}</div><div style="margin-top:6px;font-size:11px;color:#cfe8ff">${info}</div>`;
       tip.style.display='block';
-    }else if(tip){ tip.style.display='none'; }
+      // Hide plant tooltip when showing star tooltip
+      if(typeof hidePlantTooltip === 'function') hidePlantTooltip();
+    }else if(tip){ 
+      tip.style.display='none'; 
+    }
   }
 
   // Mouse events
@@ -5669,7 +5700,10 @@ init();
     showTooltipsAt(ev.clientX, ev.clientY);
   });
 
-  canvas && canvas.addEventListener('mouseleave', ()=> tip.style.display='none');
+  canvas && canvas.addEventListener('mouseleave', ()=> {
+    tip.style.display='none';
+    if(typeof hidePlantTooltip === 'function') hidePlantTooltip();
+  });
 
   // Touch events for mobile devices
   canvas && canvas.addEventListener('touchmove', (ev)=>{
@@ -5909,6 +5943,8 @@ init();
     document.querySelectorAll('#seasonalVegetables .item').forEach(item => {
       item.addEventListener('click', () => {
         if(removeMode) return;
+          // Close store when seasonal vegetable is clicked
+          document.getElementById('store').classList.remove('visible');
         document.querySelectorAll('.item').forEach(i => i.classList.remove('selected'));
         item.classList.add('selected');
         selectedType = 'plant';
@@ -6480,15 +6516,43 @@ init();
     
     const dataStr = JSON.stringify(sceneData, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    const url = URL.createObjectURL(dataBlob);
+    const fileName = `${name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    
+    // Try using File System Access API for native file dialog
+    if(window.showSaveFilePicker){
+      window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{description: 'JSON Files', accept: {'application/json': ['.json']}}]
+      }).then(async (handle) => {
+        try {
+          const writable = await handle.createWritable();
+          await writable.write(dataBlob);
+          await writable.close();
+          if(typeof showNotification === 'function') showNotification(`💾 Scene "${name}" saved!`);
+        } catch(e) {
+          console.error('File save error:', e);
+          if(typeof showNotification === 'function') showNotification(`❌ Failed to save scene`);
+        }
+      }).catch((e) => {
+        // User cancelled - use fallback download
+        console.log('Save dialog cancelled, using download fallback');
+        fallbackDownload(dataBlob, fileName, name);
+      });
+    } else {
+      // Fallback for browsers without File System Access API
+      fallbackDownload(dataBlob, fileName, name);
+    }
+  };
+
+  function fallbackDownload(blob, fileName, sceneName){
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    link.download = fileName;
     link.click();
     URL.revokeObjectURL(url);
-    
-    if(typeof showNotification === 'function') showNotification(`💾 Scene "${name}" downloaded!`);
-  };
+    if(typeof showNotification === 'function') showNotification(`💾 Scene "${sceneName}" downloaded!`);
+  }
 
   window.closeTutorial = function(){
     document.getElementById('tutorialOverlay').classList.remove('visible');
@@ -7174,18 +7238,22 @@ function loadScene(sceneData){
   saveSettings();
   showNotification(`✅ Scene "${sceneData.name}" loaded!`);
 }
-  showNotification(`📂 Scene "${sceneData.name}" loaded!`);
-}
 
 // 5. PLANT POPUPS ON HOVER
 let hoveredPlant = null;
 function checkPlantHover(mouseX, mouseY){
   hoveredPlant = null;
+  if(!items || items.length === 0){
+    hidePlantTooltip();
+    return;
+  }
   for(let item of items){
-    if(item.type === 'plant'){
+    if(item.type === 'plant' && item.screenX !== undefined && item.screenY !== undefined){
       const dist = Math.hypot(mouseX - item.screenX, mouseY - item.screenY);
+      console.log(`Plant ${item.subtype} at (${Math.round(item.screenX)}, ${Math.round(item.screenY)}), mouse at (${Math.round(mouseX)}, ${Math.round(mouseY)}), dist=${Math.round(dist)}`);
       if(dist < 40){
         hoveredPlant = item;
+        console.log(`✅ HOVER DETECTED: ${item.subtype}`);
         showPlantTooltip(item, mouseX, mouseY);
         return;
       }
@@ -7195,12 +7263,19 @@ function checkPlantHover(mouseX, mouseY){
 }
 function showPlantTooltip(plant, x, y){
   const tooltip = document.getElementById('plantTooltip');
-  const ageMonths = Math.floor(plant.age / 30);
+  if(!tooltip){
+    console.error('❌ plantTooltip element not found!');
+    return;
+  }
+  const ageMonths = Math.floor((plant.age || 0) / 30);
   const age = ageMonths > 0 ? `${ageMonths}mo` : '<1mo';
-  tooltip.innerHTML = `<strong>${plant.subtype}</strong><br>Age: ${age}<br>Health: ${Math.floor(plant.age / plant.maxAge * 100)}%`;
+  const maxAge = plant.maxAge || 250;
+  const health = Math.min(100, Math.floor(((plant.age || 0) / maxAge) * 100));
+  tooltip.innerHTML = `<strong>${plant.subtype}</strong><br>Age: ${age}<br>Health: ${health}%`;
   tooltip.style.left = (x + 10) + 'px';
   tooltip.style.top = (y - 30) + 'px';
   tooltip.style.display = 'block';
+  console.log(`🌱 Tooltip shown at (${Math.round(x)}, ${Math.round(y)})`);
 }
 function hidePlantTooltip(){
   document.getElementById('plantTooltip').style.display = 'none';
@@ -7548,6 +7623,10 @@ function initWebAds(){
   script.async = true;
   script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`;
   script.crossOrigin = 'anonymous';
+  script.onerror = () => {
+    // Script blocked by ad blocker - silent fail
+    console.log('AdSense blocked by ad blocker (this is normal)');
+  };
   script.onload = () => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
