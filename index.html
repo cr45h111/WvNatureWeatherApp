@@ -6348,6 +6348,76 @@ init();
   updateSeasonals();
   setInterval(updateSeasonals, 5*60*1000);
 
+  // ============== QUICK ACTION BUTTON FUNCTIONS ==============
+  // Define these in script 2 so they're available early
+  window.showTutorial = function(){
+    alert('showTutorial called');
+    try{
+      const overlay = document.getElementById('tutorialOverlay');
+      if(overlay) overlay.classList.add('visible');
+    }catch(e){
+      console.error('showTutorial error:', e);
+      alert('Error opening tutorial: ' + e.message);
+    }
+  };
+  
+  window.captureScreenshot = function(){
+    alert('captureScreenshot called');
+    try {
+      if(!canvas) throw new Error('Canvas not found');
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `wv-nature-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.png`;
+      link.click();
+      if(typeof showNotification === 'function') showNotification('📸 Screenshot saved!');
+    }catch(e){
+      console.error('Screenshot failed:', e);
+      if(typeof showNotification === 'function') showNotification('❌ Screenshot failed: ' + e.message);
+      alert('Screenshot error: ' + e.message);
+    }
+  };
+  
+  window.showSaveSceneModal = function(){
+    alert('showSaveSceneModal called');
+    try{
+      const now = new Date();
+      const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
+      const input = document.getElementById('sceneName');
+      if(input) input.value = defaultName;
+      const modal = document.getElementById('saveSceneModal');
+      if(modal) modal.classList.add('visible');
+      const qmodal = document.getElementById('quickActionsModal');
+      if(qmodal) qmodal.classList.remove('visible');
+    }catch(e){
+      console.error('showSaveSceneModal error:', e);
+      alert('Error opening save scene modal: ' + e.message);
+    }
+  };
+  
+  window.showLoadSceneModal = function(){
+    alert('showLoadSceneModal called');
+    try{
+      const sceneList = document.getElementById('sceneList');
+      if(!sceneList) throw new Error('Scene list element not found');
+      
+      sceneList.innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <p style="color:#0cf;margin-bottom:15px;">Click below to select a saved scene file (.json)</p>
+          <input type="file" id="sceneFileInput" accept=".json" style="display:none;" onchange="loadSceneFromFile(event)">
+          <button class="modal-btn" onclick="document.getElementById('sceneFileInput').click()">📂 Choose Scene File</button>
+        </div>
+      `;
+      
+      const modal = document.getElementById('loadSceneModal');
+      if(modal) modal.classList.add('visible');
+      const qmodal = document.getElementById('quickActionsModal');
+      if(qmodal) qmodal.classList.remove('visible');
+    }catch(e){
+      console.error('showLoadSceneModal error:', e);
+      alert('Error opening load scene modal: ' + e.message);
+    }
+  };
+
 })();
 </script>
 
@@ -6946,18 +7016,7 @@ init();
 
 // ============== NEW FEATURES ==============
 
-// 2. TUTORIAL OVERLAY
-function showTutorial(){
-  alert('showTutorial called');
-  try{
-    const overlay = document.getElementById('tutorialOverlay');
-    if(overlay) overlay.classList.add('visible');
-  }catch(e){
-    console.error('showTutorial error:', e);
-    alert('Error opening tutorial: ' + e.message);
-  }
-}
-window.showTutorial = showTutorial;
+// 2. TUTORIAL OVERLAY (moved to script 2 for early availability)
 function closeTutorial(){
   document.getElementById('tutorialOverlay').classList.remove('visible');
   localStorage.setItem('tutorialShown', 'true');
@@ -6980,42 +7039,7 @@ window.addEventListener('load', function(){
   }
 });
 
-// 3. SCREENSHOT FEATURE
-function captureScreenshot(){
-  alert('captureScreenshot called');
-  try {
-    if(!canvas) throw new Error('Canvas not found');
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = `wv-nature-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.png`;
-    link.click();
-    if(typeof showNotification === 'function') showNotification('📸 Screenshot saved!');
-  }catch(e){
-    console.error('Screenshot failed:', e);
-    if(typeof showNotification === 'function') showNotification('❌ Screenshot failed: ' + e.message);
-    alert('Screenshot error: ' + e.message);
-  }
-}
-window.captureScreenshot = captureScreenshot;
-
-// 4. SAVE/LOAD SCENES
-function showSaveSceneModal(){
-  alert('showSaveSceneModal called');
-  try{
-    const now = new Date();
-    const defaultName = `Scene-${now.toLocaleDateString()}-${now.toLocaleTimeString()}`;
-    const input = document.getElementById('sceneName');
-    if(input) input.value = defaultName;
-    const modal = document.getElementById('saveSceneModal');
-    if(modal) modal.classList.add('visible');
-    const qmodal = document.getElementById('quickActionsModal');
-    if(qmodal) qmodal.classList.remove('visible');
-  }catch(e){
-    console.error('showSaveSceneModal error:', e);
-    alert('Error opening save scene modal: ' + e.message);
-  }
-}
-window.showSaveSceneModal = showSaveSceneModal;
+// 3. SCREENSHOT FEATURE (moved to script 2 for early availability)
 function saveSceneFromModal(){
   const sceneName = document.getElementById('sceneName').value.trim();
   if(sceneName){
@@ -7057,30 +7081,7 @@ function saveScene(name){
   
   showNotification(`💾 Scene "${name}" downloaded!`);
 }
-function showLoadSceneModal(){
-  alert('showLoadSceneModal called');
-  try{
-    const sceneList = document.getElementById('sceneList');
-    if(!sceneList) throw new Error('Scene list element not found');
-    
-    sceneList.innerHTML = `
-      <div style="text-align:center;padding:20px;">
-        <p style="color:#0cf;margin-bottom:15px;">Click below to select a saved scene file (.json)</p>
-        <input type="file" id="sceneFileInput" accept=".json" style="display:none;" onchange="loadSceneFromFile(event)">
-        <button class="modal-btn" onclick="document.getElementById('sceneFileInput').click()">📂 Choose Scene File</button>
-      </div>
-    `;
-    
-    const modal = document.getElementById('loadSceneModal');
-    if(modal) modal.classList.add('visible');
-    const qmodal = document.getElementById('quickActionsModal');
-    if(qmodal) qmodal.classList.remove('visible');
-  }catch(e){
-    console.error('showLoadSceneModal error:', e);
-    alert('Error opening load scene modal: ' + e.message);
-  }
-}
-window.showLoadSceneModal = showLoadSceneModal;
+// NOTE: showLoadSceneModal moved to Script 2 (line 6397)
 
 function loadSceneFromFile(event){
   const file = event.target.files[0];
