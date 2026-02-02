@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta name="description" content="Immersive West Virginia nature simulation with real-time weather, astronomy, and interactive ecosystem">
@@ -426,6 +426,12 @@ canvas:fullscreen{background:#000;}
         <span id="tempOffsetDisplay" style="font-size:12px;color:#0ff;min-width:100px;">Current: 0°F</span>
       </div>
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast. Common in hollows/valleys.</small>
+    </div>
+    <h3>API Configuration</h3>
+    <div class="form-group" style="margin-bottom:12px">
+      <label for="newsAPIProxySettings">NewsAPI Proxy URL (optional):</label>
+      <input id="newsAPIProxySettings" type="text" placeholder="https://your-server.com/newsapi" style="width:100%;box-sizing:border-box;padding:6px;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid #0cf;color:#0ff;border-radius:3px;" value="">
+      <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Enter your NewsAPI proxy server URL to enable local news in community history. Leave blank to use other sources only.</small>
     </div>
     <h3>Share</h3>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -870,6 +876,10 @@ function loadSettings(){
       const display = document.getElementById('tempOffsetDisplay');
       if(display) display.textContent = `Current: ${tempOffset > 0 ? '+' : ''}${tempOffset}°F`;
       
+      // Restore NewsAPI proxy URL
+      const newsAPIProxyInput = document.getElementById('newsAPIProxySettings');
+      if(newsAPIProxyInput && settings.newsAPIProxy) newsAPIProxyInput.value = settings.newsAPIProxy;
+      
       // Restore terrain conditions
       snowCover = settings.snowCover !== undefined ? settings.snowCover : 0;
 
@@ -958,6 +968,13 @@ function saveSettings(){
   const settingsInput = document.getElementById('tempOffsetSettings');
   const modalInput = document.getElementById('tempOffset');
   tempOffset = parseInt(settingsInput?.value || modalInput?.value || 0) || 0;
+  
+  // Save NewsAPI proxy URL
+  const newsAPIProxyInput = document.getElementById('newsAPIProxySettings');
+  const newsAPIProxyURL = newsAPIProxyInput?.value?.trim() || '';
+  if(newsAPIProxyURL) localStorage.setItem('newsAPIProxy', newsAPIProxyURL);
+  else localStorage.removeItem('newsAPIProxy');
+  
   try{
     const settings = {
       lat: LAT,
@@ -988,6 +1005,7 @@ function saveSettings(){
       owlSchedule: owlSchedule,
       owlHootsDone: owlHootsDone,
       snowCover: snowCover,
+      newsAPIProxy: newsAPIProxyURL,
       items: items.map(item => ({
         baseX: item.baseX,
         baseY: item.baseY,
