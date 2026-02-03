@@ -8156,8 +8156,40 @@ async function fetchLocalNewspaperFacts(town){
     // Use the same extractFacts function to find interesting information
     const facts = extractFacts(textContent, town);
     
+    // Supplement with fallback facts if extraction is too sparse
+    const fallbackFacts = [
+      'Local historians continue to preserve artifacts from the region\'s coal mining heritage.',
+      'Community volunteers gather monthly to maintain historic cemeteries and monuments.',
+      'Regional hiking trails attract visitors interested in West Virginia\'s natural history.',
+      'Local schools incorporate Appalachian history and culture into their curriculum.',
+      'Historic homesteads throughout the county showcase traditional building techniques.',
+      'County records reveal fascinating stories of pioneer families who settled the area.',
+      'Seasonal festivals celebrate the region\'s traditions and cultural heritage.',
+      'Historic railway routes once connected remote mountain communities to major cities.',
+      'Local genealogical societies help residents trace their family histories.',
+      'Native American artifacts discovered in the area reveal ancient settlement patterns.',
+      'Historic churches and meetinghouses serve as architectural landmarks in the community.',
+      'Restored mills and industrial buildings document the region\'s economic history.',
+      'Local museums preserve photographs and documents from the early settlement period.',
+      'Historic bridges are engineering marvels that connected isolated mountain communities.',
+      'Old cemeteries contain graves dating back to the earliest European settlers.',
+      'Revolutionary War and Civil War sites dot the landscape throughout the region.',
+      'Historic courthouses and government buildings showcase 19th-century architecture.',
+      'Folklore and oral histories passed down through generations enrich local culture.',
+      'Abandoned structures tell stories of communities and industries long forgotten.',
+      'Historic organizations work to protect and restore endangered heritage buildings.'
+    ];
+    
+    // If extraction yielded fewer than 5 facts, add fallback facts to reach at least 8 total
+    if(facts.length < 5){
+      const needed = 8 - facts.length;
+      for(let i = 0; i < needed && i < fallbackFacts.length; i++){
+        facts.push(fallbackFacts[i]);
+      }
+    }
+    
     console.log(`📰 Extracted ${facts.length} facts from local newspaper`);
-    return facts.slice(0, 5); // Limit to 5 facts
+    return facts.slice(0, 15); // Allow more facts to cycle through
     
   }catch(e){
     console.log('📰 Local newspaper fetch failed (CORS or network issue):', e.message);
@@ -8519,7 +8551,7 @@ function extractFacts(text, town){
     
     if(hasKeyword){
       // Skip food-related facts unless they mention fair, festival, or dinner
-      const foodKeywords = ['recipe', 'cook', 'chef', 'baker', 'bakery', 'confectionery', 'candy', 'chocolate', 'ice cream', 'soda fountain', 'food', 'cuisine', 'restaurant', 'cafe', 'diner', 'eatery'];
+      const foodKeywords = ['recipe', 'cook', 'chef', 'baker', 'bakery', 'confectionery', 'candy', 'chocolate', 'ice cream', 'soda fountain', 'food', 'cuisine', 'culinary', 'restaurant', 'cafe', 'diner', 'eatery', 'pasta', 'lasagna', 'italian'];
       const isFoodRelated = foodKeywords.some(kw => lowerSentence.indexOf(kw) >= 0);
       const isCommunityEvent = lowerSentence.indexOf('fair') >= 0 || lowerSentence.indexOf('festival') >= 0 || lowerSentence.indexOf('dinner') >= 0;
       
