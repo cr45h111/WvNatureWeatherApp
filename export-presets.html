@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Export Scene Presets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #0ff;
+        }
+        button {
+            background: rgba(0,255,255,0.2);
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: rgba(0,255,255,0.4);
+        }
+        pre {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border: 1px solid #0ff;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            color: #0f0;
+            margin: 10px 0;
+        }
+        .error {
+            color: #f00;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Export Scene Presets</h1>
+    <p>This tool exports your scene presets from localStorage to JSON files.</p>
+    
+    <button onclick="exportPresets()">📤 Export All Presets</button>
+    <button onclick="showPresets()">👁️ View Presets</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        function showPresets() {
+            const saved = localStorage.getItem('scenePresets');
+            const output = document.getElementById('output');
+            
+            if (!saved) {
+                output.innerHTML = '<p class="error">No presets found in localStorage</p>';
+                return;
+            }
+            
+            const presets = JSON.parse(saved);
+            output.innerHTML = `
+                <h3>Found ${presets.length} preset(s):</h3>
+                <pre>${JSON.stringify(presets, null, 2)}</pre>
+            `;
+        }
+        
+        function exportPresets() {
+            const saved = localStorage.getItem('scenePresets');
+            const output = document.getElementById('output');
+            
+            if (!saved) {
+                output.innerHTML = '<p class="error">No presets found in localStorage</p>';
+                return;
+            }
+            
+            const presets = JSON.parse(saved);
+            
+            // Create presets directory structure
+            const presetsData = {
+                version: "1.0",
+                exported: new Date().toISOString(),
+                presets: presets
+            };
+            
+            // Download as single JSON file
+            const dataStr = JSON.stringify(presetsData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'scene-presets.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            output.innerHTML = `
+                <p class="success">✅ Exported ${presets.length} preset(s) to scene-presets.json</p>
+                <h3>Presets:</h3>
+                <pre>${JSON.stringify(presetsData, null, 2)}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>
