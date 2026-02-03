@@ -6457,6 +6457,7 @@ init();
 
   // Forecast: build a minimal 3-hour forecast from available weatherData or synthesize
   function updateForecast(){
+    console.log('🔄 updateForecast() called!');
     const wd = window.appWeatherData || {}; // Read from window.appWeatherData that gets updated by fetchWeather()
     let hours=[];
     const now = new Date();
