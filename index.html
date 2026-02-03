@@ -8907,48 +8907,59 @@ function savePreset(){
   }
 }
 
+// Default embedded presets
+const DEFAULT_PRESETS = [
+  {
+    "name": "Mysterious Mountains",
+    "description": "Explore me.",
+    "createdAt": "2026-02-02T14:36:39.860Z",
+    "terrainType": "coalmine",
+    "items": []
+  },
+  {
+    "name": "Ancient Forest",
+    "description": "Discover the hidden sycamore.",
+    "createdAt": "2026-02-03T15:20:04.390Z",
+    "terrainType": "ancientforest",
+    "items": []
+  }
+];
+
 function loadPresetsIntoStore(){
   const container = document.getElementById('scenePresetsList');
   if(!container) return;
   
   let presets = [];
   
-  // Try localStorage first (faster and always available)
+  // Try localStorage first
   try{
     const saved = localStorage.getItem('scenePresets');
     if(saved){
       presets = JSON.parse(saved);
       console.log(`Loaded ${presets.length} presets from localStorage`);
+      displayPresets(presets);
+      return;
     }
   }catch(e){
     console.error('Error loading local presets:', e);
   }
   
-  // Display immediately with localStorage presets
-  displayPresets(presets);
-  
-  // Then try to load from JSON file and merge
+  // Try to load from JSON file
   fetch('ScenePresets/scene-presets.json')
     .then(response => {
       if(!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
     })
     .then(data => {
-      console.log('Loaded presets from JSON file:', data);
+      console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
-        // Merge JSON presets with localStorage (JSON first, then local additions)
-        const combined = [...data.presets];
-        presets.forEach(local => {
-          if(!combined.find(p => p.name === local.name)){
-            combined.push(local);
-          }
-        });
-        displayPresets(combined);
-        console.log(`Total presets: ${combined.length}`);
+        displayPresets(data.presets);
+        console.log(`Displaying ${data.presets.length} presets`);
       }
     })
     .catch(err => {
-      console.log('Could not load JSON presets (using localStorage only):', err.message);
+      console.log('Using default presets:', err.message);
+      displayPresets(DEFAULT_PRESETS);
     });
 }
 
