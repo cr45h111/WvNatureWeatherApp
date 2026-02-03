@@ -3701,6 +3701,7 @@ function init(){
   setTimeout(() => {
     loader.classList.add('hidden');
     ready = true;
+    console.log('✅ App ready!', { ready, canvas: canvas ? 'found' : 'missing', ctx: ctx ? 'found' : 'missing' });
     
     if(showClock){
       document.getElementById('clock').classList.add('visible');
@@ -3753,7 +3754,11 @@ function updateFPS(){
 }
 
 function draw(){
-  if(!ready){ requestAnimationFrame(draw); return; }
+  if(!ready){ 
+    if(frameCount === 0) console.log('⏳ Waiting for ready flag...');
+    requestAnimationFrame(draw); 
+    return; 
+  }
   try{
   
   const light = calculateLighting();
