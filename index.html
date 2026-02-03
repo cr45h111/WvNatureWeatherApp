@@ -3429,7 +3429,7 @@ async function fetchWeather(){
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,weather_code,cloud_cover&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch`, {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m,weather_code,cloud_cover&hourly=temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,relative_humidity_2m,weather_code,uv_index&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&forecast_days=1`, {
         signal: controller.signal
       });
       
@@ -3453,6 +3453,20 @@ async function fetchWeather(){
     weatherData.precipitation = d.current.precipitation || 0;
     weatherData.humidity = d.current.relative_humidity_2m;
     weatherData.cloudCover = d.current.cloud_cover || 0;
+    
+    // Store hourly forecast data
+    if(d.hourly){
+      weatherData.hourly = {
+        time: d.hourly.time,
+        temperature: d.hourly.temperature_2m,
+        precipitation_probability: d.hourly.precipitation_probability,
+        wind_speed: d.hourly.wind_speed_10m,
+        wind_direction: d.hourly.wind_direction_10m,
+        humidity: d.hourly.relative_humidity_2m,
+        weather_code: d.hourly.weather_code,
+        uv_index: d.hourly.uv_index
+      };
+    }
     
     // Make weatherData accessible to IIFE functions
     window.appWeatherData = weatherData;
@@ -6455,61 +6469,85 @@ init();
     document.getElementById('plantTooltip').style.display = 'none';
   });
 
-  // Forecast: build a minimal 3-hour forecast from available weatherData or synthesize
+  // Forecast: build hourly forecast using real API data from Open-Meteo
   function updateForecast(){
     console.log('🔄 updateForecast() called!');
-    const wd = window.appWeatherData || {}; // Read from window.appWeatherData that gets updated by fetchWeather()
+    const wd = window.appWeatherData || {};
     let hours=[];
     const now = new Date();
     const currentMonth = now.getMonth();
-    const currentHour = now.getHours();
     
-    // Use REAL current temperature from API, not fake data
-    const baseTemp = (wd.temp !== undefined && wd.temp !== null) ? wd.temp : 72;
-    const humidity = (wd.humidity !== undefined) ? wd.humidity : 50;
-    const baseWind = (wd.windSpeed !== undefined) ? wd.windSpeed : 5;
+    // Helper function to get weather condition from code
+    const getCondition = (code, temp) => {
+      if(code === 0) return 'Clear';
+      if(code <= 3) return 'Cloudy';
+      if(code <= 67) return temp <= 32 ? 'Snow' : 'Rain';
+      if(code >= 71 && code <= 77) return 'Snow';
+      if(code >= 95) return 'Storm';
+      return 'Cloudy';
+    };
     
-    console.log(`📊 Forecast using: baseTemp=${baseTemp}°F (from appWeatherData.temp=${wd.temp}), wind=${baseWind}mph, humidity=${humidity}%`);
+    // Helper function to get wind direction from degrees
+    const getWindDir = (deg) => {
+      const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+      return dirs[Math.round(deg / 45) % 8];
+    };
     
-    // Pollen levels by season (higher in spring/summer)
+    // Pollen levels by season (higher in spring/summer) - still estimated
     const pollenSeasonFactor = (currentMonth >= 2 && currentMonth <= 8) ? 1.5 : 0.3;
     const basePollen = Math.round((20 + Math.random()*60) * pollenSeasonFactor);
     
-    // UV index based on time of day and season
-    const uvSeasonFactor = (currentMonth >= 4 && currentMonth <= 8) ? 1.3 : 0.7;
-    
-    // Air quality (better in winter, worse in summer heat)
+    // Air quality (better in winter, worse in summer heat) - still estimated
     const aqSeasonFactor = (currentMonth >= 5 && currentMonth <= 8) ? 0.8 : 1.0;
+    
+    console.log(`📊 Forecast using real hourly API data:`, wd.hourly ? 'Available' : 'Using fallback');
+    
+    // Find current hour index in hourly data
+    let currentHourIndex = 0;
+    if(wd.hourly && wd.hourly.time){
+      const nowStr = now.toISOString().slice(0, 13) + ':00';
+      currentHourIndex = wd.hourly.time.findIndex(t => t.startsWith(nowStr.slice(0, 13)));
+      if(currentHourIndex === -1) currentHourIndex = 0;
+    }
     
     for(let i=0;i<5;i++){
       const h = new Date(now.getTime() + i*60*60*1000);
-      // First entry (i=0) should match CURRENT temp exactly, then vary slightly for future hours
-      let temp = i === 0 ? baseTemp : Math.round(baseTemp + (Math.random()*4-2) + (i*0.3));
-      const precip = Math.random()< (wd.precipitation_probability || 0.12) ? (Math.random()*60|0) : 0;
-      const sky = precip>20 ? 'Rain' : (wd.condition || 'Clear');
+      const hourIndex = currentHourIndex + i;
       
-      // Wind speed varies throughout day
-      const wind = Math.round(baseWind + (Math.random()*5-2.5));
-      const windDir = ['N','NE','E','SE','S','SW','W','NW'][Math.floor(Math.random()*8)];
+      // Use real hourly data if available, otherwise fallback to current data
+      let temp, precip, wind, windDeg, humidity, weatherCode, uv;
       
-      // Pollen varies by hour (lower at night)
+      if(wd.hourly && hourIndex < wd.hourly.time.length){
+        temp = Math.round(wd.hourly.temperature[hourIndex]);
+        precip = wd.hourly.precipitation_probability[hourIndex] || 0;
+        wind = Math.round(wd.hourly.wind_speed[hourIndex]);
+        windDeg = wd.hourly.wind_direction[hourIndex] || 0;
+        humidity = Math.round(wd.hourly.humidity[hourIndex]);
+        weatherCode = wd.hourly.weather_code[hourIndex];
+        uv = Math.round(wd.hourly.uv_index[hourIndex] * 10) / 10; // Round to 1 decimal
+      } else {
+        // Fallback to current data with slight variations
+        temp = i === 0 ? (wd.temp || 72) : Math.round((wd.temp || 72) + (Math.random()*4-2));
+        precip = Math.round(Math.random()*30);
+        wind = Math.round((wd.windSpeed || 5) + (Math.random()*5-2.5));
+        windDeg = Math.random()*360;
+        humidity = wd.humidity || 50;
+        weatherCode = 0;
+        uv = 0;
+      }
+      
+      const sky = getCondition(weatherCode, temp);
+      const windDir = getWindDir(windDeg);
+      
+      // Pollen varies by hour (lower at night) - still estimated
       const hourOfDay = h.getHours();
       const pollenTimeFactor = (hourOfDay >= 6 && hourOfDay <= 18) ? 1.0 : 0.2;
       const pollen = Math.round(basePollen * pollenTimeFactor);
       const pollenLevel = pollen < 30 ? 'Low' : pollen < 60 ? 'Medium' : pollen < 90 ? 'High' : 'Very High';
       
-      // UV index (0 at night, peak midday)
-      let uv = 0;
-      if(hourOfDay >= 6 && hourOfDay <= 18){
-        const midday = Math.abs(hourOfDay - 12);
-        uv = Math.round((10 - midday) * uvSeasonFactor);
-        if(uv < 0) uv = 0;
-        if(sky === 'Cloudy') uv = Math.round(uv * 0.7);
-        if(sky === 'Rain') uv = Math.round(uv * 0.5);
-      }
       const uvLevel = uv <= 2 ? 'Low' : uv <= 5 ? 'Moderate' : uv <= 7 ? 'High' : uv <= 10 ? 'Very High' : 'Extreme';
       
-      // Fire danger (temp, wind, humidity, precip)
+      // Fire danger (temp, wind, humidity, precip) - calculated from real data
       let fireDanger = 0;
       if(temp > 70) fireDanger += (temp - 70) / 5;
       if(wind > 10) fireDanger += (wind - 10) / 3;
@@ -6518,7 +6556,7 @@ init();
       fireDanger = Math.max(0, Math.round(fireDanger));
       const fireDangerLevel = fireDanger < 2 ? 'Low' : fireDanger < 5 ? 'Moderate' : fireDanger < 8 ? 'High' : 'Extreme';
       
-      // Air quality (AQI estimate)
+      // Air quality (AQI estimate) - still estimated
       const baseAQI = Math.round((30 + Math.random()*50) * aqSeasonFactor);
       const aqi = sky === 'Rain' ? Math.round(baseAQI * 0.7) : baseAQI;
       const aqiLevel = aqi <= 50 ? 'Good' : aqi <= 100 ? 'Moderate' : aqi <= 150 ? 'Unhealthy for Sensitive' : 'Unhealthy';
