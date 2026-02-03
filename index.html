@@ -5386,11 +5386,8 @@ function draw(){
 
   // Deer and Bunny: z-index layering handled in CSS above
 
-
-
   animTime += 0.1;
   updateFPS(); // Update frame rate counter
-  requestAnimationFrame(draw);
   }catch(e){
     console.error('Draw error:', e);
     try{
@@ -5403,6 +5400,7 @@ function draw(){
     }catch(err){ console.error('Error showing loader:', err); }
     ready = false;
   }
+  requestAnimationFrame(draw); // Always request next frame
 }
 class Item{
   constructor(x, y, type, subtype){
