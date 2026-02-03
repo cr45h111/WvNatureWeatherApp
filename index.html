@@ -6542,7 +6542,8 @@ init();
       </div>
     `).join('');
   }
-  updateForecast();
+  // Wait for weather to load before updating forecast
+  setTimeout(() => updateForecast(), 2000);
   setInterval(updateForecast, 5*60*1000);
   
   // Farmers Almanac Data - Detailed monthly planting guide (DEFINE BEFORE USE)
