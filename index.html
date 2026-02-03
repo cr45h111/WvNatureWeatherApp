@@ -3456,6 +3456,9 @@ async function fetchWeather(){
     
     console.log(`Weather updated: ${weatherData.temp}°F (API: ${Math.round(d.current.temperature_2m)}°F + offset: ${tempOffset}°F) at LAT=${LAT.toFixed(2)}, LON=${LON.toFixed(2)}`);
     
+    // Update forecast display when weather updates
+    if(typeof updateForecast === 'function') updateForecast();
+    
     const code = d.current.weather_code;
     if(code === 0) weatherData.condition = 'Clear';
     else if(code <= 3) weatherData.condition = 'Cloudy';
@@ -6457,10 +6460,12 @@ init();
     const currentMonth = now.getMonth();
     const currentHour = now.getHours();
     
-    // Calculate current environmental conditions
-    const baseTemp = (wd.temperature_current !== undefined) ? wd.temperature_current : (wd.temp || 12);
-    const humidity = Math.round(50 + Math.random()*30); // 50-80%
-    const baseWind = Math.round(5 + Math.random()*10); // 5-15 mph base
+    // Use REAL current temperature from API, not fake data
+    const baseTemp = (wd.temp !== undefined) ? wd.temp : 72; // Use actual fetched temp
+    const humidity = (wd.humidity !== undefined) ? wd.humidity : 50;
+    const baseWind = (wd.windSpeed !== undefined) ? wd.windSpeed : 5;
+    
+    console.log(`Forecast using real data: temp=${baseTemp}°F, wind=${baseWind}mph, humidity=${humidity}%`);
     
     // Pollen levels by season (higher in spring/summer)
     const pollenSeasonFactor = (currentMonth >= 2 && currentMonth <= 8) ? 1.5 : 0.3;
@@ -6474,10 +6479,10 @@ init();
     
     for(let i=0;i<5;i++){
       const h = new Date(now.getTime() + i*60*60*1000);
-      // First entry (i=0) should match current temp exactly, then add variation for future hours
-      let temp = i === 0 ? (wd.temp || Math.round(baseTemp)) : Math.round(baseTemp + (Math.random()*3-1.5) + (i*0.5));
+      // First entry (i=0) should match CURRENT temp exactly, then vary slightly for future hours
+      let temp = i === 0 ? baseTemp : Math.round(baseTemp + (Math.random()*4-2) + (i*0.3));
       const precip = Math.random()< (wd.precipitation_probability || 0.12) ? (Math.random()*60|0) : 0;
-      const sky = precip>20 ? 'Rain' : (Math.random()<0.2 ? 'Cloudy' : 'Clear');
+      const sky = precip>20 ? 'Rain' : (wd.condition || 'Clear');
       
       // Wind speed varies throughout day
       const wind = Math.round(baseWind + (Math.random()*5-2.5));
