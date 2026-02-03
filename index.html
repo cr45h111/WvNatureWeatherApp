@@ -3401,7 +3401,7 @@ function updateCreatures(){
 const weatherCache = {
   data: null,
   timestamp: null,
-  ttl: 5*60*1000, // 5 minutes
+  ttl: 2*60*1000, // 2 minutes (reduced from 5 for more frequent updates)
   isValid(){
     return this.data && this.timestamp && (Date.now() - this.timestamp) < this.ttl;
   },
@@ -3693,6 +3693,7 @@ function init(){
   setTimeout(() => {
     determineSeason();
     updateAstronomy();
+    weatherCache.clear(); // Clear old cached weather data
     fetchWeather();
     updateProgress(100, 'Ready!');
   }, 500);
@@ -3709,7 +3710,7 @@ function init(){
     
     setInterval(updateAstronomy, 60000);
     setInterval(generateStars, 300000); // Update star positions every 5 minutes
-    setInterval(fetchWeather, 120000);
+    setInterval(fetchWeather, 60000); // Update weather every 1 minute
     setInterval(updateClock, 1000);
     setInterval(spawnBird, 8000);
     setInterval(spawnCrow, 45000);
