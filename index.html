@@ -9051,54 +9051,16 @@ window.showAncientTreeModal = showAncientTreeModal;
 
 // Initialize features on load
 window.addEventListener('load', function(){
-  loadDiscoveryAssets(); // Load discovery images
-  checkSeasonalNotifications();
-  // Check seasonals periodically
-  setInterval(checkSeasonalNotifications, 60000);
-  loadPresetsIntoStore(); // Load presets when page loads
-  initAds();
+  try {
+    loadDiscoveryAssets(); // Load discovery images
+    checkSeasonalNotifications();
+    // Check seasonals periodically
+    setInterval(checkSeasonalNotifications, 60000);
+    loadPresetsIntoStore(); // Load presets when page loads
+  } catch (e) {
+    console.error('Init error:', e);
+  }
 });
-
-// Ads initialization (non-intrusive banners)
-function initAds(){
-  try {
-    initWebAds();
-    initMobileAds();
-  } catch (e) {
-    console.warn('Ads init failed:', e);
-  }
-}
-
-function initWebAds(){
-  // Ad banner removed - presets now stored entirely in localStorage
-  return;
-}
-
-async function initMobileAds(){
-  // Mobile only: AdMob banner (Capacitor)
-  if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return;
-  if (window.isElectron) return;
-
-  const AdMob = window.Capacitor?.Plugins?.AdMob;
-  if (!AdMob) return;
-
-  try {
-    await AdMob.initialize({
-      requestTrackingAuthorization: true,
-      initializeForTesting: true
-    });
-
-    await AdMob.showBanner({
-      adId: 'ca-app-pub-XXXXXXXXXXXXXXXX/BBBBBBBBBB', // TODO: replace with your AdMob banner ID
-      position: 'BOTTOM_CENTER',
-      adSize: 'BANNER',
-      margin: 0,
-      isTesting: true
-    });
-  } catch (e) {
-    console.warn('AdMob init failed:', e);
-  }
-}
 
 // Service Worker Registration for PWA - Only in web, not Electron
 if ('serviceWorker' in navigator && !window.isElectron) {
