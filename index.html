@@ -8914,12 +8914,49 @@ function loadPresetsIntoStore(){
   if(!container) return;
   
   let presets = [];
-  try{
-    const saved = localStorage.getItem('scenePresets');
-    if(saved) presets = JSON.parse(saved);
-  }catch(e){
-    console.error('Error loading presets:', e);
-  }
+  
+  // First, try to load from the JSON file
+  fetch('ScenePresets/scene-presets.json')
+    .then(response => response.json())
+    .then(data => {
+      if(data.presets && Array.isArray(data.presets)){
+        presets = data.presets;
+      }
+      
+      // Then merge with localStorage presets (user's custom ones)
+      try{
+        const saved = localStorage.getItem('scenePresets');
+        if(saved){
+          const localPresets = JSON.parse(saved);
+          // Add local presets that aren't already in the file
+          localPresets.forEach(local => {
+            if(!presets.find(p => p.name === local.name)){
+              presets.push(local);
+            }
+          });
+        }
+      }catch(e){
+        console.error('Error loading local presets:', e);
+      }
+      
+      displayPresets(presets);
+    })
+    .catch(err => {
+      // If file fetch fails, fall back to localStorage only
+      console.log('Loading presets from localStorage only:', err.message);
+      try{
+        const saved = localStorage.getItem('scenePresets');
+        if(saved) presets = JSON.parse(saved);
+      }catch(e){
+        console.error('Error loading presets:', e);
+      }
+      displayPresets(presets);
+    });
+}
+
+function displayPresets(presets){
+  const container = document.getElementById('scenePresetsList');
+  if(!container) return;
   
   if(presets.length === 0){
     container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;font-size:11px;">No presets saved yet. Create one from Quick Actions!</div>';
@@ -8941,21 +8978,12 @@ function loadPresetsIntoStore(){
   container.querySelectorAll('.item[data-type="preset"]').forEach(el => {
     el.addEventListener('click', () => {
       const index = parseInt(el.dataset.index);
-      loadPreset(index);
+      loadPresetByIndex(index, presets);
     });
   });
 }
 
-function loadPreset(index){
-  let presets = [];
-  try{
-    const saved = localStorage.getItem('scenePresets');
-    if(saved) presets = JSON.parse(saved);
-  }catch(e){
-    console.error('Error loading presets:', e);
-    return;
-  }
-  
+function loadPresetByIndex(index, presets){
   if(index < 0 || index >= presets.length) return;
   
   const preset = presets[index];
