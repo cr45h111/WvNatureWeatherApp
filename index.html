@@ -3454,6 +3454,9 @@ async function fetchWeather(){
     weatherData.humidity = d.current.relative_humidity_2m;
     weatherData.cloudCover = d.current.cloud_cover || 0;
     
+    // Make weatherData accessible to IIFE functions
+    window.appWeatherData = weatherData;
+    
     console.log(`Weather updated: ${weatherData.temp}°F (API: ${Math.round(d.current.temperature_2m)}°F + offset: ${tempOffset}°F) at LAT=${LAT.toFixed(2)}, LON=${LON.toFixed(2)}`);
     
     // Update forecast display when weather updates
@@ -6454,7 +6457,7 @@ init();
 
   // Forecast: build a minimal 3-hour forecast from available weatherData or synthesize
   function updateForecast(){
-    const wd = weatherData || {}; // Use global weatherData variable directly, not window.weatherData
+    const wd = window.appWeatherData || {}; // Read from window.appWeatherData that gets updated by fetchWeather()
     let hours=[];
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -6465,7 +6468,7 @@ init();
     const humidity = (wd.humidity !== undefined) ? wd.humidity : 50;
     const baseWind = (wd.windSpeed !== undefined) ? wd.windSpeed : 5;
     
-    console.log(`📊 Forecast using: baseTemp=${baseTemp}°F (from global weatherData.temp=${wd.temp}), wind=${baseWind}mph, humidity=${humidity}%`);
+    console.log(`📊 Forecast using: baseTemp=${baseTemp}°F (from appWeatherData.temp=${wd.temp}), wind=${baseWind}mph, humidity=${humidity}%`);
     
     // Pollen levels by season (higher in spring/summer)
     const pollenSeasonFactor = (currentMonth >= 2 && currentMonth <= 8) ? 1.5 : 0.3;
