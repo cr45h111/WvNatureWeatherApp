@@ -464,7 +464,7 @@ canvas:fullscreen{background:#000;}
     </div>
     <div class="form-group" style="margin-bottom:12px">
       <label for="localNewspaperSettings">Local Newspaper URL (optional):</label>
-      <input id="localNewspaperSettings" type="text" placeholder="https://www.wvecho.com/" style="width:100%;box-sizing:border-box;padding:6px;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid #0cf;color:#0ff;border-radius:3px;" value="">
+      <input id="localNewspaperSettings" type="text" placeholder="https://www.wvecho.com/" style="width:100%;box-sizing:border-box;padding:6px;margin-top:4px;background:rgba(0,0,0,0.3);border:1px solid #0cf;color:#0ff;border-radius:3px;" value="https://www.wvecho.com/">
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Enter your local newspaper URL for your current location. The app will automatically fetch fresh facts from this source and rotate them in the Community History modal. You can set different newspaper URLs for different locations.</small>
     </div>
     <div style="margin-top:10px;">
@@ -8192,7 +8192,7 @@ async function fetchWikidataEvents(lat, lon, town){
 async function fetchNewsAPIArticles(town){
   try{
     // Free tier: 100 requests/day. Sign up at newsapi.org for your own key
-    const newsApiKey = 'demo'; // Users should replace with their own key from newsapi.org
+    const newsApiKey = 'dde3828e067c4487bb3ce6a99611d878'; // Your NewsAPI key
     const response = await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(town)}+West+Virginia&sortBy=publishedAt&language=en&pageSize=5&apiKey=${newsApiKey}`);
     const data = await response.json();
     
