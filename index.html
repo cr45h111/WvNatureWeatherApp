@@ -6454,7 +6454,7 @@ init();
 
   // Forecast: build a minimal 3-hour forecast from available weatherData or synthesize
   function updateForecast(){
-    const wd = window.weatherData || {};
+    const wd = weatherData || {}; // Use global weatherData variable directly, not window.weatherData
     let hours=[];
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -6465,8 +6465,7 @@ init();
     const humidity = (wd.humidity !== undefined) ? wd.humidity : 50;
     const baseWind = (wd.windSpeed !== undefined) ? wd.windSpeed : 5;
     
-    console.log(`📊 Forecast using: baseTemp=${baseTemp}°F (from wd.temp=${wd.temp}), wind=${baseWind}mph, humidity=${humidity}%`);
-    console.log(`📊 Full weatherData:`, wd);
+    console.log(`📊 Forecast using: baseTemp=${baseTemp}°F (from global weatherData.temp=${wd.temp}), wind=${baseWind}mph, humidity=${humidity}%`);
     
     // Pollen levels by season (higher in spring/summer)
     const pollenSeasonFactor = (currentMonth >= 2 && currentMonth <= 8) ? 1.5 : 0.3;
