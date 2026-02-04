@@ -1083,6 +1083,8 @@ function loadSettings(){
       
       if(settings.items){
         items = settings.items.map(data => Object.assign(new Item(data.baseX, data.baseY, data.type, data.subtype), data));
+        // Remove auto-generated wildleek items from old sessions (keep ramppods manually placed by users)
+        items = items.filter(item => !(item.type === 'plant' && item.subtype === 'wildleek'));
         console.log(`📦 Loaded ${items.length} items from localStorage`);
       }
       // Reset community history cache on load so it matches current location
