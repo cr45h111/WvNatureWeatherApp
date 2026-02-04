@@ -532,6 +532,7 @@ canvas:fullscreen{background:#000;}
       <button id="openBirdGuideBtn" class="modal-btn">Open Bird Guide</button>
       <button id="openFishGuideBtn" class="modal-btn">Open Fish Guide</button>
       <button id="openTreeGuideBtn" class="modal-btn">Open Tree Guide</button>
+      <button class="modal-btn" onclick="simulateSpringDay()">🌸 Spring Test Day</button>
       <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
@@ -2068,7 +2069,11 @@ function generateMoonCraters(){
 }
 
 function updateAstronomy(){
-  const now = new Date();
+  let now = new Date();
+  // Apply time offset if in simulation mode
+  if(window.timeOffset){
+    now = new Date(now.getTime() + window.timeOffset);
+  }
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth() + 1;
   const day = now.getUTCDate();
@@ -2202,6 +2207,10 @@ function ensureOwlSchedule(now){
 }
 
 function checkOwlSchedule(now){
+  // Apply time offset if in simulation mode
+  if(window.timeOffset){
+    now = new Date(now.getTime() + window.timeOffset);
+  }
   try{
     ensureOwlSchedule(now);
     if(!owlSchedule) return;
@@ -7347,6 +7356,86 @@ init();
 
   window.openSupportLink = function(){
     window.open('https://buymeacoffee.com/ctf57918', '_blank');
+  };
+
+  window.simulateSpringDay = function(){
+    // Set date to mid-Spring (April 15th) - good time to see wild leeks flowering
+    const today = new Date();
+    const springDate = new Date(today.getFullYear(), 3, 15, 12, 0, 0); // April 15, noon
+    
+    // Store original date for restoration
+    window.originalDate = window.simulatedDate || today;
+    
+    // Override the Date constructor behavior for this simulation
+    // Create a custom time offset
+    const timeDiff = springDate - today;
+    window.timeOffset = timeDiff;
+    window.isSimulating = true;
+    
+    // Update season calculation
+    const month = springDate.getMonth();
+    const seasonMap = {0:'winter',1:'winter',2:'spring',3:'spring',4:'spring',5:'summer',
+                       6:'summer',7:'summer',8:'fall',9:'fall',10:'fall',11:'winter'};
+    season = seasonMap[month];
+    
+    // Set realistic spring weather
+    if(weatherData){
+      weatherData.temp = 62; // Mid-spring temp ~62°F
+      weatherData.condition = 'Cloudy';
+      weatherData.windSpeed = 8;
+      weatherData.humidity = 65;
+      weatherData.cloudCover = 40;
+    }
+    
+    // Show notification
+    if(typeof showNotification === 'function'){
+      showNotification('🌸 Spring Test Mode: April 15, 12:00 PM - Wild Leeks in season!');
+    } else {
+      alert('🌸 Spring Test Mode Active: April 15, Noon\nWild Leeks are now in season!\n\nClick "Reset" to return to current date.');
+    }
+    
+    // Add Reset button
+    const qmodal = document.getElementById('quickActionsModal');
+    if(qmodal && !document.getElementById('resetSimBtn')){
+      const resetBtn = document.createElement('button');
+      resetBtn.id = 'resetSimBtn';
+      resetBtn.className = 'modal-btn';
+      resetBtn.textContent = '↩️ Reset to Today';
+      resetBtn.onclick = window.resetSimulation;
+      
+      // Insert after the Spring Test button
+      const body = qmodal.querySelector('.modal-body');
+      const springBtn = Array.from(body.querySelectorAll('button')).find(b => b.textContent.includes('Spring Test'));
+      if(springBtn && springBtn.parentNode){
+        springBtn.parentNode.insertBefore(resetBtn, springBtn.nextSibling);
+      }
+    }
+  };
+
+  window.resetSimulation = function(){
+    window.timeOffset = 0;
+    window.isSimulating = false;
+    if(window.originalDate) delete window.originalDate;
+    
+    // Reset season to current
+    const now = new Date();
+    const month = now.getMonth();
+    const seasonMap = {0:'winter',1:'winter',2:'spring',3:'spring',4:'spring',5:'summer',
+                       6:'summer',7:'summer',8:'fall',9:'fall',10:'fall',11:'winter'};
+    season = seasonMap[month];
+    
+    // Refresh weather
+    if(typeof fetchWeather === 'function') fetchWeather();
+    
+    if(typeof showNotification === 'function'){
+      showNotification('↩️ Reset to current date and time');
+    } else {
+      alert('Reset to current date and time');
+    }
+    
+    // Remove reset button
+    const resetBtn = document.getElementById('resetSimBtn');
+    if(resetBtn) resetBtn.remove();
   };
 
   window.saveSceneFromModal = function(){
