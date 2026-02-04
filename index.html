@@ -3285,6 +3285,14 @@ function generateSpringWildflowers(){
     effectiveMonth = simDate.getMonth();
   }
   
+  const animalWalkY = H * 0.65;
+  const makeMaturePlant = (x, y, subtype) => {
+    const plant = new Item(x, y, 'plant', subtype);
+    plant.age = plant.maxAge;
+    plant.plantedDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120);
+    return plant;
+  };
+  
   // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground ONLY
   if(effectiveMonth >= 2 && effectiveMonth <= 4){
     const daffodilCount = 15 + Math.floor(Math.random() * 10);
@@ -3292,9 +3300,9 @@ function generateSpringWildflowers(){
       const x = Math.random() * W;
       const terrainY = getTerrainY(x);
       
-      // Only place on upper edge of foreground (top 20% of terrain)
-      if(terrainY < H * 0.55){
-        items.push(new Item(x, terrainY, 'plant', 'wilddaffodil'));
+      // Place on the top edge of the foreground (just above animal path)
+      if(terrainY >= animalWalkY - 10 && terrainY <= animalWalkY + 25){
+        items.push(makeMaturePlant(x, terrainY, 'wilddaffodil'));
       }
     }
   }
@@ -3307,7 +3315,6 @@ function generateSpringWildflowers(){
     for(let c = 0; c < clusterCount; c++){
       // Random center point for this cluster
       const clusterCenterX = Math.random() * W;
-      const clusterCenterY = H * 0.55 + Math.random() * (H * 0.3); // Spread across background terrain (55%-85% of screen)
       
       // 20 ramps per cluster, scattered around center
       const rampsPerCluster = 20;
@@ -3321,9 +3328,9 @@ function generateSpringWildflowers(){
         if(x >= 0 && x <= W){
           const terrainY = getTerrainY(x);
           
-          // Place on background terrain (not the top edge where daffodils are)
-          if(terrainY >= H * 0.55 && terrainY < H * 0.88){
-            items.push(new Item(x, terrainY, 'plant', 'wildleek'));
+          // Place on background terrain (above foreground edge)
+          if(terrainY < animalWalkY - 15){
+            items.push(makeMaturePlant(x, terrainY, 'wildleek'));
           }
         }
       }
