@@ -7366,7 +7366,6 @@ init();
     // Store original date for restoration
     window.originalDate = window.simulatedDate || today;
     
-    // Override the Date constructor behavior for this simulation
     // Create a custom time offset
     const timeDiff = springDate - today;
     window.timeOffset = timeDiff;
@@ -7386,6 +7385,12 @@ init();
       weatherData.humidity = 65;
       weatherData.cloudCover = 40;
     }
+    
+    // Force refresh of astronomy with new time
+    updateAstronomy();
+    
+    // Force refresh of seasonal plants in store
+    if(typeof updateSeasonalStore === 'function') updateSeasonalStore();
     
     // Show notification
     if(typeof showNotification === 'function'){
@@ -7424,8 +7429,12 @@ init();
                        6:'summer',7:'summer',8:'fall',9:'fall',10:'fall',11:'winter'};
     season = seasonMap[month];
     
-    // Refresh weather
+    // Refresh weather and astronomy
     if(typeof fetchWeather === 'function') fetchWeather();
+    updateAstronomy();
+    
+    // Refresh seasonal store
+    if(typeof updateSeasonalStore === 'function') updateSeasonalStore();
     
     if(typeof showNotification === 'function'){
       showNotification('↩️ Reset to current date and time');
