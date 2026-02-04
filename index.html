@@ -7392,20 +7392,30 @@ init();
     // Force refresh of seasonal plants in store
     if(typeof updateSeasonalStore === 'function') updateSeasonalStore();
     
-    // Show notification
-    if(typeof showNotification === 'function'){
-      showNotification('🌸 Spring Test Mode: April 15, 12:00 PM - Wild Leeks in season!');
-    } else {
-      alert('🌸 Spring Test Mode Active: April 15, Noon\nWild Leeks are now in season!\n\nClick "Reset" to return to current date.');
+    // Add simulation banner to UI
+    let simBanner = document.getElementById('simulationBanner');
+    if(!simBanner){
+      simBanner = document.createElement('div');
+      simBanner.id = 'simulationBanner';
+      simBanner.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,165,0,0.95);color:#000;padding:12px 20px;border-radius:8px;z-index:250;font-family:monospace;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.5);border:2px solid #ff8800;';
+      simBanner.innerHTML = '🌸 SIMULATION MODE: April 15, 2026 12:00 PM (Spring) <button onclick="window.resetSimulation()" style="margin-left:15px;background:#fff;border:2px solid #000;padding:4px 12px;border-radius:4px;cursor:pointer;font-weight:bold;">↩️ Exit Test Mode</button>';
+      document.body.appendChild(simBanner);
     }
     
-    // Add Reset button
+    // Show notification
+    if(typeof showNotification === 'function'){
+      showNotification('🌸 Spring Test Mode Active! Wild Leeks now in season. Click banner to exit.');
+    } else {
+      alert('🌸 Spring Test Mode Active: April 15, Noon\nWild Leeks are now in season!\n\nClick "Exit Test Mode" in the banner to return.');
+    }
+    
+    // Add Reset button in Quick Actions
     const qmodal = document.getElementById('quickActionsModal');
     if(qmodal && !document.getElementById('resetSimBtn')){
       const resetBtn = document.createElement('button');
       resetBtn.id = 'resetSimBtn';
-      resetBtn.className = 'modal-btn';
-      resetBtn.textContent = '↩️ Reset to Today';
+      resetBtn.className = 'modal-btn danger';
+      resetBtn.textContent = '↩️ Exit Spring Test';
       resetBtn.onclick = window.resetSimulation;
       
       // Insert after the Spring Test button
@@ -7436,13 +7446,17 @@ init();
     // Refresh seasonal store
     if(typeof updateSeasonalStore === 'function') updateSeasonalStore();
     
+    // Remove simulation banner
+    const simBanner = document.getElementById('simulationBanner');
+    if(simBanner) simBanner.remove();
+    
     if(typeof showNotification === 'function'){
-      showNotification('↩️ Reset to current date and time');
+      showNotification('↩️ Returned to current date and time');
     } else {
-      alert('Reset to current date and time');
+      alert('Returned to current date and time');
     }
     
-    // Remove reset button
+    // Remove reset button from Quick Actions
     const resetBtn = document.getElementById('resetSimBtn');
     if(resetBtn) resetBtn.remove();
   };
