@@ -1084,7 +1084,10 @@ function loadSettings(){
       if(settings.items){
         items = settings.items.map(data => Object.assign(new Item(data.baseX, data.baseY, data.type, data.subtype), data));
         // Remove auto-generated wildleek items from old sessions (keep ramppods manually placed by users)
+        const beforeFilter = items.length;
         items = items.filter(item => !(item.type === 'plant' && item.subtype === 'wildleek'));
+        const removed = beforeFilter - items.length;
+        if(removed > 0) console.log(`🗑️ Filtered out ${removed} old wildleek items`);
         console.log(`📦 Loaded ${items.length} items from localStorage`);
       }
       // Reset community history cache on load so it matches current location
@@ -5624,7 +5627,7 @@ class Item{
     const currentTerrainY = getTerrainY(this.baseX);
     
     // Keep ramp pods in the background band during spring, even if terrain changes
-    if(this.type === 'plant' && (this.subtype === 'wildleek' || this.subtype === 'ramppod')){
+    if(this.type === 'plant' && this.subtype === 'ramppod'){
       const month = new Date().getMonth();
       const animalWalkY = H * 0.65;
       const minY = H * CONFIG.TERRAIN.MOUNTAIN_TOP_Y + 10;
@@ -5875,8 +5878,8 @@ class Item{
       ctx.fill();
     }
     
-    // Wild Leeks (Ramps) - special rendering for spring plant
-    if(this.type === 'plant' && (this.subtype === 'wildleek' || this.subtype === 'ramppod')){
+    // Wild Leeks (Ramps) - special rendering for spring plant, ONLY for ramppod subtype
+    if(this.type === 'plant' && this.subtype === 'ramppod'){
       ctx.save();
       ctx.translate(this.screenX, this.screenY);
       
