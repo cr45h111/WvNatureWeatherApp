@@ -652,8 +652,8 @@ canvas:fullscreen{background:#000;}
         <div class="item" data-type="terrain" data-subtype="alpine"><div class="item-icon">❄️</div><div class="item-name">Alpine Ridge</div></div>
         <div class="item" data-type="terrain" data-subtype="plateau"><div class="item-icon">📦</div><div class="item-name">High Plateau</div></div>
         <div class="item" data-type="terrain" data-subtype="gorge"><div class="item-icon">🪨</div><div class="item-name">Rocky Gorge</div></div>
-        <div class="item" data-type="terrain" data-subtype="graveyard"><div class="item-icon">⚰️</div><div class="item-name">Abandoned Graveyard</div></div>
-        <div class="item" data-type="terrain" data-subtype="railway"><div class="item-icon">🚂</div><div class="item-name">Rails Through Time</div></div>
+        <div class="item" data-type="terrain" data-subtype="graveyard" style="position:relative;opacity:0.7;cursor:not-allowed;"><div class="item-icon">⚰️</div><div class="item-name">Abandoned Graveyard</div><div style="position:absolute;top:-8px;right:-8px;background:#ff6b00;color:white;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;transform:rotate(15deg);box-shadow:0 2px 4px rgba(0,0,0,0.3);">Coming Soon</div></div>
+        <div class="item" data-type="terrain" data-subtype="railway" style="position:relative;opacity:0.7;cursor:not-allowed;"><div class="item-icon">🚂</div><div class="item-name">Rails Through Time</div><div style="position:absolute;top:-8px;right:-8px;background:#ff6b00;color:white;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;transform:rotate(15deg);box-shadow:0 2px 4px rgba(0,0,0,0.3);">Coming Soon</div></div>
       </div>
     </div>
   </div>
@@ -848,6 +848,8 @@ let LAT = 38.4147, LON = -80.2435, LOCATION_NAME = 'HACKER VALLEY, WV';
 let selectedType = null, selectedSubtype = null, removeMode = false, showClock = false;
 let alarmTime = null, alarmTriggered = false;
 let controlsHidden = false;
+let isDeveloper = localStorage.getItem('developerMode') === 'true'; // Check developer mode
+window.isDeveloper = isDeveloper;
 let customSignText = 'CUSTOM';
 let infoPanelVisible = true;
 
@@ -2728,6 +2730,12 @@ document.querySelectorAll('.item').forEach(item => {
     const subtype = item.dataset.subtype;
     
     if(type === 'terrain'){
+      // Check if trying to access Coming Soon terrains
+      if((subtype === 'graveyard' || subtype === 'railway') && !window.isDeveloper){
+        alert('⏰ This terrain is coming soon! Check back later.');
+        return;
+      }
+      
       terrainType = subtype;
       buildTerrain();
       generateGrassPatches();
@@ -3277,29 +3285,29 @@ function generateSpringWildflowers(){
     effectiveMonth = simDate.getMonth();
   }
   
-  // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground
+  // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground ONLY
   if(effectiveMonth >= 2 && effectiveMonth <= 4){
     const daffodilCount = 15 + Math.floor(Math.random() * 10);
     for(let i = 0; i < daffodilCount; i++){
       const x = Math.random() * W;
       const terrainY = getTerrainY(x);
       
-      // Only place on upper foreground (top 30% of terrain)
-      if(terrainY < H * 0.65){
+      // Only place on upper edge of foreground (top 20% of terrain)
+      if(terrainY < H * 0.55){
         items.push(new Item(x, terrainY, 'plant', 'wilddaffodil'));
       }
     }
   }
   
-  // Wild Leeks (April-June, months 3-5) - foreground and mid-background
+  // Wild Leeks (April-June, months 3-5) - foreground and mid-background (NOT top edge)
   if(effectiveMonth >= 3 && effectiveMonth <= 5){
     const leekCount = 20 + Math.floor(Math.random() * 15);
     for(let i = 0; i < leekCount; i++){
       const x = Math.random() * W;
       const terrainY = getTerrainY(x);
       
-      // Place anywhere on visible terrain
-      if(terrainY < H * 0.85){
+      // Place in middle and lower terrain (exclude upper edge where daffodils are)
+      if(terrainY >= H * 0.55 && terrainY < H * 0.85){
         items.push(new Item(x, terrainY, 'plant', 'wildleek'));
       }
     }
