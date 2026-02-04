@@ -7377,6 +7377,10 @@ init();
                        6:'summer',7:'summer',8:'fall',9:'fall',10:'fall',11:'winter'};
     season = seasonMap[month];
     
+    // Clear winter conditions
+    snowCover = 0;
+    snowflakes = [];
+    
     // Set realistic spring weather
     if(weatherData){
       weatherData.temp = 62; // Mid-spring temp ~62°F
@@ -7385,6 +7389,10 @@ init();
       weatherData.humidity = 65;
       weatherData.cloudCover = 40;
     }
+    
+    // Rebuild terrain to remove snow visuals
+    buildTerrain();
+    generateGrassPatches();
     
     // Force refresh of astronomy with new time
     updateAstronomy();
@@ -7438,6 +7446,10 @@ init();
     const seasonMap = {0:'winter',1:'winter',2:'spring',3:'spring',4:'spring',5:'summer',
                        6:'summer',7:'summer',8:'fall',9:'fall',10:'fall',11:'winter'};
     season = seasonMap[month];
+    
+    // Rebuild terrain to restore proper seasonal visuals
+    buildTerrain();
+    generateGrassPatches();
     
     // Refresh weather and astronomy
     if(typeof fetchWeather === 'function') fetchWeather();
