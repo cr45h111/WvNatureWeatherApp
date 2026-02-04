@@ -972,7 +972,22 @@ const brightStars = [
 // Load saved settings
 function loadSettings(){
   try{
+    // FORCE clear any wildleek items from localStorage on every load
     const saved = localStorage.getItem('wvNatureSettings');
+    if(saved){
+      try{
+        const settings = JSON.parse(saved);
+        if(settings.items && Array.isArray(settings.items)){
+          const wildleekCount = settings.items.filter(i => i.subtype === 'wildleek').length;
+          if(wildleekCount > 0){
+            console.log(`⚠️ CLEARING ${wildleekCount} wildleeks from localStorage...`);
+            settings.items = settings.items.filter(i => i.subtype !== 'wildleek');
+            localStorage.setItem('wvNatureSettings', JSON.stringify(settings));
+          }
+        }
+      }catch(e){ console.log('Error pre-filtering wildleeks:', e); }
+    }
+    
     if(saved){
       const settings = JSON.parse(saved);
       const setValue = (id, value) => {
