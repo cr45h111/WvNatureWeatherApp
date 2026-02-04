@@ -5639,7 +5639,8 @@ class Item{
       sycamore: ['#6a9a6f', '#5a8a5f', '#e4984f', '#9a8a7a'],
       rosebush: ['#ff79c4', '#ff69b4', '#ff9aa9', '#8a7a6a'],
       blueberry: ['#6a8a7f', '#5a7a6f', '#8a6a5f', '#7a6a5a'],
-      lavender: ['#bb79f0', '#ab69e0', '#9b59d0', '#8a7a7a']
+      lavender: ['#bb79f0', '#ab69e0', '#9b59d0', '#8a7a7a'],
+      wildleek: ['#a8d5a8', '#9acf9a', '#8ac98a', '#7ac37a']
     };
     
     const seasons = ['spring', 'summer', 'fall', 'winter'];
@@ -5796,8 +5797,69 @@ class Item{
       ctx.fill();
     }
     
+    // Wild Leeks (Ramps) - special rendering for spring plant
+    if(this.type === 'plant' && this.subtype === 'wildleek'){
+      ctx.save();
+      ctx.translate(this.screenX, this.screenY);
+      
+      // Draw leaf cluster (broad, flat light green leaves 20-30cm long)
+      const leafColor = this.getSeasonalColor();
+      ctx.fillStyle = leafColor;
+      
+      // 3-5 broad flat leaves arranged in cluster
+      const leafCount = 3 + Math.floor(growth * 2);
+      for(let i = 0; i < leafCount; i++){
+        const angle = (i / leafCount) * Math.PI - Math.PI / 2 + Math.sin(animTime * 0.01 + i) * 0.1;
+        const leafLength = 20 * growth;
+        const leafWidth = 5 + growth * 3;
+        
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.fillRect(-leafWidth / 2, -leafLength, leafWidth, leafLength);
+        
+        // Purple/burgundy tints on lower stems
+        ctx.fillStyle = 'rgba(128,0,128,0.3)';
+        ctx.fillRect(-leafWidth / 2, -leafLength * 0.3, leafWidth, leafLength * 0.2);
+        ctx.fillStyle = leafColor;
+        ctx.restore();
+      }
+      
+      // Flower umbel (white/cream flowers in June-August) - show in late spring/early summer months
+      const currentMonth = new Date().getMonth();
+      if(growth > 0.5 && currentMonth >= 4 && currentMonth <= 7){
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        const flowerHeight = 12 + growth * 6;
+        
+        // Erect scape (flower stem 10-40cm)
+        ctx.strokeStyle = leafColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -flowerHeight);
+        ctx.stroke();
+        
+        // Umbel with 8-15 small white flowers arranged in umbrella pattern
+        const flowerCount = 8 + Math.floor(growth * 7);
+        for(let i = 0; i < flowerCount; i++){
+          const flowerAngle = (i / flowerCount) * Math.PI * 2;
+          const flowerDist = 5 + growth * 3;
+          const flowerX = Math.cos(flowerAngle) * flowerDist;
+          const flowerY = -flowerHeight + Math.sin(flowerAngle) * flowerDist * 0.5;
+          
+          // Each flower is 4-7mm (shown as 2-3px in canvas)
+          ctx.beginPath();
+          ctx.arc(flowerX, flowerY, 1.5 + growth * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      ctx.restore();
+      ctx.restore();
+      return;
+    }
+    
     // Draw health meter only for vegetables/fruits (actual crops), not trees or berries
-    const vegetablesList = ['tomato','pepper','eggplant','peas','lettuce','spinach','kale','beans','corn','squash','zucchini','cucumber','melon','pumpkin','broccoli','cabbage','beets','carrots','radish','chard','onion','leek','potato','garlic','asparagus','rhubarb','microgreens','covercrop'];
+    const vegetablesList = ['tomato','pepper','eggplant','peas','lettuce','spinach','kale','beans','corn','squash','zucchini','cucumber','melon','pumpkin','broccoli','cabbage','beets','carrots','radish','chard','onion','leek','wildleek','potato','garlic','asparagus','rhubarb','microgreens','covercrop'];
     if(this.type === 'plant' && PLANT_CATALOG[this.subtype] && vegetablesList.includes(this.subtype)){
       const meterWidth = 40;
       const meterHeight = 5;
@@ -6628,6 +6690,7 @@ init();
     chard: {name:'Swiss Chard', type:'vegetable', icon:'🥬', minTemp:50, maxTemp:75, water:6, daysToMaturity:55},
     onion: {name:'Onion', type:'vegetable', icon:'🧅', minTemp:45, maxTemp:80, water:5, daysToMaturity:100},
     leek: {name:'Leek', type:'vegetable', icon:'🧅', minTemp:40, maxTemp:75, water:6, daysToMaturity:90},
+    wildleek: {name:'Wild Leeks (Ramps)', type:'wildflower', icon:'🌿', minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Allium tricoccum - A perennial growing from 2-6cm bulbs with broad light green leaves 20-30cm long. White or cream flowers bloom June-August after leaves die back. Flowers have 4-7mm tepals arranged in umbels.'},
     potato: {name:'Potato', type:'vegetable', icon:'🥔', minTemp:50, maxTemp:80, water:6, daysToMaturity:90},
     garlic: {name:'Garlic', type:'vegetable', icon:'🧄', minTemp:30, maxTemp:75, water:4, daysToMaturity:180},
     asparagus: {name:'Asparagus', type:'vegetable', icon:'🌿', minTemp:40, maxTemp:80, water:5, daysToMaturity:730},
@@ -6648,6 +6711,11 @@ init();
     const allPlants = Object.keys(PLANT_CATALOG);
     const monthData = PLANTING_CALENDAR[month];
     const seasonalPlants = [];
+    
+    // Add wild leeks for spring/early summer (March through June = months 2-5)
+    if(month >= 2 && month <= 5){
+      seasonalPlants.push('wildleek');
+    }
     
     // Parse plant names from planting calendar
     if(monthData && monthData.plant){
@@ -6682,7 +6750,9 @@ init();
               .replace('chard', 'chard')
               .replace('onions', 'onion')
               .replace('onion sets', 'onion')
-              .replace('leeks', 'leek')
+              .replace('leeks', 'wildleek')
+              .replace('ramps', 'wildleek')
+              .replace('wild leeks', 'wildleek')
               .replace('potatoes', 'potato')
               .replace('garlic', 'garlic')
               .replace('asparagus', 'asparagus')
