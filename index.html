@@ -3293,9 +3293,6 @@ function generateSpringWildflowers(){
     return plant;
   };
   
-  // Clear any auto-generated wildleek items from previous sessions
-  items = items.filter(item => !(item.type === 'plant' && item.subtype === 'wildleek'));
-  
   // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground ONLY
   if(effectiveMonth >= 2 && effectiveMonth <= 4){
     const daffodilCount = 15 + Math.floor(Math.random() * 10);
@@ -5630,12 +5627,14 @@ class Item{
       const animalWalkY = H * 0.65;
       const minY = H * CONFIG.TERRAIN.MOUNTAIN_TOP_Y + 10;
       const maxY = animalWalkY - 8;
+      const yDifference = Math.abs(this.baseY - currentTerrainY);
+      const desiredY = yDifference > 5 ? this.baseY : currentTerrainY;
       if(month >= 1 && month <= 4){
-        this.screenY = Math.max(minY, Math.min(maxY, currentTerrainY));
+        this.screenY = Math.max(minY, Math.min(maxY, desiredY));
         this.baseY = this.screenY;
       } else {
-        this.screenY = currentTerrainY;
-        this.baseY = currentTerrainY;
+        this.screenY = desiredY;
+        this.baseY = desiredY;
       }
       this.screenX = this.baseX;
       return;
