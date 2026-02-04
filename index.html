@@ -3289,7 +3289,7 @@ function generateSpringWildflowers(){
   const makeMaturePlant = (x, y, subtype) => {
     const plant = new Item(x, y, 'plant', subtype);
     plant.age = plant.maxAge;
-    plant.plantedDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120);
+    plant.plantedDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 500);
     return plant;
   };
   
@@ -5957,8 +5957,8 @@ class Item{
       const leafCount = 2 + Math.floor(growth * 2);
       for(let i = 0; i < leafCount; i++){
         const angle = (i / leafCount) * 0.4 - 0.2 + Math.sin(animTime * 0.01 + i) * 0.05;
-        const leafLength = 15 * growth;
-        const leafWidth = 2;
+        const leafLength = 24 * growth;
+        const leafWidth = 2.5;
         
         ctx.save();
         ctx.rotate(angle);
@@ -5968,7 +5968,7 @@ class Item{
       
       // Flower (yellow trumpet-shaped bloom in March-May)
       if(growth > 0.3){
-        const flowerHeight = 20 + growth * 8;
+        const flowerHeight = 30 + growth * 12;
         
         // Flower stem (scape)
         ctx.strokeStyle = '#8ab063';
@@ -5983,28 +5983,28 @@ class Item{
         ctx.fillStyle = trumpetColor;
         ctx.beginPath();
         ctx.ellipse(Math.sin(animTime * 0.01) * 2, -flowerHeight, 
-                    4 + growth * 2, 6 + growth * 3, 0, 0, Math.PI * 2);
+                    6 + growth * 3, 9 + growth * 4, 0, 0, Math.PI * 2);
         ctx.fill();
         
         // Orange/yellow center rim
         ctx.fillStyle = '#ffa500';
         ctx.beginPath();
         ctx.ellipse(Math.sin(animTime * 0.01) * 2, -flowerHeight - 2, 
-                    2, 3, 0, 0, Math.PI * 2);
+                    3, 4, 0, 0, Math.PI * 2);
         ctx.fill();
         
         // Outer petals (perianth - 6 petals)
         ctx.fillStyle = '#ffeb3b';
         for(let i = 0; i < 6; i++){
           const petalAngle = (i / 6) * Math.PI * 2;
-          const petalX = Math.cos(petalAngle) * (6 + growth * 2) + Math.sin(animTime * 0.01) * 2;
-          const petalY = -flowerHeight + Math.sin(petalAngle) * (6 + growth * 2);
+          const petalX = Math.cos(petalAngle) * (9 + growth * 3) + Math.sin(animTime * 0.01) * 2;
+          const petalY = -flowerHeight + Math.sin(petalAngle) * (9 + growth * 3);
           
           ctx.save();
           ctx.translate(petalX, petalY);
           ctx.rotate(petalAngle);
           ctx.beginPath();
-          ctx.ellipse(0, 0, 3 + growth, 5 + growth * 2, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, 4 + growth * 1.5, 7 + growth * 2.5, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
@@ -8410,11 +8410,14 @@ function showPlantTooltip(plant, x, y){
     console.error('❌ plantTooltip element not found!');
     return;
   }
+  const catalogEntry = PLANT_CATALOG[plant.subtype];
+  const displayName = catalogEntry?.name || plant.subtype;
+  const description = catalogEntry?.description || '';
   const ageMonths = Math.floor((plant.age || 0) / 30);
   const age = ageMonths > 0 ? `${ageMonths}mo` : '<1mo';
   const maxAge = plant.maxAge || 250;
   const health = Math.min(100, Math.floor(((plant.age || 0) / maxAge) * 100));
-  tooltip.innerHTML = `<strong>${plant.subtype}</strong><br>Age: ${age}<br>Health: ${health}%`;
+  tooltip.innerHTML = `<strong>${displayName}</strong><br>Age: ${age}<br>Health: ${health}%${description ? `<br><em>${description}</em>` : ''}`;
   tooltip.style.left = (x + 10) + 'px';
   tooltip.style.top = (y - 30) + 'px';
   tooltip.style.display = 'block';
