@@ -3299,16 +3299,33 @@ function generateSpringWildflowers(){
     }
   }
   
-  // Wild Leeks (April-June, months 3-5) - foreground and mid-background (NOT top edge)
+  // Wild Ramps/Leeks (April-June, months 3-5) - scattered groups across all background terrain
   if(effectiveMonth >= 3 && effectiveMonth <= 5){
-    const leekCount = 20 + Math.floor(Math.random() * 15);
-    for(let i = 0; i < leekCount; i++){
-      const x = Math.random() * W;
-      const terrainY = getTerrainY(x);
+    // Create 4-5 scattered clusters of ramps across the terrain
+    const clusterCount = 4 + Math.floor(Math.random() * 2); // 4-5 clusters
+    
+    for(let c = 0; c < clusterCount; c++){
+      // Random center point for this cluster
+      const clusterCenterX = Math.random() * W;
+      const clusterCenterY = H * 0.55 + Math.random() * (H * 0.3); // Spread across background terrain (55%-85% of screen)
       
-      // Place in middle and lower terrain (exclude upper edge where daffodils are)
-      if(terrainY >= H * 0.55 && terrainY < H * 0.85){
-        items.push(new Item(x, terrainY, 'plant', 'wildleek'));
+      // 20 ramps per cluster, scattered around center
+      const rampsPerCluster = 20;
+      for(let i = 0; i < rampsPerCluster; i++){
+        // Scatter around cluster center with some randomness
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 80; // Spread within ~80px radius
+        const x = clusterCenterX + Math.cos(angle) * distance;
+        
+        // Keep within bounds
+        if(x >= 0 && x <= W){
+          const terrainY = getTerrainY(x);
+          
+          // Place on background terrain (not the top edge where daffodils are)
+          if(terrainY >= H * 0.55 && terrainY < H * 0.88){
+            items.push(new Item(x, terrainY, 'plant', 'wildleek'));
+          }
+        }
       }
     }
   }
@@ -6821,7 +6838,7 @@ init();
     chard: {name:'Swiss Chard', type:'vegetable', icon:'🥬', minTemp:50, maxTemp:75, water:6, daysToMaturity:55},
     onion: {name:'Onion', type:'vegetable', icon:'🧅', minTemp:45, maxTemp:80, water:5, daysToMaturity:100},
     leek: {name:'Leek', type:'vegetable', icon:'🧅', minTemp:40, maxTemp:75, water:6, daysToMaturity:90},
-    wildleek: {name:'Wild Leeks (Ramps)', type:'wildflower', icon:'🌿', minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Allium tricoccum - A perennial growing from 2-6cm bulbs with broad light green leaves 20-30cm long. White or cream flowers bloom June-August after leaves die back. Flowers have 4-7mm tepals arranged in umbels.'},
+    wildleek: {name:'Ramp\'s', type:'wildflower', icon:'🌿', minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Allium tricoccum - A perennial growing from 2-6cm bulbs with broad light green leaves 20-30cm long. White or cream flowers bloom June-August after leaves die back. Flowers have 4-7mm tepals arranged in umbels.'},
     wilddaffodil: {name:'Wild Daffodil', type:'wildflower', icon:'🌼', minTemp:25, maxTemp:65, water:4, daysToMaturity:365, description:'Narcissus pseudonarcissus - Early spring wildflower with bright yellow trumpet-shaped blooms. Grows 15-35cm tall. Blooms March-May before tree canopy fills in.'},
     potato: {name:'Potato', type:'vegetable', icon:'🥔', minTemp:50, maxTemp:80, water:6, daysToMaturity:90},
     garlic: {name:'Garlic', type:'vegetable', icon:'🧄', minTemp:30, maxTemp:75, water:4, daysToMaturity:180},
