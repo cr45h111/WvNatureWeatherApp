@@ -3262,6 +3262,48 @@ function generateGrassPatches(){
       grassPatches.push({x, y: terrainY, blades});
     }
   }
+  
+  // Generate spring wildflowers if in season
+  generateSpringWildflowers();
+}
+
+function generateSpringWildflowers(){
+  const currentMonth = new Date().getMonth();
+  
+  // Apply time offset if simulating
+  let effectiveMonth = currentMonth;
+  if(window.timeOffset){
+    const simDate = new Date(new Date().getTime() + window.timeOffset);
+    effectiveMonth = simDate.getMonth();
+  }
+  
+  // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground
+  if(effectiveMonth >= 2 && effectiveMonth <= 4){
+    const daffodilCount = 15 + Math.floor(Math.random() * 10);
+    for(let i = 0; i < daffodilCount; i++){
+      const x = Math.random() * W;
+      const terrainY = getTerrainY(x);
+      
+      // Only place on upper foreground (top 30% of terrain)
+      if(terrainY < H * 0.65){
+        items.push(new Item(x, terrainY, 'plant', 'wilddaffodil'));
+      }
+    }
+  }
+  
+  // Wild Leeks (April-June, months 3-5) - foreground and mid-background
+  if(effectiveMonth >= 3 && effectiveMonth <= 5){
+    const leekCount = 20 + Math.floor(Math.random() * 15);
+    for(let i = 0; i < leekCount; i++){
+      const x = Math.random() * W;
+      const terrainY = getTerrainY(x);
+      
+      // Place anywhere on visible terrain
+      if(terrainY < H * 0.85){
+        items.push(new Item(x, terrainY, 'plant', 'wildleek'));
+      }
+    }
+  }
 }
 
 function generateFish(){
@@ -5649,7 +5691,8 @@ class Item{
       rosebush: ['#ff79c4', '#ff69b4', '#ff9aa9', '#8a7a6a'],
       blueberry: ['#6a8a7f', '#5a7a6f', '#8a6a5f', '#7a6a5a'],
       lavender: ['#bb79f0', '#ab69e0', '#9b59d0', '#8a7a7a'],
-      wildleek: ['#a8d5a8', '#9acf9a', '#8ac98a', '#7ac37a']
+      wildleek: ['#a8d5a8', '#9acf9a', '#8ac98a', '#7ac37a'],
+      wilddaffodil: ['#ffeb3b', '#fdd835', '#f9a825', '#c9a825']
     };
     
     const seasons = ['spring', 'summer', 'fall', 'winter'];
@@ -5867,8 +5910,79 @@ class Item{
       return;
     }
     
+    // Wild Daffodils - early spring wildflower with yellow trumpet blooms
+    if(this.type === 'plant' && this.subtype === 'wilddaffodil'){
+      ctx.save();
+      ctx.translate(this.screenX, this.screenY);
+      
+      // Draw narrow basal leaves (15-35cm tall plant)
+      const leafColor = '#5a8c3a'; // Dark green
+      ctx.fillStyle = leafColor;
+      
+      // 2-4 narrow leaves
+      const leafCount = 2 + Math.floor(growth * 2);
+      for(let i = 0; i < leafCount; i++){
+        const angle = (i / leafCount) * 0.4 - 0.2 + Math.sin(animTime * 0.01 + i) * 0.05;
+        const leafLength = 15 * growth;
+        const leafWidth = 2;
+        
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.fillRect(-leafWidth / 2, -leafLength, leafWidth, leafLength);
+        ctx.restore();
+      }
+      
+      // Flower (yellow trumpet-shaped bloom in March-May)
+      if(growth > 0.3){
+        const flowerHeight = 20 + growth * 8;
+        
+        // Flower stem (scape)
+        ctx.strokeStyle = '#8ab063';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.sin(animTime * 0.01) * 2, -flowerHeight);
+        ctx.stroke();
+        
+        // Trumpet-shaped corona (central trumpet)
+        const trumpetColor = this.getSeasonalColor();
+        ctx.fillStyle = trumpetColor;
+        ctx.beginPath();
+        ctx.ellipse(Math.sin(animTime * 0.01) * 2, -flowerHeight, 
+                    4 + growth * 2, 6 + growth * 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Orange/yellow center rim
+        ctx.fillStyle = '#ffa500';
+        ctx.beginPath();
+        ctx.ellipse(Math.sin(animTime * 0.01) * 2, -flowerHeight - 2, 
+                    2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Outer petals (perianth - 6 petals)
+        ctx.fillStyle = '#ffeb3b';
+        for(let i = 0; i < 6; i++){
+          const petalAngle = (i / 6) * Math.PI * 2;
+          const petalX = Math.cos(petalAngle) * (6 + growth * 2) + Math.sin(animTime * 0.01) * 2;
+          const petalY = -flowerHeight + Math.sin(petalAngle) * (6 + growth * 2);
+          
+          ctx.save();
+          ctx.translate(petalX, petalY);
+          ctx.rotate(petalAngle);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 3 + growth, 5 + growth * 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      
+      ctx.restore();
+      ctx.restore();
+      return;
+    }
+    
     // Draw health meter only for vegetables/fruits (actual crops), not trees or berries
-    const vegetablesList = ['tomato','pepper','eggplant','peas','lettuce','spinach','kale','beans','corn','squash','zucchini','cucumber','melon','pumpkin','broccoli','cabbage','beets','carrots','radish','chard','onion','leek','wildleek','potato','garlic','asparagus','rhubarb','microgreens','covercrop'];
+    const vegetablesList = ['tomato','pepper','eggplant','peas','lettuce','spinach','kale','beans','corn','squash','zucchini','cucumber','melon','pumpkin','broccoli','cabbage','beets','carrots','radish','chard','onion','leek','wildleek','wilddaffodil','potato','garlic','asparagus','rhubarb','microgreens','covercrop'];
     if(this.type === 'plant' && PLANT_CATALOG[this.subtype] && vegetablesList.includes(this.subtype)){
       const meterWidth = 40;
       const meterHeight = 5;
@@ -6700,6 +6814,7 @@ init();
     onion: {name:'Onion', type:'vegetable', icon:'🧅', minTemp:45, maxTemp:80, water:5, daysToMaturity:100},
     leek: {name:'Leek', type:'vegetable', icon:'🧅', minTemp:40, maxTemp:75, water:6, daysToMaturity:90},
     wildleek: {name:'Wild Leeks (Ramps)', type:'wildflower', icon:'🌿', minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Allium tricoccum - A perennial growing from 2-6cm bulbs with broad light green leaves 20-30cm long. White or cream flowers bloom June-August after leaves die back. Flowers have 4-7mm tepals arranged in umbels.'},
+    wilddaffodil: {name:'Wild Daffodil', type:'wildflower', icon:'🌼', minTemp:25, maxTemp:65, water:4, daysToMaturity:365, description:'Narcissus pseudonarcissus - Early spring wildflower with bright yellow trumpet-shaped blooms. Grows 15-35cm tall. Blooms March-May before tree canopy fills in.'},
     potato: {name:'Potato', type:'vegetable', icon:'🥔', minTemp:50, maxTemp:80, water:6, daysToMaturity:90},
     garlic: {name:'Garlic', type:'vegetable', icon:'🧄', minTemp:30, maxTemp:75, water:4, daysToMaturity:180},
     asparagus: {name:'Asparagus', type:'vegetable', icon:'🌿', minTemp:40, maxTemp:80, water:5, daysToMaturity:730},
@@ -6721,8 +6836,13 @@ init();
     const monthData = PLANTING_CALENDAR[month];
     const seasonalPlants = [];
     
-    // Add wild leeks for spring/early summer (March through June = months 2-5)
-    if(month >= 2 && month <= 5){
+    // Add wild daffodils for early spring (March through May = months 2-4)
+    if(month >= 2 && month <= 4){
+      seasonalPlants.push('wilddaffodil');
+    }
+    
+    // Add wild leeks for spring/early summer (April through June = months 3-5)
+    if(month >= 3 && month <= 5){
       seasonalPlants.push('wildleek');
     }
     
