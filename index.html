@@ -998,20 +998,21 @@ const brightStars = [
 // Load saved settings
 function loadSettings(){
   try{
-    // FORCE clear any wildleek items from localStorage on every load
+    // FORCE clear any wildleek and ramppod items from localStorage on every load
     const saved = localStorage.getItem('wvNatureSettings');
     if(saved){
       try{
         const settings = JSON.parse(saved);
         if(settings.items && Array.isArray(settings.items)){
           const wildleekCount = settings.items.filter(i => i.subtype === 'wildleek').length;
-          if(wildleekCount > 0){
-            console.log(`⚠️ CLEARING ${wildleekCount} wildleeks from localStorage...`);
-            settings.items = settings.items.filter(i => i.subtype !== 'wildleek');
+          const ramppodCount = settings.items.filter(i => i.subtype === 'ramppod').length;
+          if(wildleekCount > 0 || ramppodCount > 0){
+            console.log(`⚠️ CLEARING ${wildleekCount} wildleeks and ${ramppodCount} ramppods from localStorage...`);
+            settings.items = settings.items.filter(i => i.subtype !== 'wildleek' && i.subtype !== 'ramppod');
             localStorage.setItem('wvNatureSettings', JSON.stringify(settings));
           }
         }
-      }catch(e){ console.log('Error pre-filtering wildleeks:', e); }
+      }catch(e){ console.log('Error clearing plant items:', e); }
     }
     
     if(saved){
@@ -1131,15 +1132,19 @@ function loadSettings(){
       
       if(settings.items){
         items = settings.items.map(data => Object.assign(new Item(data.baseX, data.baseY, data.type, data.subtype), data));
-        // Remove auto-generated wildleek items from old sessions (keep ramppods manually placed by users)
+        // Remove wildleek and ramppod items from old sessions
         const beforeFilter = items.length;
         const wildleeks = items.filter(i => i.subtype === 'wildleek');
+        const ramppods = items.filter(i => i.subtype === 'ramppod');
         if(wildleeks.length > 0){
-          console.log(`🔍 Found ${wildleeks.length} wildleeks:`, wildleeks.map(w => `(${Math.round(w.baseX)},${Math.round(w.baseY)})`));
+          console.log(`🔍 Found ${wildleeks.length} wildleeks:`, wildleeks.map(w => `(${Math.round(w.baseX)},${Math.round(w.baseY)}`));
         }
-        items = items.filter(item => !(item.type === 'plant' && item.subtype === 'wildleek'));
+        if(ramppods.length > 0){
+          console.log(`🔍 Found ${ramppods.length} ramppods (user-placed):`, ramppods.map(w => `(${Math.round(w.baseX)},${Math.round(w.baseY)}`));
+        }
+        items = items.filter(item => !(item.type === 'plant' && (item.subtype === 'wildleek' || item.subtype === 'ramppod')));
         const removed = beforeFilter - items.length;
-        if(removed > 0) console.log(`🗑️ Filtered out ${removed} old wildleek items`);
+        if(removed > 0) console.log(`🗑️ Filtered out ${removed} plant items (wildleek + ramppod)`);
         console.log(`📦 Loaded ${items.length} items from localStorage`);
       }
       // Reset community history cache on load so it matches current location
@@ -1217,7 +1222,7 @@ function saveSettings(){
       ancientTreeDiscovered: ancientTreeDiscovered,
       ancientTreeScale: ancientTreeScale,
       rampPodScale: rampPodScale,
-      items: items.filter(item => item.subtype !== 'wildleek').map(item => ({
+      items: items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod')).map(item => ({
         baseX: item.baseX,
         baseY: item.baseY,
         type: item.type,
@@ -3910,8 +3915,8 @@ function draw(){
   }
   try{
   
-  // AGGRESSIVE WILDLEEK FILTER - remove any wildleeks that may have snuck through localStorage
-  items = items.filter(item => item.subtype !== 'wildleek');
+  // AGGRESSIVE FILTER - remove any wildleeks or ramppods that may have snuck through localStorage
+  items = items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod'));
   
   const light = calculateLighting();
   const darken = 1 - light;
