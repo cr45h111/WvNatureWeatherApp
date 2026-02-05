@@ -920,6 +920,8 @@ let coalMinePosition = null; // {x, y} for coal mine placement
 let coalMineDiscovered = false; // Whether coal mine has been uncovered
 let ancientTreePosition = null; // {x, y} for ancient tree placement
 let ancientTreeDiscovered = false; // Whether ancient tree has been uncovered
+let placingCoalMine = false; // Placement mode for coal mine
+let placingAncientTree = false; // Placement mode for ancient tree
 let tempOffset = 0; // Temperature offset for microclimate (hollow, valley, etc.)
 let ancientTreeScale = 1.4; // Scale multiplier for ancient tree image
 let pendingAncientTreeScale = 1.4; // Pending scale value before apply
@@ -9422,10 +9424,6 @@ function savePreset(){
     statusDiv.style.display = 'block';
   }
 }
-
-// Placement mode flags
-let placingCoalMine = false;
-let placingAncientTree = false;
 
 function startPlacingCoalMine(){
   if(terrainType !== 'coalmine'){
