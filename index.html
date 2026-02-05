@@ -4981,7 +4981,8 @@ function draw(){
     
     // Log accessory rendering for debugging
     if(item.type === 'accessory'){
-      console.log(`🎯 Drawing accessory: ${item.subtype} at screenY=${itemY.toFixed(1)}, assigned to ${layerName}`);
+      const ctxType = targetCtx === originalCtx ? 'originalCtx' : (targetCtx === ctxLayer1 ? 'ctxLayer1' : 'unknown');
+      console.log(`🎯 Drawing accessory: ${item.subtype} at screenY=${itemY.toFixed(1)}, assigned to ${layerName}, ctxType=${ctxType}`);
     }
     
     // Draw shadow and item on same layer
