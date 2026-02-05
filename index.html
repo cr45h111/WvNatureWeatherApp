@@ -460,9 +460,10 @@ canvas:fullscreen{background:#000;}
     <div class="form-group" style="margin-bottom:12px">
       <label for="rampPodScaleSettings">Ramp Pod Size:</label>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="rampPodScaleSettings" type="range" min="0.5" max="2.5" step="0.05" value="1" oninput="updateRampPodScale(this.value)" style="flex:1;">
+        <input id="rampPodScaleSettings" type="range" min="0.5" max="2.5" step="0.05" value="1" oninput="previewRampPodScale(this.value)" style="flex:1;">
         <span id="rampPodScaleDisplay" style="font-size:12px;color:#0ff;min-width:60px;">100%</span>
       </div>
+      <button class="modal-btn" style="margin-top:6px;" onclick="applyRampPodScale()">Apply Ramp Pod Size</button>
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust the size of placed ramp pods.</small>
     </div>
     <h3>API Configuration</h3>
@@ -1449,13 +1450,19 @@ function applyAncientTreeScale(){
   saveSettings();
 }
 
-function updateRampPodScale(val){
+function previewRampPodScale(val){
   pendingRampPodScale = parseFloat(val) || 1;
+  rampPodScale = pendingRampPodScale; // live preview without saving
+  const display = document.getElementById('rampPodScaleDisplay');
+  if(display) display.textContent = Math.round(pendingRampPodScale * 100) + '%';
+  requestAnimationFrame(draw);
+}
+
+function applyRampPodScale(){
   rampPodScale = pendingRampPodScale;
   const display = document.getElementById('rampPodScaleDisplay');
   if(display) display.textContent = Math.round(rampPodScale * 100) + '%';
   saveSettings();
-  requestAnimationFrame(draw);
 }
 
 function updateFishSplashVolume(val){
