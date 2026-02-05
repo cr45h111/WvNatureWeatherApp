@@ -5830,7 +5830,7 @@ class Item{
         ctx.ellipse(0, -20, 25, 20, 0, 0, Math.PI * 2);
         ctx.fill();
       }else if(this.subtype === 'welcome' || this.subtype === 'keepout' || this.subtype === 'custom' || this.subtype === 'customsaved' || this.subtype === 'laurelclue' || this.subtype === 'poplarclue'){
-        console.log(`✏️  Item.draw() rendering ${this.subtype} sign at (${this.screenX.toFixed(1)}, ${this.screenY.toFixed(1)}), ctx=${window.ctx === originalCtx ? 'originalCtx' : 'ctxLayer1'}`);
+        console.log(`✏️  Item.draw() rendering ${this.subtype} sign at (${this.screenX.toFixed(1)}, ${this.screenY.toFixed(1)})`);
         ctx.fillStyle = `rgb(${Math.floor(139*(1-darken*0.6))},${Math.floor(90*(1-darken*0.6))},${Math.floor(43*(1-darken*0.6))})`;
         ctx.fillRect(-20, -60, 40, 40);
         ctx.fillRect(-3, -20, 6, 20);
