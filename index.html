@@ -547,6 +547,8 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
       <button class="modal-btn" onclick="showSavePresetModal()">🎨 Save as Preset</button>
+      <button class="modal-btn" onclick="startPlacingCoalMine()">⛏️ Place Coal Mine</button>
+      <button class="modal-btn" onclick="startPlacingAncientTree()">🌳 Place Ancient Tree</button>
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
     </div>
   </div>
@@ -2989,6 +2991,25 @@ canvas.addEventListener('click', e => {
         showCoalMineWarning();
         return;
       }
+    }
+  }
+  
+  // Handle coal mine placement
+  if(placingCoalMine){
+    if(terrainType === 'coalmine'){
+      coalMinePosition = {x: x, y: y};
+      coalMineDiscovered = true;
+      placingCoalMine = false;
+      selectedType = null;
+      selectedSubtype = null;
+      document.getElementById('selected').textContent = 'None';
+      saveSettings();
+      showNotification('⛏️ Coal Mine placed! Now cover it with laurel to hide it.');
+      console.log('⛏️ Coal mine placed at', Math.round(x), Math.round(y));
+      return;
+    } else {
+      showNotification('❌ Switch to Coal Mine terrain first');
+      return;
     }
   }
   
@@ -9400,6 +9421,42 @@ function savePreset(){
     statusDiv.style.color = '#f88';
     statusDiv.style.display = 'block';
   }
+}
+
+// Placement mode flags
+let placingCoalMine = false;
+let placingAncientTree = false;
+
+function startPlacingCoalMine(){
+  if(terrainType !== 'coalmine'){
+    alert('⛏️ Switch to Coal Mine terrain first to place the coal mine.');
+    return;
+  }
+  placingCoalMine = true;
+  placingAncientTree = false;
+  document.getElementById('quickActionsModal').classList.remove('visible');
+  
+  // Show instruction
+  const notification = document.getElementById('sceneNotification');
+  notification.textContent = '⛏️ Click anywhere to place the coal mine entrance';
+  notification.style.display = 'block';
+  setTimeout(() => notification.style.display = 'none', 3000);
+}
+
+function startPlacingAncientTree(){
+  if(terrainType !== 'ancientforest'){
+    alert('🌳 Switch to Ancient Forest terrain first to place the ancient tree.');
+    return;
+  }
+  placingAncientTree = true;
+  placingCoalMine = false;
+  document.getElementById('quickActionsModal').classList.remove('visible');
+  
+  // Show instruction
+  const notification = document.getElementById('sceneNotification');
+  notification.textContent = '🌳 Click anywhere to place the ancient tree';
+  notification.style.display = 'block';
+  setTimeout(() => notification.style.display = 'none', 3000);
 }
 
 // Default embedded presets

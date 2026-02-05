@@ -519,9 +519,7 @@
           "subtype": "rosebush",
           "age": 250
         }
-      ],
-      "coalMinePosition": {"x": 821, "y": 380},
-      "coalMineDiscovered": true
+      ]
     },
     {
       "name": "Ancient Forest",
@@ -1054,9 +1052,7 @@
           "subtype": "laurel",
           "age": 250
         }
-      ],
-      "ancientTreePosition": {"x": 750, "y": 387},
-      "ancientTreeDiscovered": true
+      ]
     }
   ]
 }
