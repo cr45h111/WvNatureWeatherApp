@@ -1142,9 +1142,9 @@ function loadSettings(){
         if(ramppods.length > 0){
           console.log(`🔍 Found ${ramppods.length} ramppods (user-placed):`, ramppods.map(w => `(${Math.round(w.baseX)},${Math.round(w.baseY)}`));
         }
-        items = items.filter(item => !(item.type === 'plant' && (item.subtype === 'wildleek' || item.subtype === 'ramppod' || item.subtype === 'wilddaffodil')));
+        items = items.filter(item => !(item.type === 'plant' && (item.subtype === 'wildleek' || item.subtype === 'ramppod')));
         const removed = beforeFilter - items.length;
-        if(removed > 0) console.log(`🗑️ Filtered out ${removed} plant items (wildleek + ramppod + daffodil)`);
+        if(removed > 0) console.log(`🗑️ Filtered out ${removed} plant items (wildleek + ramppod)`);
         console.log(`📦 Loaded ${items.length} items from localStorage`);
       }
       // Reset community history cache on load so it matches current location
@@ -1222,7 +1222,7 @@ function saveSettings(){
       ancientTreeDiscovered: ancientTreeDiscovered,
       ancientTreeScale: ancientTreeScale,
       rampPodScale: rampPodScale,
-      items: items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod' || item.subtype === 'wilddaffodil')).map(item => ({
+      items: items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod')).map(item => ({
         baseX: item.baseX,
         baseY: item.baseY,
         type: item.type,
@@ -3915,8 +3915,8 @@ function draw(){
   }
   try{
   
-  // AGGRESSIVE FILTER - remove any wildleeks, ramppods, or daffodils that may have snuck through localStorage
-  items = items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod' || item.subtype === 'wilddaffodil'));
+  // AGGRESSIVE FILTER - remove any wildleeks or ramppods that may have snuck through localStorage
+  items = items.filter(item => !(item.subtype === 'wildleek' || item.subtype === 'ramppod'));
   
   const light = calculateLighting();
   const darken = 1 - light;
