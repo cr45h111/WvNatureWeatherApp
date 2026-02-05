@@ -1231,7 +1231,8 @@ function saveSettings(){
         customText: item.customText
       }))
     };
-    console.log(`💾 Saving ${settings.items.length} items to localStorage`);
+    const accCount = settings.items.filter(i => i.type === 'accessory').length;
+    console.log(`💾 Saving ${settings.items.length} items to localStorage (${accCount} accessories)`);
     localStorage.setItem('wvNatureSettings', JSON.stringify(settings));
     console.log('✅ Settings saved successfully');
   }catch(e){
@@ -9504,6 +9505,13 @@ function loadPresetByIndex(index, presets){
       }
       items.push(item);
     });
+    
+    console.log(`📦 Loaded ${items.length} items from preset "${preset.name}"`);
+    const accessories = items.filter(i => i.type === 'accessory');
+    console.log(`🔍 Accessories in items array:`, accessories.map(i => `${i.subtype} at (${Math.round(i.baseX)},${Math.round(i.baseY)})`));
+    if(accessories.length === 0){
+      console.warn('⚠️ No accessories found in loaded items! Check if they were filtered out during creation.');
+    };
     
     // Set terrain
     terrainType = preset.terrainType || 'hills';
