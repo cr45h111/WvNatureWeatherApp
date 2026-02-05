@@ -456,6 +456,15 @@ canvas:fullscreen{background:#000;}
       </div>
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast. Common in hollows/valleys.</small>
     </div>
+    <h3>Plants</h3>
+    <div class="form-group" style="margin-bottom:12px">
+      <label for="rampPodScaleSettings">Ramp Pod Size:</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="rampPodScaleSettings" type="range" min="0.5" max="2.5" step="0.05" value="1" oninput="updateRampPodScale(this.value)" style="flex:1;">
+        <span id="rampPodScaleDisplay" style="font-size:12px;color:#0ff;min-width:60px;">100%</span>
+      </div>
+      <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust the size of placed ramp pods.</small>
+    </div>
     <h3>API Configuration</h3>
     <div class="form-group" style="margin-bottom:12px">
       <label for="newsAPIProxySettings">NewsAPI Proxy URL (optional):</label>
@@ -885,6 +894,19 @@ function loadDiscoveryAssets(){
   });
 }
 
+function loadRampPodAsset(){
+  const img = new Image();
+  img.src = './WestVirginia game data/ramp-pod.png';
+  img.onload = () => {
+    rampPodImage = img;
+    console.log('✅ Loaded ramp pod image');
+  };
+  img.onerror = () => {
+    rampPodImage = null;
+    console.log('⚠️ Could not load ramp pod image - will use canvas fallback');
+  };
+}
+
 let items = [], birds = [], clouds = [], stars = [], raindrops = [], snowflakes = [];
 let grassPatches = [], terrain = [], bgTerrain = [[], [], []], bgDetails = [[],[],[]], river = [];
 let creatures = [], splashes = [], cloudShadows = [];
@@ -898,6 +920,9 @@ let ancientTreeDiscovered = false; // Whether ancient tree has been uncovered
 let tempOffset = 0; // Temperature offset for microclimate (hollow, valley, etc.)
 let ancientTreeScale = 1.4; // Scale multiplier for ancient tree image
 let pendingAncientTreeScale = 1.4; // Pending scale value before apply
+let rampPodScale = 1.0; // Scale multiplier for ramp pod image
+let pendingRampPodScale = 1.0; // Pending scale value before apply
+let rampPodImage = null;
 let lightning = {active:false, intensity:0, countdown:0, x:0};
 let season = 'spring';
 let moonCraters = [];
@@ -1037,6 +1062,13 @@ function loadSettings(){
       const ancientTreeScaleDisplay = document.getElementById('ancientTreeScaleDisplay');
       if(ancientTreeScaleInput) ancientTreeScaleInput.value = pendingAncientTreeScale;
       if(ancientTreeScaleDisplay) ancientTreeScaleDisplay.textContent = Math.round(ancientTreeScale * 100) + '%';
+
+      rampPodScale = settings.rampPodScale !== undefined ? settings.rampPodScale : rampPodScale;
+      pendingRampPodScale = rampPodScale;
+      const rampPodScaleInput = document.getElementById('rampPodScaleSettings');
+      const rampPodScaleDisplay = document.getElementById('rampPodScaleDisplay');
+      if(rampPodScaleInput) rampPodScaleInput.value = pendingRampPodScale;
+      if(rampPodScaleDisplay) rampPodScaleDisplay.textContent = Math.round(rampPodScale * 100) + '%';
 
       // Restore owl schedule state
       owlSchedule = settings.owlSchedule || null;
@@ -1183,6 +1215,7 @@ function saveSettings(){
       ancientTreePosition: ancientTreePosition,
       ancientTreeDiscovered: ancientTreeDiscovered,
       ancientTreeScale: ancientTreeScale,
+      rampPodScale: rampPodScale,
       items: items.filter(item => item.subtype !== 'wildleek').map(item => ({
         baseX: item.baseX,
         baseY: item.baseY,
@@ -1414,6 +1447,15 @@ function applyAncientTreeScale(){
   const display = document.getElementById('ancientTreeScaleDisplay');
   if(display) display.textContent = Math.round(ancientTreeScale * 100) + '%';
   saveSettings();
+}
+
+function updateRampPodScale(val){
+  pendingRampPodScale = parseFloat(val) || 1;
+  rampPodScale = pendingRampPodScale;
+  const display = document.getElementById('rampPodScaleDisplay');
+  if(display) display.textContent = Math.round(rampPodScale * 100) + '%';
+  saveSettings();
+  requestAnimationFrame(draw);
 }
 
 function updateFishSplashVolume(val){
@@ -5906,6 +5948,16 @@ class Item{
     if(this.type === 'plant' && this.subtype === 'ramppod'){
       ctx.save();
       ctx.translate(this.screenX, this.screenY);
+
+      const rampScale = (rampPodScale || 1) * (0.6 + growth * 0.6);
+      if(rampPodImage){
+        const baseSize = 64;
+        const size = baseSize * rampScale;
+        ctx.drawImage(rampPodImage, -size / 2, -size, size, size);
+        ctx.restore();
+        ctx.restore();
+        return;
+      }
       
       // Draw leaf cluster (broad, flat light green leaves 20-30cm long)
       const leafColor = this.getSeasonalColor();
@@ -5914,7 +5966,7 @@ class Item{
       // Pod base for clustered ramps
       ctx.fillStyle = 'rgba(60,90,50,0.6)';
       ctx.beginPath();
-      ctx.ellipse(0, -4, 10 + growth * 6, 6 + growth * 3, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -4, (10 + growth * 6) * (rampPodScale || 1), (6 + growth * 3) * (rampPodScale || 1), 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = leafColor;
       
@@ -5922,8 +5974,8 @@ class Item{
       const leafCount = 4 + Math.floor(growth * 2);
       for(let i = 0; i < leafCount; i++){
         const angle = (i / leafCount) * Math.PI - Math.PI / 2 + Math.sin(animTime * 0.01 + i) * 0.1;
-        const leafLength = 40 * growth;
-        const leafWidth = 12 + growth * 8;
+        const leafLength = 40 * growth * (rampPodScale || 1);
+        const leafWidth = (12 + growth * 8) * (rampPodScale || 1);
         
         ctx.save();
         ctx.rotate(angle);
@@ -9490,6 +9542,7 @@ window.showAncientTreeModal = showAncientTreeModal;
 window.addEventListener('load', function(){
   try {
     loadDiscoveryAssets(); // Load discovery images
+    loadRampPodAsset(); // Load ramp pod image
     checkSeasonalNotifications();
     // Check seasonals periodically
     setInterval(checkSeasonalNotifications, 60000);
