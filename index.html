@@ -1183,7 +1183,7 @@ function saveSettings(){
       ancientTreePosition: ancientTreePosition,
       ancientTreeDiscovered: ancientTreeDiscovered,
       ancientTreeScale: ancientTreeScale,
-      items: items.map(item => ({
+      items: items.filter(item => item.subtype !== 'wildleek').map(item => ({
         baseX: item.baseX,
         baseY: item.baseY,
         type: item.type,
@@ -3861,6 +3861,9 @@ function draw(){
   }
   try{
   
+  // AGGRESSIVE WILDLEEK FILTER - remove any wildleeks that may have snuck through localStorage
+  items = items.filter(item => item.subtype !== 'wildleek');
+  
   const light = calculateLighting();
   const darken = 1 - light;
   
@@ -5567,7 +5570,6 @@ class Item{
         strawberry: {trunk:'#5a4a3f', maxH:12, trunkW:2, leafCount:35, isBush:true},
         microgreens: {trunk:'#4a6a3f', maxH:8, trunkW:2, leafCount:30, isBush:true},
         covercrop: {trunk:'#4a5a3f', maxH:15, trunkW:2, leafCount:40, isBush:true},
-        wildleek: {trunk:'#3a5a2f', maxH:20, trunkW:2, leafCount:20, isBush:true},
         ramppod: {trunk:'#3a5a2f', maxH:20, trunkW:2, leafCount:20, isBush:true},
         wilddaffodil: {trunk:'#5a8c3a', maxH:15, trunkW:2, leafCount:15, isBush:true}
       };
@@ -5742,7 +5744,7 @@ class Item{
       rosebush: ['#ff79c4', '#ff69b4', '#ff9aa9', '#8a7a6a'],
       blueberry: ['#6a8a7f', '#5a7a6f', '#8a6a5f', '#7a6a5a'],
       lavender: ['#bb79f0', '#ab69e0', '#9b59d0', '#8a7a7a'],
-      wildleek: ['#a8d5a8', '#9acf9a', '#8ac98a', '#7ac37a'],
+      ramppod: ['#a8d5a8', '#9acf9a', '#8ac98a', '#7ac37a'],
       wilddaffodil: ['#ffeb3b', '#fdd835', '#f9a825', '#c9a825']
     };
     
@@ -6873,7 +6875,6 @@ init();
     chard: {name:'Swiss Chard', type:'vegetable', icon:'🥬', minTemp:50, maxTemp:75, water:6, daysToMaturity:55},
     onion: {name:'Onion', type:'vegetable', icon:'🧅', minTemp:45, maxTemp:80, water:5, daysToMaturity:100},
     leek: {name:'Leek', type:'vegetable', icon:'🧅', minTemp:40, maxTemp:75, water:6, daysToMaturity:90},
-    wildleek: {name:'Ramp\'s', type:'wildflower', icon:'🌿', minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Allium tricoccum - A perennial growing from 2-6cm bulbs with broad light green leaves 20-30cm long. White or cream flowers bloom June-August after leaves die back. Flowers have 4-7mm tepals arranged in umbels.'},
     ramppod: {name:'Ramp\'s Pod', type:'wildflower', icon:`<svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2f6b3d" stroke-width="1.5" stroke-linecap="round"><path d="M6 20 L10 4"/><path d="M10 20 L12 3"/><path d="M14 20 L17 5"/></g><g fill="#6bcf7b"><ellipse cx="9" cy="8" rx="3" ry="6"/><ellipse cx="12" cy="7" rx="3" ry="6"/><ellipse cx="15" cy="9" rx="3" ry="6"/></g><g fill="#7a3d7a" opacity="0.45"><ellipse cx="10" cy="16" rx="2" ry="3"/><ellipse cx="13" cy="16" rx="2" ry="3"/></g></svg>`, minTemp:30, maxTemp:70, water:5, daysToMaturity:365, description:'Clustered ramp leaves emerging from a shared pod. Place in woodland groups across background terrain.'},
     wilddaffodil: {name:'Wild Daffodil', type:'wildflower', icon:'🌼', minTemp:25, maxTemp:65, water:4, daysToMaturity:365, description:'Narcissus pseudonarcissus - Early spring wildflower with bright yellow trumpet-shaped blooms. Grows 15-35cm tall. Blooms March-May before tree canopy fills in.'},
     potato: {name:'Potato', type:'vegetable', icon:'🥔', minTemp:50, maxTemp:80, water:6, daysToMaturity:90},
