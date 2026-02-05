@@ -1100,6 +1100,10 @@ function loadSettings(){
         items = settings.items.map(data => Object.assign(new Item(data.baseX, data.baseY, data.type, data.subtype), data));
         // Remove auto-generated wildleek items from old sessions (keep ramppods manually placed by users)
         const beforeFilter = items.length;
+        const wildleeks = items.filter(i => i.subtype === 'wildleek');
+        if(wildleeks.length > 0){
+          console.log(`🔍 Found ${wildleeks.length} wildleeks:`, wildleeks.map(w => `(${Math.round(w.baseX)},${Math.round(w.baseY)})`));
+        }
         items = items.filter(item => !(item.type === 'plant' && item.subtype === 'wildleek'));
         const removed = beforeFilter - items.length;
         if(removed > 0) console.log(`🗑️ Filtered out ${removed} old wildleek items`);
@@ -3316,6 +3320,7 @@ function generateSpringWildflowers(){
   // Wild Daffodils (March-May, months 2-4) - appear on top edge of foreground ONLY
   if(effectiveMonth >= 2 && effectiveMonth <= 4){
     const daffodilCount = 15 + Math.floor(Math.random() * 10);
+    let placed = 0;
     for(let i = 0; i < daffodilCount; i++){
       const x = Math.random() * W;
       const terrainY = getTerrainY(x);
@@ -3323,8 +3328,10 @@ function generateSpringWildflowers(){
       // Place on the top edge of the foreground (just above animal path)
       if(terrainY >= animalWalkY - 10 && terrainY <= animalWalkY + 25){
         items.push(makeMaturePlant(x, terrainY, 'wilddaffodil'));
+        placed++;
       }
     }
+    console.log(`🌼 Generated ${placed} daffodils (month=${effectiveMonth})`);
   }
 }
 
