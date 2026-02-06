@@ -9489,16 +9489,30 @@ function loadPresetsIntoStore(){
   const container = document.getElementById('scenePresetsList');
   if(!container) return;
   
-  let presets = [];
+  let localPresets = [];
+  const mergePresetsByName = (basePresets, overridePresets) => {
+    const map = new Map();
+    basePresets.forEach(p => map.set(p.name, p));
+    overridePresets.forEach(p => map.set(p.name, p));
+    return Array.from(map.values());
+  };
+  const saveMergedIfNeeded = (merged) => {
+    if(localPresets.length > 0 && merged.length !== localPresets.length){
+      try{
+        localStorage.setItem('scenePresets', JSON.stringify(merged));
+      }catch(e){
+        console.warn('Could not persist merged presets:', e);
+      }
+    }
+  };
   
-  // Try localStorage first
+  // Load localStorage (user presets)
   try{
     const saved = localStorage.getItem('scenePresets');
     if(saved){
-      presets = JSON.parse(saved);
-      console.log(`Loaded ${presets.length} presets from localStorage`);
-      displayPresets(presets);
-      return;
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed)) localPresets = parsed;
+      console.log(`Loaded ${localPresets.length} presets from localStorage`);
     }
   }catch(e){
     console.error('Error loading local presets:', e);
@@ -9513,13 +9527,21 @@ function loadPresetsIntoStore(){
     .then(data => {
       console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
-        displayPresets(data.presets);
-        console.log(`Displaying ${data.presets.length} presets`);
+        const merged = mergePresetsByName(data.presets, localPresets);
+        displayPresets(merged);
+        saveMergedIfNeeded(merged);
+        console.log(`Displaying ${merged.length} presets`);
+        return;
       }
+      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      displayPresets(merged);
+      saveMergedIfNeeded(merged);
     })
     .catch(err => {
       console.log('Using default presets:', err.message);
-      displayPresets(DEFAULT_PRESETS);
+      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      displayPresets(merged);
+      saveMergedIfNeeded(merged);
     });
 }
 
