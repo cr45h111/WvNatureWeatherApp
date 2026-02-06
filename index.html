@@ -2976,6 +2976,25 @@ canvas.addEventListener('click', e => {
     return; // Exit early after remove
   }
   
+  // Handle coal mine placement
+  if(placingCoalMine){
+    if(terrainType === 'coalmine'){
+      coalMinePosition = {x: x, y: y};
+      coalMineDiscovered = true;
+      placingCoalMine = false;
+      selectedType = null;
+      selectedSubtype = null;
+      document.getElementById('selected').textContent = 'None';
+      saveSettings();
+      showNotification('⛏️ Coal Mine placed! Now cover it with laurel to hide it.');
+      console.log('⛏️ Coal mine placed at', Math.round(x), Math.round(y));
+      return;
+    } else {
+      showNotification('❌ Switch to Coal Mine terrain first');
+      return;
+    }
+  }
+  
   // Check if clicking on discovered coal mine (only if NOT in remove mode and NOT covered)
   if(terrainType === 'coalmine' && coalMinePosition && coalMineDiscovered){
     console.log('💣 Coal mine click check - position:', coalMinePosition, 'discovered:', coalMineDiscovered, 'click at:', Math.round(x), Math.round(y));
@@ -3003,25 +3022,6 @@ canvas.addEventListener('click', e => {
         showCoalMineWarning();
         return;
       }
-    }
-  }
-  
-  // Handle coal mine placement
-  if(placingCoalMine){
-    if(terrainType === 'coalmine'){
-      coalMinePosition = {x: x, y: y};
-      coalMineDiscovered = true;
-      placingCoalMine = false;
-      selectedType = null;
-      selectedSubtype = null;
-      document.getElementById('selected').textContent = 'None';
-      saveSettings();
-      showNotification('⛏️ Coal Mine placed! Now cover it with laurel to hide it.');
-      console.log('⛏️ Coal mine placed at', Math.round(x), Math.round(y));
-      return;
-    } else {
-      showNotification('❌ Switch to Coal Mine terrain first');
-      return;
     }
   }
   
