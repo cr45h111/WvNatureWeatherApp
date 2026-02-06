@@ -458,6 +458,15 @@ canvas:fullscreen{background:#000;}
     </div>
     <h3>Plants</h3>
     <div class="form-group" style="margin-bottom:12px">
+      <label for="ancientTreeScaleSettings">Ancient Tree Size:</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="ancientTreeScaleSettings" type="range" min="0.5" max="4" step="0.1" value="1.4" oninput="previewAncientTreeScale(this.value)" style="flex:1;">
+        <span id="ancientTreeScaleDisplay" style="font-size:12px;color:#0ff;min-width:60px;">140%</span>
+      </div>
+      <button class="modal-btn" style="margin-top:6px;" onclick="applyAncientTreeScale()">Apply Ancient Tree Size</button>
+      <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust the size of the ancient tree discovery.</small>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
       <label for="rampPodScaleSettings">Ramp Pod Size:</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input id="rampPodScaleSettings" type="range" min="0.5" max="2.5" step="0.05" value="1" oninput="previewRampPodScale(this.value)" style="flex:1;">
