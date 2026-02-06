@@ -4511,94 +4511,6 @@ function draw(){
     }
   }
   
-  // Draw coal mine for coalmine terrain type (at user-clicked position)
-  if(terrainType === 'coalmine' && coalMinePosition){
-    const mineX = coalMinePosition.x;
-    const mineBaseY = coalMinePosition.y;
-    
-    ctxLayer4.save();
-    ctxLayer4.globalAlpha = 0.9;
-    
-    // Mine entrance (dark tunnel opening)
-    ctxLayer4.fillStyle = '#1a1a1a';
-    ctxLayer4.beginPath();
-    ctxLayer4.arc(mineX, mineBaseY - 5, 15, 0, Math.PI, true);
-    ctxLayer4.fill();
-    
-    // Wooden support beams
-    ctxLayer4.strokeStyle = '#5a4a3a';
-    ctxLayer4.lineWidth = 3;
-    ctxLayer4.beginPath();
-    ctxLayer4.moveTo(mineX - 15, mineBaseY - 5);
-    ctxLayer4.lineTo(mineX - 15, mineBaseY - 20);
-    ctxLayer4.moveTo(mineX + 15, mineBaseY - 5);
-    ctxLayer4.lineTo(mineX + 15, mineBaseY - 20);
-    ctxLayer4.moveTo(mineX - 15, mineBaseY - 20);
-    ctxLayer4.lineTo(mineX + 15, mineBaseY - 20);
-    ctxLayer4.stroke();
-    
-    // Mine cart tracks
-    ctxLayer4.strokeStyle = '#4a3a2a';
-    ctxLayer4.lineWidth = 2;
-    ctxLayer4.beginPath();
-    ctxLayer4.moveTo(mineX - 25, mineBaseY);
-    ctxLayer4.lineTo(mineX - 5, mineBaseY);
-    ctxLayer4.moveTo(mineX + 5, mineBaseY);
-    ctxLayer4.lineTo(mineX + 25, mineBaseY);
-    ctxLayer4.stroke();
-    
-    // Coal pile
-    ctxLayer4.fillStyle = '#2a2a2a';
-    ctxLayer4.beginPath();
-    ctxLayer4.moveTo(mineX + 30, mineBaseY);
-    ctxLayer4.lineTo(mineX + 45, mineBaseY);
-    ctxLayer4.lineTo(mineX + 40, mineBaseY - 12);
-    ctxLayer4.lineTo(mineX + 35, mineBaseY - 8);
-    ctxLayer4.closePath();
-    ctxLayer4.fill();
-    
-    // Coal lumps highlights
-    ctxLayer4.fillStyle = '#1a1a1a';
-    ctxLayer4.fillRect(mineX + 32, mineBaseY - 3, 4, 3);
-    ctxLayer4.fillRect(mineX + 38, mineBaseY - 7, 3, 3);
-    
-    // Check if coal mine is covered by laurel plants
-    let isCovered = false;
-    for(let item of items){
-      if(item.subtype === 'laurel'){
-        const dx = Math.abs(item.screenX - mineX);
-        const dy = Math.abs(item.screenY - mineBaseY);
-        if(dx < 60 && dy < 60){
-          isCovered = true;
-          break;
-        }
-      }
-    }
-    
-    // Update discovered state (silently, no alert)
-    if(!isCovered && !coalMineDiscovered){
-      coalMineDiscovered = true;
-      saveSettings();
-    }
-    
-    // Check if mouse is hovering over coal mine
-    const mouseX = canvas.mouseX || 0;
-    const mouseY = canvas.mouseY || 0;
-    const isHovering = Math.abs(mouseX - mineX) < 50 && Math.abs(mouseY - mineBaseY) < 40;
-    
-    // Draw label only if discovered, not covered, AND hovering
-    if(coalMineDiscovered && !isCovered && isHovering){
-      ctxLayer4.fillStyle = 'rgba(0,0,0,0.7)';
-      ctxLayer4.fillRect(mineX - 60, mineBaseY - 55, 120, 20);
-      ctxLayer4.fillStyle = '#ff6';
-      ctxLayer4.font = '11px "Courier New"';
-      ctxLayer4.textAlign = 'center';
-      ctxLayer4.fillText('Abandoned Coal Mine', mineX, mineBaseY - 42);
-    }
-    
-    ctxLayer4.restore();
-  }
-  
   // Draw ancient tree for ancient forest terrain type (at user-clicked position)
   if(terrainType === 'ancientforest' && ancientTreePosition){
     const treeX = ancientTreePosition.x;
@@ -5591,6 +5503,95 @@ function draw(){
     }catch(err){ console.error('Error showing loader:', err); }
     ready = false;
   }
+
+  // Draw coal mine on top layer AFTER clearing (to prevent getting wiped out)
+  if(terrainType === 'coalmine' && coalMinePosition){
+    const mineX = coalMinePosition.x;
+    const mineBaseY = coalMinePosition.y;
+    
+    ctxLayer4.save();
+    ctxLayer4.globalAlpha = 0.9;
+    
+    // Mine entrance (dark tunnel opening)
+    ctxLayer4.fillStyle = '#1a1a1a';
+    ctxLayer4.beginPath();
+    ctxLayer4.arc(mineX, mineBaseY - 5, 15, 0, Math.PI, true);
+    ctxLayer4.fill();
+    
+    // Wooden support beams
+    ctxLayer4.strokeStyle = '#5a4a3a';
+    ctxLayer4.lineWidth = 3;
+    ctxLayer4.beginPath();
+    ctxLayer4.moveTo(mineX - 15, mineBaseY - 5);
+    ctxLayer4.lineTo(mineX - 15, mineBaseY - 20);
+    ctxLayer4.moveTo(mineX + 15, mineBaseY - 5);
+    ctxLayer4.lineTo(mineX + 15, mineBaseY - 20);
+    ctxLayer4.moveTo(mineX - 15, mineBaseY - 20);
+    ctxLayer4.lineTo(mineX + 15, mineBaseY - 20);
+    ctxLayer4.stroke();
+    
+    // Mine cart tracks
+    ctxLayer4.strokeStyle = '#4a3a2a';
+    ctxLayer4.lineWidth = 2;
+    ctxLayer4.beginPath();
+    ctxLayer4.moveTo(mineX - 25, mineBaseY);
+    ctxLayer4.lineTo(mineX - 5, mineBaseY);
+    ctxLayer4.moveTo(mineX + 5, mineBaseY);
+    ctxLayer4.lineTo(mineX + 25, mineBaseY);
+    ctxLayer4.stroke();
+    
+    // Coal pile
+    ctxLayer4.fillStyle = '#2a2a2a';
+    ctxLayer4.beginPath();
+    ctxLayer4.moveTo(mineX + 30, mineBaseY);
+    ctxLayer4.lineTo(mineX + 45, mineBaseY);
+    ctxLayer4.lineTo(mineX + 40, mineBaseY - 12);
+    ctxLayer4.lineTo(mineX + 35, mineBaseY - 8);
+    ctxLayer4.closePath();
+    ctxLayer4.fill();
+    
+    // Coal lumps highlights
+    ctxLayer4.fillStyle = '#1a1a1a';
+    ctxLayer4.fillRect(mineX + 32, mineBaseY - 3, 4, 3);
+    ctxLayer4.fillRect(mineX + 38, mineBaseY - 7, 3, 3);
+    
+    // Check if coal mine is covered by laurel plants
+    let isCovered = false;
+    for(let item of items){
+      if(item.subtype === 'laurel'){
+        const dx = Math.abs(item.screenX - mineX);
+        const dy = Math.abs(item.screenY - mineBaseY);
+        if(dx < 60 && dy < 60){
+          isCovered = true;
+          break;
+        }
+      }
+    }
+    
+    // Update discovered state (silently, no alert)
+    if(!isCovered && !coalMineDiscovered){
+      coalMineDiscovered = true;
+      saveSettings();
+    }
+    
+    // Check if mouse is hovering over coal mine
+    const mouseX = canvas.mouseX || 0;
+    const mouseY = canvas.mouseY || 0;
+    const isHovering = Math.abs(mouseX - mineX) < 50 && Math.abs(mouseY - mineBaseY) < 40;
+    
+    // Draw label only if discovered, not covered, AND hovering
+    if(coalMineDiscovered && !isCovered && isHovering){
+      ctxLayer4.fillStyle = 'rgba(0,0,0,0.7)';
+      ctxLayer4.fillRect(mineX - 60, mineBaseY - 55, 120, 20);
+      ctxLayer4.fillStyle = '#ff6';
+      ctxLayer4.font = '11px "Courier New"';
+      ctxLayer4.textAlign = 'center';
+      ctxLayer4.fillText('Abandoned Coal Mine', mineX, mineBaseY - 42);
+    }
+    
+    ctxLayer4.restore();
+  }
+
   requestAnimationFrame(draw); // Always request next frame
 }
 class Item{
