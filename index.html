@@ -4604,61 +4604,61 @@ function draw(){
     const treeX = ancientTreePosition.x;
     const treeBaseY = ancientTreePosition.y;
     
-    ctxLayer4.save();
-    ctxLayer4.globalAlpha = 0.85;
+    ctx.save();
+    ctx.globalAlpha = 0.85;
     
     // Check if ancient tree image is loaded
     if(discoveryAssets.ancientTree){
       // Draw image if available
       const baseSize = 80;
       const imgSize = baseSize * ancientTreeScale;
-      ctxLayer4.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
-      ctxLayer4.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
-      ctxLayer4.filter = 'none';
+      ctx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
+      ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
+      ctx.filter = 'none';
     } else {
       // Fallback: Canvas-drawn ancient gnarled tree
       // Twisted trunk
-      ctxLayer4.strokeStyle = '#4a3a2a';
-      ctxLayer4.lineWidth = 6;
-      ctxLayer4.beginPath();
-      ctxLayer4.moveTo(treeX, treeBaseY);
-      ctxLayer4.quadraticCurveTo(treeX - 8, treeBaseY - 20, treeX - 5, treeBaseY - 40);
-      ctxLayer4.quadraticCurveTo(treeX - 3, treeBaseY - 50, treeX + 2, treeBaseY - 60);
-      ctxLayer4.stroke();
+      ctx.strokeStyle = '#4a3a2a';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(treeX, treeBaseY);
+      ctx.quadraticCurveTo(treeX - 8, treeBaseY - 20, treeX - 5, treeBaseY - 40);
+      ctx.quadraticCurveTo(treeX - 3, treeBaseY - 50, treeX + 2, treeBaseY - 60);
+      ctx.stroke();
       
       // Gnarled branches
-      ctxLayer4.strokeStyle = '#5a4a3a';
-      ctxLayer4.lineWidth = 3;
+      ctx.strokeStyle = '#5a4a3a';
+      ctx.lineWidth = 3;
       // Left branches
-      ctxLayer4.beginPath();
-      ctxLayer4.moveTo(treeX - 5, treeBaseY - 30);
-      ctxLayer4.quadraticCurveTo(treeX - 20, treeBaseY - 35, treeX - 28, treeBaseY - 40);
-      ctxLayer4.stroke();
-      ctxLayer4.beginPath();
-      ctxLayer4.moveTo(treeX - 5, treeBaseY - 45);
-      ctxLayer4.quadraticCurveTo(treeX - 18, treeBaseY - 50, treeX - 25, treeBaseY - 55);
-      ctxLayer4.stroke();
+      ctx.beginPath();
+      ctx.moveTo(treeX - 5, treeBaseY - 30);
+      ctx.quadraticCurveTo(treeX - 20, treeBaseY - 35, treeX - 28, treeBaseY - 40);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(treeX - 5, treeBaseY - 45);
+      ctx.quadraticCurveTo(treeX - 18, treeBaseY - 50, treeX - 25, treeBaseY - 55);
+      ctx.stroke();
       // Right branches
-      ctxLayer4.beginPath();
-      ctxLayer4.moveTo(treeX + 2, treeBaseY - 35);
-      ctxLayer4.quadraticCurveTo(treeX + 18, treeBaseY - 32, treeX + 26, treeBaseY - 38);
-      ctxLayer4.stroke();
-      ctxLayer4.beginPath();
-      ctxLayer4.moveTo(treeX + 2, treeBaseY - 50);
-      ctxLayer4.quadraticCurveTo(treeX + 16, treeBaseY - 52, treeX + 24, treeBaseY - 58);
-      ctxLayer4.stroke();
+      ctx.beginPath();
+      ctx.moveTo(treeX + 2, treeBaseY - 35);
+      ctx.quadraticCurveTo(treeX + 18, treeBaseY - 32, treeX + 26, treeBaseY - 38);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(treeX + 2, treeBaseY - 50);
+      ctx.quadraticCurveTo(treeX + 16, treeBaseY - 52, treeX + 24, treeBaseY - 58);
+      ctx.stroke();
       
       // Weathered foliage clusters
-      ctxLayer4.fillStyle = 'rgba(60,100,50,0.6)';
-      ctxLayer4.beginPath();
-      ctxLayer4.arc(treeX - 22, treeBaseY - 50, 15, 0, Math.PI * 2);
-      ctxLayer4.fill();
-      ctxLayer4.beginPath();
-      ctxLayer4.arc(treeX + 18, treeBaseY - 48, 14, 0, Math.PI * 2);
-      ctxLayer4.fill();
-      ctxLayer4.beginPath();
-      ctxLayer4.arc(treeX, treeBaseY - 65, 12, 0, Math.PI * 2);
-      ctxLayer4.fill();
+      ctx.fillStyle = 'rgba(60,100,50,0.6)';
+      ctx.beginPath();
+      ctx.arc(treeX - 22, treeBaseY - 50, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(treeX + 18, treeBaseY - 48, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(treeX, treeBaseY - 65, 12, 0, Math.PI * 2);
+      ctx.fill();
     }
     
     // Check if ancient tree is covered by vegetation
@@ -4687,15 +4687,15 @@ function draw(){
     
     // Draw label only if discovered, not covered, AND hovering
     if(ancientTreeDiscovered && !isCovered && isHovering){
-      ctxLayer4.fillStyle = 'rgba(0,0,0,0.7)';
-      ctxLayer4.fillRect(treeX - 60, treeBaseY - 55, 120, 20);
-      ctxLayer4.fillStyle = '#D2B48C';
-      ctxLayer4.font = '11px "Courier New"';
-      ctxLayer4.textAlign = 'center';
-      ctxLayer4.fillText('Ancient Tree', treeX, treeBaseY - 42);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(treeX - 60, treeBaseY - 55, 120, 20);
+      ctx.fillStyle = '#D2B48C';
+      ctx.font = '11px "Courier New"';
+      ctx.textAlign = 'center';
+      ctx.fillText('Ancient Tree', treeX, treeBaseY - 42);
     }
     
-    ctxLayer4.restore();
+    ctx.restore();
   }
   
   ctx.globalAlpha = 1;
