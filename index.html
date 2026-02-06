@@ -2706,6 +2706,9 @@ document.getElementById('infoPanelBtn').addEventListener('click', () => {
 
 document.getElementById('storeBtn').addEventListener('click', () => {
   document.getElementById('store').classList.toggle('visible');
+  if(document.getElementById('store').classList.contains('visible')){
+    loadPresetsIntoStore(); // Load presets when store opens
+  }
 });
 
 document.getElementById('clockBtn').addEventListener('click', () => {
