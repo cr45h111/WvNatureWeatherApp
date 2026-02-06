@@ -7048,11 +7048,6 @@ init();
       seasonalPlants.push('wilddaffodil');
     }
     
-    // Add ramp pods for late winter/spring (February through May = months 1-4)
-    if(month >= 1 && month <= 4){
-      seasonalPlants.push('ramppod');
-    }
-    
     // Parse plant names from planting calendar
     if(monthData && monthData.plant){
       monthData.plant.forEach(entry => {
