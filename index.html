@@ -8196,8 +8196,10 @@ init();
     const now = new Date();
     const currentHour = now.getHours();
     
-    // Only allow bunnies between 10am (10) and 2pm (14)
-    if(currentHour < 10 || currentHour >= 14) return;
+    // Only allow bunnies between 7-11am or 2-5pm (match schedule window)
+    const inMorningWindow = (currentHour >= 7 && currentHour < 11);
+    const inAfternoonWindow = (currentHour >= 14 && currentHour < 17);
+    if(!inMorningWindow && !inAfternoonWindow) return;
     
     for(let event of bunnyEvents){
       if(!event.triggered && now >= event.time){
