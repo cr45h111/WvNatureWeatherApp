@@ -1458,7 +1458,7 @@ function applyAncientTreeScale(){
   ancientTreeScale = pendingAncientTreeScale;
   const display = document.getElementById('ancientTreeScaleDisplay');
   if(display) display.textContent = Math.round(ancientTreeScale * 100) + '%';
-  saveSettings();
+  showNotification('🌳 Ancient tree size adjusted. Save a preset to make it permanent.');
 }
 
 function previewRampPodScale(val){
@@ -1473,7 +1473,7 @@ function applyRampPodScale(){
   rampPodScale = pendingRampPodScale;
   const display = document.getElementById('rampPodScaleDisplay');
   if(display) display.textContent = Math.round(rampPodScale * 100) + '%';
-  saveSettings();
+  showNotification('🫘 Ramp pod size adjusted. Save a preset to make it permanent.');
 }
 
 function updateFishSplashVolume(val){
@@ -9458,6 +9458,7 @@ function savePreset(){
     ancientTreePosition: ancientTreePosition,
     ancientTreeDiscovered: ancientTreeDiscovered,
     ancientTreeScale: ancientTreeScale,
+    rampPodScale: rampPodScale,
     items: items.map(item => ({
       baseX: item.baseX,
       baseY: item.baseY,
@@ -9549,6 +9550,7 @@ const DEFAULT_PRESETS = [
     "terrainType": "coalmine",
     "coalMinePosition": null,
     "coalMineDiscovered": false,
+    "rampPodScale": 1.0,
     "items": []
   },
   {
@@ -9559,6 +9561,7 @@ const DEFAULT_PRESETS = [
     "ancientTreePosition": null,
     "ancientTreeDiscovered": false,
     "ancientTreeScale": 1.4,
+    "rampPodScale": 1.0,
     "items": []
   }
 ];
@@ -9693,6 +9696,12 @@ function loadPresetByIndex(index, presets){
     ancientTreeScale = preset.ancientTreeScale !== undefined ? preset.ancientTreeScale : 1.4;
     pendingAncientTreeScale = ancientTreeScale;
     console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}, scale=${ancientTreeScale}`);
+    
+    // Restore ramp pod scale if it exists
+    rampPodScale = preset.rampPodScale !== undefined ? preset.rampPodScale : 1.0;
+    pendingRampPodScale = rampPodScale;
+    console.log(`🫘 Ramp pod scale from preset: ${rampPodScale}`);
+    
     
     // Save and close
     saveSettings();
