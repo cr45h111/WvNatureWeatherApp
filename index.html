@@ -5813,8 +5813,9 @@ class Item{
     const sunZenith = 90 - sunAltClamped;
     const shadowLength = Math.max(6, Math.min(200, Math.tan(sunZenith * Math.PI / 180) * 60));
     
+    // Shadow extends directly away from light source
     const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
-    let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
+    let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength;
     
     // Get terrain at object position
     const terrainY = getTerrainY(this.baseX);
