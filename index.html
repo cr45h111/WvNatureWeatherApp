@@ -535,6 +535,7 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
+      <button class="modal-btn" onclick="showSavePresetModal()">🎨 Save Preset</button>
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
     </div>
   </div>
@@ -1443,7 +1444,7 @@ function applyAncientTreeScale(){
   ancientTreeScale = pendingAncientTreeScale;
   const display = document.getElementById('ancientTreeScaleDisplay');
   if(display) display.textContent = Math.round(ancientTreeScale * 100) + '%';
-  saveSettings();
+  showNotification('🌳 Ancient tree size adjusted. Save a preset to make it permanent.');
 }
 
 function previewRampPodScale(val){
@@ -1458,7 +1459,7 @@ function applyRampPodScale(){
   rampPodScale = pendingRampPodScale;
   const display = document.getElementById('rampPodScaleDisplay');
   if(display) display.textContent = Math.round(rampPodScale * 100) + '%';
-  saveSettings();
+  showNotification('🫘 Ramp pod size adjusted. Save a preset to make it permanent.');
 }
 
 function updateFishSplashVolume(val){
@@ -4488,67 +4489,19 @@ function draw(){
     }
   }
   
-  // Draw ancient tree for ancient forest terrain type (at user-clicked position)
-  if(terrainType === 'ancientforest' && ancientTreePosition){
+  // Draw ancient tree image if placed (user's custom image)
+  if(terrainType === 'ancientforest' && ancientTreePosition && discoveryAssets.ancientTree){
     const treeX = ancientTreePosition.x;
     const treeBaseY = ancientTreePosition.y;
     
     ctx.save();
     ctx.globalAlpha = 0.85;
     
-    // Check if ancient tree image is loaded
-    if(discoveryAssets.ancientTree){
-      // Draw image if available
-      const baseSize = 80;
-      const imgSize = baseSize * ancientTreeScale;
-      ctx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
-      ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
-      ctx.filter = 'none';
-    } else {
-      // Fallback: Canvas-drawn ancient gnarled tree
-      // Twisted trunk
-      ctx.strokeStyle = '#4a3a2a';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(treeX, treeBaseY);
-      ctx.quadraticCurveTo(treeX - 8, treeBaseY - 20, treeX - 5, treeBaseY - 40);
-      ctx.quadraticCurveTo(treeX - 3, treeBaseY - 50, treeX + 2, treeBaseY - 60);
-      ctx.stroke();
-      
-      // Gnarled branches
-      ctx.strokeStyle = '#5a4a3a';
-      ctx.lineWidth = 3;
-      // Left branches
-      ctx.beginPath();
-      ctx.moveTo(treeX - 5, treeBaseY - 30);
-      ctx.quadraticCurveTo(treeX - 20, treeBaseY - 35, treeX - 28, treeBaseY - 40);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(treeX - 5, treeBaseY - 45);
-      ctx.quadraticCurveTo(treeX - 18, treeBaseY - 50, treeX - 25, treeBaseY - 55);
-      ctx.stroke();
-      // Right branches
-      ctx.beginPath();
-      ctx.moveTo(treeX + 2, treeBaseY - 35);
-      ctx.quadraticCurveTo(treeX + 18, treeBaseY - 32, treeX + 26, treeBaseY - 38);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(treeX + 2, treeBaseY - 50);
-      ctx.quadraticCurveTo(treeX + 16, treeBaseY - 52, treeX + 24, treeBaseY - 58);
-      ctx.stroke();
-      
-      // Weathered foliage clusters
-      ctx.fillStyle = 'rgba(60,100,50,0.6)';
-      ctx.beginPath();
-      ctx.arc(treeX - 22, treeBaseY - 50, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(treeX + 18, treeBaseY - 48, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(treeX, treeBaseY - 65, 12, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    const baseSize = 80;
+    const imgSize = baseSize * ancientTreeScale;
+    ctx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
+    ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
+    ctx.filter = 'none';
     
     // Check if ancient tree is covered by vegetation
     let isCovered = false;
@@ -4943,6 +4896,27 @@ function draw(){
       window._coalMineDrawn = true;
     }
     
+    // Ancient tree should be drawn based on its y-position relative to items
+    const ancientTreeY = (terrainType === 'ancientforest' && ancientTreePosition) ? ancientTreePosition.y : null;
+    
+    // Draw ancient tree image if this item is below it (higher y-value = further down screen)
+    if(ancientTreeY !== null && itemY > ancientTreeY && !window._ancientTreeDrawn && discoveryAssets.ancientTree){
+      const treeX = ancientTreePosition.x;
+      const treeBaseY = ancientTreePosition.y;
+      
+      originalCtx.save();
+      originalCtx.globalAlpha = 0.85;
+      
+      const baseSize = 80;
+      const imgSize = baseSize * ancientTreeScale;
+      originalCtx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
+      originalCtx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
+      originalCtx.filter = 'none';
+      
+      originalCtx.restore();
+      window._ancientTreeDrawn = true;
+    }
+    
     let targetCtx;
     let layerName = 'unknown';
     
@@ -5033,6 +5007,7 @@ function draw(){
   }
   
   window._coalMineDrawn = false; // Reset for next frame
+  window._ancientTreeDrawn = false; // Reset for next frame
   
   // Check coal mine coverage and draw label if needed
   if(terrainType === 'coalmine' && coalMinePosition){
@@ -7379,6 +7354,7 @@ init();
     });
   }
   
+  
   function updateSoundButtonStates(){
     const toggleOwlBtn = document.getElementById('toggleOwlBtn');
     const toggleFishSplashBtn = document.getElementById('toggleFishSplashBtn');
@@ -9427,6 +9403,8 @@ function savePreset(){
     coalMineDiscovered: coalMineDiscovered,
     ancientTreePosition: ancientTreePosition,
     ancientTreeDiscovered: ancientTreeDiscovered,
+    ancientTreeScale: ancientTreeScale,
+    rampPodScale: rampPodScale,
     items: items.map(item => ({
       baseX: item.baseX,
       baseY: item.baseY,
@@ -9516,6 +9494,9 @@ const DEFAULT_PRESETS = [
     "description": "Explore me.",
     "createdAt": "2026-02-02T14:36:39.860Z",
     "terrainType": "coalmine",
+    "coalMinePosition": null,
+    "coalMineDiscovered": false,
+    "rampPodScale": 1.0,
     "items": []
   },
   {
@@ -9523,6 +9504,10 @@ const DEFAULT_PRESETS = [
     "description": "Discover the hidden sycamore.",
     "createdAt": "2026-02-03T15:20:04.390Z",
     "terrainType": "ancientforest",
+    "ancientTreePosition": null,
+    "ancientTreeDiscovered": false,
+    "ancientTreeScale": 1.4,
+    "rampPodScale": 1.0,
     "items": []
   }
 ];
@@ -9644,14 +9629,25 @@ function loadPresetByIndex(index, presets){
     
     // Set terrain
     terrainType = preset.terrainType || 'hills';
+    console.log(`🌍 Set terrain type to: ${terrainType}`);
     
     // Restore coal mine position and discovered state if it exists
     coalMinePosition = preset.coalMinePosition || null;
     coalMineDiscovered = preset.coalMineDiscovered || false;
+    console.log(`🏭 Coal mine from preset: position=${coalMinePosition ? `(${Math.round(coalMinePosition.x)},${Math.round(coalMinePosition.y)})` : 'NULL'}, discovered=${coalMineDiscovered}`);
     
-    // Restore ancient tree position and discovered state if it exists
+    // Restore ancient tree position, discovered state, and scale if it exists
     ancientTreePosition = preset.ancientTreePosition || null;
     ancientTreeDiscovered = preset.ancientTreeDiscovered || false;
+    ancientTreeScale = preset.ancientTreeScale !== undefined ? preset.ancientTreeScale : 1.4;
+    pendingAncientTreeScale = ancientTreeScale;
+    console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}, scale=${ancientTreeScale}`);
+    
+    // Restore ramp pod scale if it exists
+    rampPodScale = preset.rampPodScale !== undefined ? preset.rampPodScale : 1.0;
+    pendingRampPodScale = rampPodScale;
+    console.log(`🫘 Ramp pod scale from preset: ${rampPodScale}`);
+    
     
     // Save and close
     saveSettings();
@@ -9660,6 +9656,25 @@ function loadPresetByIndex(index, presets){
     showNotification(`✅ Loaded preset: ${preset.name}`);
   }
 }
+
+// Debug function to check saved presets
+window.checkSavedPresets = function(){
+  const saved = localStorage.getItem('scenePresets');
+  if(!saved){
+    console.log('❌ No presets saved in localStorage');
+    return;
+  }
+  const presets = JSON.parse(saved);
+  console.log('📋 Saved Presets:');
+  presets.forEach((p, i) => {
+    console.log(`  [${i}] ${p.name}:`);
+    console.log(`      - Terrain: ${p.terrainType}`);
+    console.log(`      - Coal Mine Position: ${p.coalMinePosition ? `(${Math.round(p.coalMinePosition.x)},${Math.round(p.coalMinePosition.y)})` : 'MISSING'}`);
+    console.log(`      - Ancient Tree Position: ${p.ancientTreePosition ? `(${Math.round(p.ancientTreePosition.x)},${Math.round(p.ancientTreePosition.y)})` : 'MISSING'}`);
+    console.log(`      - Ancient Tree Scale: ${p.ancientTreeScale !== undefined ? p.ancientTreeScale : 'MISSING'}`);
+    console.log(`      - Items: ${p.items.length}`);
+  });
+};
 
 window.showSavePresetModal = showSavePresetModal;
 window.savePreset = savePreset;
