@@ -842,7 +842,7 @@ const CONFIG = {
 };
 
 let W, H, ready = false, animTime = 0;
-let lightSourceX, lightSourceY, lightSourceAlt = 45;
+let lightSourceX = 0, lightSourceY = 0, lightSourceAlt = 45;
 let LAT = 38.4147, LON = -80.2435, LOCATION_NAME = 'HACKER VALLEY, WV';
 let selectedType = null, selectedSubtype = null, removeMode = false, showClock = false;
 let alarmTime = null, alarmTriggered = false;
@@ -2107,35 +2107,47 @@ function stopSounds(){
 }
 function generateMoonCraters(){
   moonCraters = [];
-  // Based on real lunar features visible from Earth
+  // Approximate selenographic positions projected to a face-on disk
+  // (x: east/west, y: north/south) in a -28..28 range scaled later.
   const craterData = [
-    // Tycho - prominent crater in southern region
-    {x:3, y:24, r:6, depth:0.8},
-    // Copernicus - bright ray crater in center
-    {x:-5, y:5, r:5, depth:0.7},
-    // Kepler - northwestern region
-    {x:-18, y:-8, r:4, depth:0.6},
-    // Aristarchus - one of brightest spots
-    {x:-20, y:-12, r:5, depth:0.75},
-    // Plato - dark floored crater in north
-    {x:-8, y:-18, r:6, depth:0.5},
-    // Archimedes - Mare Imbrium region
-    {x:-10, y:-10, r:4, depth:0.5},
-    // Theophilus - eastern edge
-    {x:18, y:8, r:5, depth:0.65},
-    // Ptolemaeus - central
-    {x:2, y:12, r:5, depth:0.4},
-    // Mare Crisium - dark sea on eastern edge
-    {x:25, y:-5, r:8, depth:0.3, mare:true},
-    // Mare Serenitatis - Sea of Serenity
-    {x:8, y:-12, r:9, depth:0.3, mare:true},
-    // Mare Tranquillitatis - Apollo 11 landing
-    {x:12, y:2, r:7, depth:0.3, mare:true},
-    // Smaller craters for detail
-    {x:-15, y:18, r:3, depth:0.5},
-    {x:15, y:-18, r:3, depth:0.5},
-    {x:-25, y:2, r:3, depth:0.6},
-    {x:22, y:15, r:3, depth:0.55}
+    // Major maria (dark basaltic plains)
+    {x:-4,  y:-6,  r:13, depth:0.2, mare:true},   // Mare Imbrium
+    {x:9,   y:-10, r:10, depth:0.2, mare:true},   // Mare Serenitatis
+    {x:12,  y:2,   r:9,  depth:0.2, mare:true},   // Mare Tranquillitatis
+    {x:17,  y:-6,  r:8,  depth:0.2, mare:true},   // Mare Fecunditatis
+    {x:21,  y:6,   r:7,  depth:0.2, mare:true},   // Mare Crisium
+    {x:-8,  y:10,  r:9,  depth:0.2, mare:true},   // Mare Frigoris (segment)
+    {x:-12, y:6,   r:8,  depth:0.2, mare:true},   // Mare Vaporum
+    {x:-6,  y:16,  r:7,  depth:0.2, mare:true},   // Sinus Iridum / Imbrium edge
+    {x:-14, y:-14, r:7,  depth:0.2, mare:true},   // Mare Nubium
+    {x:-20, y:-2,  r:7,  depth:0.2, mare:true},   // Oceanus Procellarum (segment)
+
+    // Prominent craters (approximate positions and sizes)
+    {x:4,   y:22,  r:6,  depth:0.8},  // Tycho
+    {x:-6,  y:6,   r:5,  depth:0.7},  // Copernicus
+    {x:-14, y:4,   r:4,  depth:0.6},  // Kepler
+    {x:-18, y:0,   r:5,  depth:0.75}, // Aristarchus
+    {x:-7,  y:-16, r:6,  depth:0.55}, // Plato
+    {x:-10, y:-8,  r:4,  depth:0.5},  // Archimedes
+    {x:16,  y:9,   r:5,  depth:0.65}, // Theophilus
+    {x:2,   y:12,  r:5,  depth:0.45}, // Ptolemaeus
+    {x:6,   y:10,  r:4,  depth:0.45}, // Alphonsus
+    {x:8,   y:12,  r:4,  depth:0.4},  // Arzachel
+    {x:-2,  y:18,  r:5,  depth:0.5},  // Clavius (north rim)
+    {x:-6,  y:24,  r:4,  depth:0.55}, // Moretus
+    {x:12,  y:16,  r:4,  depth:0.5},  // Gassendi
+    {x:18,  y:14,  r:4,  depth:0.5},  // Langrenus
+    {x:22,  y:12,  r:4,  depth:0.5},  // Petavius
+    {x:20,  y:-12, r:4,  depth:0.5},  // Messier
+    {x:0,   y:2,   r:4,  depth:0.55}, // Eratosthenes
+    {x:-2,  y:8,   r:4,  depth:0.5},  // Plato rim detail
+    {x:-22, y:10,  r:4,  depth:0.5},  // Grimaldi
+    {x:-24, y:-10, r:4,  depth:0.5},  // Schickard
+    {x:24,  y:-2,  r:4,  depth:0.5},  // Humboldtianum (limb)
+    {x:6,   y:-4,  r:4,  depth:0.5},  // Manilius
+    {x:10,  y:-2,  r:4,  depth:0.5},  // Posidonius
+    {x:-12, y:18,  r:4,  depth:0.5},  // Schiller
+    {x:-16, y:20,  r:4,  depth:0.5}   // Bailly (southern region)
   ];
   moonCraters = craterData;
 }
@@ -2656,6 +2668,14 @@ function altAzToScreen(alt, az){
   const x = W * 0.5 + (azNorm * W * 0.7); // Increased from 0.6 to 0.7 for more left-right movement
   
   return {x, y, visible: alt > -6 && x > -100 && x < W + 100 && y > -100 && y < H + 100};
+}
+
+// Apparent angular radius of sun/moon ~0.265° (diameter ~0.53°)
+function getCelestialRadiusPx(){
+  if(!H) return 1;
+  const angularRadiusDeg = 0.265;
+  const pixelsPerDegree = (H * 0.6) / 90; // matches altAzToScreen vertical mapping
+  return pixelsPerDegree * angularRadiusDeg;
 }
 document.getElementById('hideBtn').addEventListener('click', () => {
   controlsHidden = !controlsHidden;
@@ -3879,8 +3899,8 @@ function init(){
     setInterval(generateStars, 300000); // Update star positions every 5 minutes
     setInterval(fetchWeather, 60000); // Update weather every 1 minute
     setInterval(updateClock, 1000);
-    setInterval(spawnBird, 8000);
-    setInterval(spawnCrow, 45000);
+    // setInterval(spawnBird, 8000);
+    // setInterval(spawnCrow, 45000);
     setInterval(updateWeatherEffects, 100);
     setInterval(updateCreatures, 5000);
     setInterval(checkAlarm, 10000);
@@ -4024,9 +4044,11 @@ function draw(){
   
   const moonPos = altAzToScreen(moonAlt, moonAz);
   if(moonPos.visible && sunAlt < -6){
+    const moonRadius = getCelestialRadiusPx();
+    const moonDiameter = moonRadius * 2;
     const moonBrightness = moonPhase > 0.4 && moonPhase < 0.6 ? 0.6 : 0.4;
-    const auraSize = 80 + Math.sin(animTime * 0.05) * 10;
-    const auraGrad = ctx.createRadialGradient(moonPos.x, moonPos.y, 45, moonPos.x, moonPos.y, auraSize);
+    const auraSize = moonRadius * 2.2 + Math.sin(animTime * 0.05) * (moonRadius * 0.2);
+    const auraGrad = ctx.createRadialGradient(moonPos.x, moonPos.y, moonRadius, moonPos.x, moonPos.y, auraSize);
     auraGrad.addColorStop(0, 'rgba(232,232,224,0)');
     auraGrad.addColorStop(0.5, `rgba(200,210,220,${moonBrightness*0.15})`);
     auraGrad.addColorStop(1, 'rgba(180,190,210,0)');
@@ -4037,71 +4059,72 @@ function draw(){
     
     ctx.fillStyle = '#e8e8e0';
     ctx.beginPath();
-    ctx.arc(moonPos.x, moonPos.y, 45, 0, Math.PI * 2);
+    ctx.arc(moonPos.x, moonPos.y, moonRadius, 0, Math.PI * 2);
     ctx.fill();
     
     if(moonPhase < 0.45 || moonPhase > 0.55){
       ctx.fillStyle = `rgba(20,25,50,${0.6+darken*0.2})`;
       ctx.beginPath();
-      ctx.arc(moonPos.x + (moonPhase - 0.5) * 90, moonPos.y, 45, 0, Math.PI * 2);
+      ctx.arc(moonPos.x + (moonPhase - 0.5) * moonDiameter, moonPos.y, moonRadius, 0, Math.PI * 2);
       ctx.fill();
     }
     
     // Draw craters with realistic depth and shadows
     for(let crater of moonCraters){
-      const cx = moonPos.x + crater.x;
-      const cy = moonPos.y + crater.y;
-      const phaseOffset = (moonPhase - 0.5) * 90;
+      const craterScale = moonRadius / 45;
+      const cx = moonPos.x + crater.x * craterScale;
+      const cy = moonPos.y + crater.y * craterScale;
+      const phaseOffset = (moonPhase - 0.5) * moonDiameter;
       const distFromEdge = Math.abs(cx - (moonPos.x + phaseOffset));
       
-      if(distFromEdge < 45){
+      if(distFromEdge < moonRadius){
         ctx.save();
         // Clip to moon circle
         ctx.beginPath();
-        ctx.arc(moonPos.x, moonPos.y, 45, 0, Math.PI * 2);
+        ctx.arc(moonPos.x, moonPos.y, moonRadius, 0, Math.PI * 2);
         ctx.clip();
         
         if(crater.mare){
           // Mare (dark sea) regions - darker basaltic plains
-          const mareGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, crater.r);
+          const mareGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, crater.r * craterScale);
           mareGrad.addColorStop(0, 'rgba(100,100,95,0.5)');
           mareGrad.addColorStop(1, 'rgba(120,120,110,0.3)');
           ctx.fillStyle = mareGrad;
           ctx.beginPath();
-          ctx.arc(cx, cy, crater.r, 0, Math.PI * 2);
+          ctx.arc(cx, cy, crater.r * craterScale, 0, Math.PI * 2);
           ctx.fill();
         }else{
           // Regular impact craters with depth
           // Shadow side based on phase
           const shadowAngle = (moonPhase - 0.5) * Math.PI;
-          const shadowX = Math.cos(shadowAngle) * crater.r * 0.3;
-          const shadowY = Math.sin(shadowAngle) * crater.r * 0.2;
+          const shadowX = Math.cos(shadowAngle) * crater.r * craterScale * 0.3;
+          const shadowY = Math.sin(shadowAngle) * crater.r * craterScale * 0.2;
           
           // Outer rim highlight
           ctx.strokeStyle = `rgba(255,255,250,${0.15 * crater.depth})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.arc(cx - shadowX * 0.5, cy - shadowY * 0.5, crater.r * 0.95, 0, Math.PI * 2);
+          ctx.arc(cx - shadowX * 0.5, cy - shadowY * 0.5, crater.r * craterScale * 0.95, 0, Math.PI * 2);
           ctx.stroke();
           
           // Inner crater (darker)
           const craterGrad = ctx.createRadialGradient(
             cx + shadowX, cy + shadowY, 0,
-            cx + shadowX, cy + shadowY, crater.r * 0.8
+            cx + shadowX, cy + shadowY, crater.r * craterScale * 0.8
           );
           craterGrad.addColorStop(0, `rgba(80,80,75,${0.6 * crater.depth})`);
           craterGrad.addColorStop(0.5, `rgba(140,140,130,${0.4 * crater.depth})`);
           craterGrad.addColorStop(1, `rgba(180,180,170,${0.2 * crater.depth})`);
           ctx.fillStyle = craterGrad;
           ctx.beginPath();
-          ctx.arc(cx, cy, crater.r * 0.85, 0, Math.PI * 2);
+          ctx.arc(cx, cy, crater.r * craterScale * 0.85, 0, Math.PI * 2);
           ctx.fill();
           
           // Central peak for larger craters
-          if(crater.r > 4){
+          if(crater.r * craterScale > moonRadius * 0.09){
             ctx.fillStyle = `rgba(200,200,190,${0.3 * crater.depth})`;
             ctx.beginPath();
-            ctx.arc(cx - shadowX * 0.3, cy - shadowY * 0.3, crater.r * 0.2, 0, Math.PI * 2);
+            ctx.arc(cx - shadowX * 0.3, cy - shadowY * 0.3, crater.r * craterScale * 0.2, 0, Math.PI * 2);
             ctx.fill();
           }
         }
@@ -4115,14 +4138,21 @@ function draw(){
   // prefer a vertically-moving sun that rises from behind the background mountains (centered)
   if(sunPos.visible && sunAlt > 0){
     sunPos.x = W * 0.5;
-    const sg = ctx.createRadialGradient(sunPos.x, sunPos.y, 20, sunPos.x, sunPos.y, 100);
-    sg.addColorStop(0, 'rgba(255,255,220,1)');
-    sg.addColorStop(0.3, 'rgba(255,240,150,1)');
-    sg.addColorStop(0.6, 'rgba(255,230,100,0.5)');
+    const sunRadius = getCelestialRadiusPx();
+    const sunGlowRadius = sunRadius * 2.2;
+    const sg = ctx.createRadialGradient(sunPos.x, sunPos.y, sunRadius * 0.3, sunPos.x, sunPos.y, sunGlowRadius);
+    sg.addColorStop(0, 'rgba(255,255,235,1)');
+    sg.addColorStop(0.35, 'rgba(255,240,160,0.9)');
+    sg.addColorStop(0.7, 'rgba(255,220,120,0.45)');
     sg.addColorStop(1, 'rgba(255,200,50,0)');
     ctx.fillStyle = sg;
     ctx.beginPath();
-    ctx.arc(sunPos.x, sunPos.y, 100, 0, Math.PI * 2);
+    ctx.arc(sunPos.x, sunPos.y, sunGlowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,250,220,1)';
+    ctx.beginPath();
+    ctx.arc(sunPos.x, sunPos.y, sunRadius, 0, Math.PI * 2);
     ctx.fill();
   }
   
@@ -5805,16 +5835,30 @@ class Item{
   drawShadow(light){
     const shadowOpacity = light > 0.5 ? 0.4 : light > 0.2 ? 0.25 : 0.15;
     
-    const dx = this.screenX - lightSourceX;
-    const dy = this.screenY - lightSourceY;
-    const shadowAngle = Math.atan2(dy, dx);
+    // Ensure light source is valid (fallback to reasonable default if not set)
+    const lsx = lightSourceX !== undefined && lightSourceX !== null ? lightSourceX : W * 0.5;
+    
+    // Calculate shadow based on HORIZONTAL angle only
+    // Shadows extend horizontally on the ground, away from light source
+    const dx = this.screenX - lsx;
+    const shadowAngle = dx > 0 ? 0 : Math.PI; // Right if object is right of light, left otherwise
     
     const sunAltClamped = Math.max(-10, Math.min(85, lightSourceAlt));
     const sunZenith = 90 - sunAltClamped;
     const shadowLength = Math.max(6, Math.min(200, Math.tan(sunZenith * Math.PI / 180) * 60));
     
-    const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
-    const shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
+    // Shadow extends horizontally away from light source
+    // Sign of dx determines direction: positive dx = shadow goes right, negative = goes left
+    const shadowEndX = this.screenX + Math.sign(dx) * shadowLength;
+    
+    // Shadow stays at ground level (object's Y position)
+    const shadowEndY = this.screenY;
+    
+    // Get terrain at object position
+    const terrainY = getTerrainY(this.baseX);
+    
+    // Don't draw shadow if object is floating extremely high in the sky (way above terrain)
+    if(this.screenY < terrainY - 500) return;
     
     ctx.save();
     ctx.globalAlpha = shadowOpacity;
@@ -5822,14 +5866,14 @@ class Item{
     
     if(this.type === 'accessory'){
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, shadowEndY, 15, 8, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, 15, 8, 0, 0, Math.PI * 2);
       ctx.fill();
     }else{
       const growth = Math.min(1, this.age / this.maxAge);
       const shadowW = this.trunkW * growth * 2;
       
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, shadowEndY, shadowW * 3, shadowW * 1.5, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, shadowW * 3, shadowW * 1.5, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     
@@ -6323,7 +6367,11 @@ class Bird{
       const shadowLength = Math.max(6, Math.min(120, Math.tan(sunZenith * Math.PI / 180) * 15));
       
       const shadowEndX = this.x + Math.cos(shadowAngle) * shadowLength;
-      const shadowEndY = this.y + Math.sin(shadowAngle) * shadowLength * 0.3;
+      let shadowEndY = this.y + Math.sin(shadowAngle) * shadowLength * 0.3;
+      
+      // Clamp shadow to terrain level - don't draw shadows in the sky
+      const terrainY = getTerrainY(shadowEndX);
+      shadowEndY = Math.min(shadowEndY, terrainY);
       
       ctx.save();
       ctx.globalAlpha = shadowOpacity;
@@ -8196,8 +8244,10 @@ init();
     const now = new Date();
     const currentHour = now.getHours();
     
-    // Only allow bunnies between 10am (10) and 2pm (14)
-    if(currentHour < 10 || currentHour >= 14) return;
+    // Only allow bunnies between 7-11am or 2-5pm (match schedule window)
+    const inMorningWindow = (currentHour >= 7 && currentHour < 11);
+    const inAfternoonWindow = (currentHour >= 14 && currentHour < 17);
+    if(!inMorningWindow && !inAfternoonWindow) return;
     
     for(let event of bunnyEvents){
       if(!event.triggered && now >= event.time){
