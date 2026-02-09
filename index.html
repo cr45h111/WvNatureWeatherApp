@@ -4488,67 +4488,19 @@ function draw(){
     }
   }
   
-  // Draw ancient tree for ancient forest terrain type (at user-clicked position)
-  if(terrainType === 'ancientforest' && ancientTreePosition){
+  // Draw ancient tree image if placed (user's custom image)
+  if(terrainType === 'ancientforest' && ancientTreePosition && discoveryAssets.ancientTree){
     const treeX = ancientTreePosition.x;
     const treeBaseY = ancientTreePosition.y;
     
     ctx.save();
     ctx.globalAlpha = 0.85;
     
-    // Check if ancient tree image is loaded
-    if(discoveryAssets.ancientTree){
-      // Draw image if available
-      const baseSize = 80;
-      const imgSize = baseSize * ancientTreeScale;
-      ctx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
-      ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
-      ctx.filter = 'none';
-    } else {
-      // Fallback: Canvas-drawn ancient gnarled tree
-      // Twisted trunk
-      ctx.strokeStyle = '#4a3a2a';
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(treeX, treeBaseY);
-      ctx.quadraticCurveTo(treeX - 8, treeBaseY - 20, treeX - 5, treeBaseY - 40);
-      ctx.quadraticCurveTo(treeX - 3, treeBaseY - 50, treeX + 2, treeBaseY - 60);
-      ctx.stroke();
-      
-      // Gnarled branches
-      ctx.strokeStyle = '#5a4a3a';
-      ctx.lineWidth = 3;
-      // Left branches
-      ctx.beginPath();
-      ctx.moveTo(treeX - 5, treeBaseY - 30);
-      ctx.quadraticCurveTo(treeX - 20, treeBaseY - 35, treeX - 28, treeBaseY - 40);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(treeX - 5, treeBaseY - 45);
-      ctx.quadraticCurveTo(treeX - 18, treeBaseY - 50, treeX - 25, treeBaseY - 55);
-      ctx.stroke();
-      // Right branches
-      ctx.beginPath();
-      ctx.moveTo(treeX + 2, treeBaseY - 35);
-      ctx.quadraticCurveTo(treeX + 18, treeBaseY - 32, treeX + 26, treeBaseY - 38);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(treeX + 2, treeBaseY - 50);
-      ctx.quadraticCurveTo(treeX + 16, treeBaseY - 52, treeX + 24, treeBaseY - 58);
-      ctx.stroke();
-      
-      // Weathered foliage clusters
-      ctx.fillStyle = 'rgba(60,100,50,0.6)';
-      ctx.beginPath();
-      ctx.arc(treeX - 22, treeBaseY - 50, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(treeX + 18, treeBaseY - 48, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(treeX, treeBaseY - 65, 12, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    const baseSize = 80;
+    const imgSize = baseSize * ancientTreeScale;
+    ctx.filter = 'brightness(0.25) contrast(1.3) sepia(0.3)';
+    ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
+    ctx.filter = 'none';
     
     // Check if ancient tree is covered by vegetation
     let isCovered = false;
