@@ -5814,14 +5814,16 @@ class Item{
     const shadowLength = Math.max(6, Math.min(200, Math.tan(sunZenith * Math.PI / 180) * 60));
     
     const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
-    const shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
+    let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
     
-    // Only draw shadow if it's on the ground or below terrain - don't draw in the sky
+    // Get terrain at shadow position
     const terrainY = getTerrainY(this.baseX);
-    if(shadowEndY < terrainY - 30) return; // Don't draw shadows in the sky
     
-    // Clamp shadow to terrain level
-    const clampedShadowY = Math.min(shadowEndY, terrainY);
+    // Don't draw shadow if object is floating high in the sky (more than 200px above terrain)
+    if(this.screenY < terrainY - 200) return;
+    
+    // Clamp shadow to terrain level - never draw above ground
+    shadowEndY = Math.max(shadowEndY, terrainY); // Keep shadow AT or BELOW terrain
     
     ctx.save();
     ctx.globalAlpha = shadowOpacity;
@@ -5829,14 +5831,14 @@ class Item{
     
     if(this.type === 'accessory'){
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, clampedShadowY, 15, 8, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, 15, 8, shadowAngle, 0, Math.PI * 2);
       ctx.fill();
     }else{
       const growth = Math.min(1, this.age / this.maxAge);
       const shadowW = this.trunkW * growth * 2;
       
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, clampedShadowY, shadowW * 3, shadowW * 1.5, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, shadowW * 3, shadowW * 1.5, shadowAngle, 0, Math.PI * 2);
       ctx.fill();
     }
     
