@@ -842,7 +842,7 @@ const CONFIG = {
 };
 
 let W, H, ready = false, animTime = 0;
-let lightSourceX, lightSourceY, lightSourceAlt = 45;
+let lightSourceX = 0, lightSourceY = 0, lightSourceAlt = 45;
 let LAT = 38.4147, LON = -80.2435, LOCATION_NAME = 'HACKER VALLEY, WV';
 let selectedType = null, selectedSubtype = null, removeMode = false, showClock = false;
 let alarmTime = null, alarmTriggered = false;
@@ -5805,8 +5805,12 @@ class Item{
   drawShadow(light){
     const shadowOpacity = light > 0.5 ? 0.4 : light > 0.2 ? 0.25 : 0.15;
     
-    const dx = this.screenX - lightSourceX;
-    const dy = this.screenY - lightSourceY;
+    // Ensure light source is valid (fallback to reasonable default if not set)
+    const lsx = lightSourceX !== undefined && lightSourceX !== null ? lightSourceX : W * 0.5;
+    const lsy = lightSourceY !== undefined && lightSourceY !== null ? lightSourceY : H * 0.3;
+    
+    const dx = this.screenX - lsx;
+    const dy = this.screenY - lsy;
     const shadowAngle = Math.atan2(dy, dx);
     
     const sunAltClamped = Math.max(-10, Math.min(85, lightSourceAlt));
