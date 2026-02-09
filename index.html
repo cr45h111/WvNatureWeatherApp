@@ -5816,11 +5816,12 @@ class Item{
     const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
     let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
     
-    // Get terrain at shadow position
+    // Get terrain at object position
     const terrainY = getTerrainY(this.baseX);
     
-    // Don't draw shadow if object is floating high in the sky (more than 200px above terrain)
-    if(this.screenY < terrainY - 200) return;
+    // Don't draw shadow if object is floating extremely high in the sky (way above terrain)
+    // Use a large threshold to allow trees on distant hills to have shadows
+    if(this.screenY < terrainY - 500) return;
     
     // Clamp shadow to terrain level - never draw above ground
     shadowEndY = Math.max(shadowEndY, terrainY); // Keep shadow AT or BELOW terrain
