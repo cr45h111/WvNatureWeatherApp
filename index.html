@@ -451,7 +451,7 @@ canvas:fullscreen{background:#000;}
     <div class="form-group" style="margin-bottom:12px">
       <label for="tempOffsetSettings">Temperature Offset (°F):</label>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="tempOffsetSettings" type="number" min="-10" max="10" step="1" value="0" oninput="updateTempOffset(this.value)" style="flex:1;">
+        <input id="tempOffsetSettings" type="number" min="-50" max="50" step="1" value="0" oninput="updateTempOffset(this.value)" style="flex:1;">
         <span id="tempOffsetDisplay" style="font-size:12px;color:#0ff;min-width:100px;">Current: 0°F</span>
       </div>
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast. Common in hollows/valleys.</small>
@@ -680,7 +680,7 @@ canvas:fullscreen{background:#000;}
     </div>
     <div class="form-group">
       <label for="tempOffset">Temperature Offset (for hollow/valley):</label>
-      <input id="tempOffset" type="number" min="-10" max="10" step="1" placeholder="0">
+      <input id="tempOffset" type="number" min="-50" max="50" step="1" placeholder="0">
       <small style="font-size:10px;color:#0cf;display:block;margin-top:4px;">Adjust if your area is typically colder (-) or warmer (+) than regional forecast</small>
     </div>
     <div class="modal-btn-wrapper">
