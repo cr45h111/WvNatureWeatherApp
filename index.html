@@ -535,7 +535,22 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
+      <button class="modal-btn" onclick="showSavePresetModal()">🎨 Save Preset</button>
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
+    </div>
+    <h3 id="artifactActionsHeader" style="display:none;margin-top:16px;">Artifact Placement</h3>
+    <div id="artifactActions" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px">
+      <button class="modal-btn" onclick="startPlacingCoalMine()">⛏️ Place Coal Mine</button>
+      <button class="modal-btn" onclick="enableAncientTreePlacement()">🌳 Place Ancient Tree</button>
+    </div>
+    <h3 id="artifactScaleHeader" style="display:none;margin-top:16px;">Ancient Tree Size</h3>
+    <div id="artifactScaleControls" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label for="ancientTreeScaleQuick" style="color:#0cf;font-size:12px;min-width:60px;">Scale:</label>
+        <input type="range" id="ancientTreeScaleQuick" min="0.5" max="3" step="0.1" value="1.4" style="flex:1;">
+        <span id="ancientTreeScaleQuickDisplay" style="color:#0ff;font-size:12px;min-width:40px;text-align:right;">1.4x</span>
+      </div>
+      <button class="modal-btn" onclick="applyAncientTreeScale()">✓ Apply Size</button>
     </div>
   </div>
 </div>
@@ -7402,9 +7417,57 @@ init();
   if(quickActionsBtn){
     quickActionsBtn.addEventListener('click', ()=>{
       const quickActionsModal = document.getElementById('quickActionsModal');
-      if(quickActionsModal) quickActionsModal.classList.toggle('visible');
+      if(quickActionsModal){
+        quickActionsModal.classList.toggle('visible');
+        
+        // Show/hide artifact controls based on terrain
+        const artifactHeader = document.getElementById('artifactActionsHeader');
+        const artifactActions = document.getElementById('artifactActions');
+        const scaleHeader = document.getElementById('artifactScaleHeader');
+        const scaleControls = document.getElementById('artifactScaleControls');
+        
+        if(terrainType === 'coalmine' || terrainType === 'ancientforest'){
+          if(artifactHeader) artifactHeader.style.display = 'block';
+          if(artifactActions) artifactActions.style.display = 'flex';
+        }else{
+          if(artifactHeader) artifactHeader.style.display = 'none';
+          if(artifactActions) artifactActions.style.display = 'none';
+        }
+        
+        if(terrainType === 'ancientforest'){
+          if(scaleHeader) scaleHeader.style.display = 'block';
+          if(scaleControls) scaleControls.style.display = 'flex';
+          // Update slider to current scale
+          const slider = document.getElementById('ancientTreeScaleQuick');
+          const display = document.getElementById('ancientTreeScaleQuickDisplay');
+          if(slider) slider.value = ancientTreeScale;
+          if(display) display.textContent = ancientTreeScale.toFixed(1) + 'x';
+        }else{
+          if(scaleHeader) scaleHeader.style.display = 'none';
+          if(scaleControls) scaleControls.style.display = 'none';
+        }
+      }
     });
   }
+  
+  // Wire up ancient tree scale slider
+  const scaleSlider = document.getElementById('ancientTreeScaleQuick');
+  if(scaleSlider){
+    scaleSlider.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      pendingAncientTreeScale = value;
+      const display = document.getElementById('ancientTreeScaleQuickDisplay');
+      if(display) display.textContent = value.toFixed(1) + 'x';
+    });
+  }
+  
+  // Apply ancient tree scale function
+  window.applyAncientTreeScale = function(){
+    ancientTreeScale = pendingAncientTreeScale;
+    saveSettings();
+    showNotification(`🌳 Ancient tree size set to ${ancientTreeScale.toFixed(1)}x`);
+  };
+  
   
   function updateSoundButtonStates(){
     const toggleOwlBtn = document.getElementById('toggleOwlBtn');
