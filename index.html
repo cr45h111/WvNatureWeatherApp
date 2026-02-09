@@ -4943,6 +4943,80 @@ function draw(){
       window._coalMineDrawn = true;
     }
     
+    // Ancient tree should be drawn based on its y-position relative to items
+    const ancientTreeY = (terrainType === 'ancientforest' && ancientTreePosition) ? ancientTreePosition.y : null;
+    
+    // Draw ancient tree if this item is below it (higher y-value = further down screen)
+    if(ancientTreeY !== null && itemY > ancientTreeY && !window._ancientTreeDrawn){
+      const treeX = ancientTreePosition.x;
+      const treeBaseY = ancientTreePosition.y;
+      
+      originalCtx.save();
+      originalCtx.globalAlpha = 0.95;
+      
+      // Trunk - gnarled and ancient
+      originalCtx.fillStyle = '#3d2817';
+      originalCtx.beginPath();
+      originalCtx.moveTo(treeX - 12, treeBaseY);
+      originalCtx.lineTo(treeX - 10, treeBaseY - 40);
+      originalCtx.lineTo(treeX + 10, treeBaseY - 40);
+      originalCtx.lineTo(treeX + 12, treeBaseY);
+      originalCtx.closePath();
+      originalCtx.fill();
+      
+      // Bark texture (dark lines)
+      originalCtx.strokeStyle = '#2a1810';
+      originalCtx.lineWidth = 1.5;
+      originalCtx.beginPath();
+      originalCtx.moveTo(treeX - 3, treeBaseY);
+      originalCtx.lineTo(treeX - 2, treeBaseY - 40);
+      originalCtx.moveTo(treeX + 3, treeBaseY);
+      originalCtx.lineTo(treeX + 2, treeBaseY - 40);
+      originalCtx.stroke();
+      
+      // Root system at base
+      originalCtx.strokeStyle = '#2a1810';
+      originalCtx.lineWidth = 2;
+      originalCtx.beginPath();
+      originalCtx.moveTo(treeX - 12, treeBaseY);
+      originalCtx.lineTo(treeX - 20, treeBaseY + 8);
+      originalCtx.moveTo(treeX + 12, treeBaseY);
+      originalCtx.lineTo(treeX + 20, treeBaseY + 8);
+      originalCtx.stroke();
+      
+      // Ancient canopy - massive and sprawling
+      const canopyY = treeBaseY - 35;
+      originalCtx.fillStyle = '#1a4d2e';
+      originalCtx.beginPath();
+      originalCtx.ellipse(treeX, canopyY, 50, 45, 0, 0, Math.PI * 2);
+      originalCtx.fill();
+      
+      // Canopy highlights (lighter foliage)
+      originalCtx.fillStyle = '#2d7a4a';
+      originalCtx.beginPath();
+      originalCtx.ellipse(treeX - 15, canopyY - 10, 25, 20, -0.3, 0, Math.PI * 2);
+      originalCtx.fill();
+      
+      originalCtx.beginPath();
+      originalCtx.ellipse(treeX + 15, canopyY - 8, 28, 22, 0.3, 0, Math.PI * 2);
+      originalCtx.fill();
+      
+      // Age indicator - gnarled knots
+      originalCtx.fillStyle = '#0d3620';
+      originalCtx.beginPath();
+      originalCtx.arc(treeX - 20, canopyY + 5, 3, 0, Math.PI * 2);
+      originalCtx.fill();
+      originalCtx.beginPath();
+      originalCtx.arc(treeX + 25, canopyY - 5, 4, 0, Math.PI * 2);
+      originalCtx.fill();
+      originalCtx.beginPath();
+      originalCtx.arc(treeX + 10, canopyY + 15, 2.5, 0, Math.PI * 2);
+      originalCtx.fill();
+      
+      originalCtx.restore();
+      window._ancientTreeDrawn = true;
+    }
+    
     let targetCtx;
     let layerName = 'unknown';
     
@@ -5033,6 +5107,7 @@ function draw(){
   }
   
   window._coalMineDrawn = false; // Reset for next frame
+  window._ancientTreeDrawn = false; // Reset for next frame
   
   // Check coal mine coverage and draw label if needed
   if(terrainType === 'coalmine' && coalMinePosition){
