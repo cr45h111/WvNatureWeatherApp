@@ -9454,6 +9454,7 @@ function savePreset(){
     coalMineDiscovered: coalMineDiscovered,
     ancientTreePosition: ancientTreePosition,
     ancientTreeDiscovered: ancientTreeDiscovered,
+    ancientTreeScale: ancientTreeScale,
     items: items.map(item => ({
       baseX: item.baseX,
       baseY: item.baseY,
@@ -9550,6 +9551,8 @@ const DEFAULT_PRESETS = [
     "description": "Discover the hidden sycamore.",
     "createdAt": "2026-02-03T15:20:04.390Z",
     "terrainType": "ancientforest",
+    "ancientTreePosition": null,
+    "ancientTreeDiscovered": false,
     "items": []
   }
 ];
@@ -9685,10 +9688,12 @@ function loadPresetByIndex(index, presets){
       console.log('🏭 Generated coal mine position for legacy preset:', coalMinePosition);
     }
     
-    // Restore ancient tree position and discovered state if it exists
+    // Restore ancient tree position, discovered state, and scale if it exists
     ancientTreePosition = preset.ancientTreePosition || null;
     ancientTreeDiscovered = preset.ancientTreeDiscovered || false;
-    console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}`);
+    ancientTreeScale = preset.ancientTreeScale !== undefined ? preset.ancientTreeScale : 1.4;
+    pendingAncientTreeScale = ancientTreeScale;
+    console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}, scale=${ancientTreeScale}`);
     
     // If terrain is ancientforest but no position exists, generate one
     if(terrainType === 'ancientforest' && !ancientTreePosition){
