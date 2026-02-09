@@ -7402,18 +7402,11 @@ init();
   if(scaleSlider){
     scaleSlider.addEventListener('input', (e) => {
       const value = parseFloat(e.target.value);
-      pendingAncientTreeScale = value;
+      previewAncientTreeScale(value);
       const display = document.getElementById('ancientTreeScaleQuickDisplay');
       if(display) display.textContent = value.toFixed(1) + 'x';
     });
   }
-  
-  // Apply ancient tree scale function
-  window.applyAncientTreeScale = function(){
-    ancientTreeScale = pendingAncientTreeScale;
-    saveSettings();
-    showNotification(`🌳 Ancient tree size set to ${ancientTreeScale.toFixed(1)}x`);
-  };
   
   
   function updateSoundButtonStates(){
