@@ -9684,26 +9684,12 @@ function loadPresetByIndex(index, presets){
     coalMineDiscovered = preset.coalMineDiscovered || false;
     console.log(`🏭 Coal mine from preset: position=${coalMinePosition ? `(${Math.round(coalMinePosition.x)},${Math.round(coalMinePosition.y)})` : 'NULL'}, discovered=${coalMineDiscovered}`);
     
-    // If terrain is coalmine but no position exists, generate one
-    if(terrainType === 'coalmine' && !coalMinePosition){
-      coalMinePosition = {x: W * 0.5, y: H * 0.6};
-      coalMineDiscovered = false;
-      console.log('🏭 Generated coal mine position for legacy preset:', coalMinePosition);
-    }
-    
     // Restore ancient tree position, discovered state, and scale if it exists
     ancientTreePosition = preset.ancientTreePosition || null;
     ancientTreeDiscovered = preset.ancientTreeDiscovered || false;
     ancientTreeScale = preset.ancientTreeScale !== undefined ? preset.ancientTreeScale : 1.4;
     pendingAncientTreeScale = ancientTreeScale;
     console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}, scale=${ancientTreeScale}`);
-    
-    // If terrain is ancientforest but no position exists, generate one
-    if(terrainType === 'ancientforest' && !ancientTreePosition){
-      ancientTreePosition = {x: W * 0.5, y: H * 0.5};
-      ancientTreeDiscovered = false;
-      console.log('🌳 Generated ancient tree position for legacy preset:', ancientTreePosition);
-    }
     
     // Save and close
     saveSettings();
@@ -9712,6 +9698,25 @@ function loadPresetByIndex(index, presets){
     showNotification(`✅ Loaded preset: ${preset.name}`);
   }
 }
+
+// Debug function to check saved presets
+window.checkSavedPresets = function(){
+  const saved = localStorage.getItem('scenePresets');
+  if(!saved){
+    console.log('❌ No presets saved in localStorage');
+    return;
+  }
+  const presets = JSON.parse(saved);
+  console.log('📋 Saved Presets:');
+  presets.forEach((p, i) => {
+    console.log(`  [${i}] ${p.name}:`);
+    console.log(`      - Terrain: ${p.terrainType}`);
+    console.log(`      - Coal Mine Position: ${p.coalMinePosition ? `(${Math.round(p.coalMinePosition.x)},${Math.round(p.coalMinePosition.y)})` : 'MISSING'}`);
+    console.log(`      - Ancient Tree Position: ${p.ancientTreePosition ? `(${Math.round(p.ancientTreePosition.x)},${Math.round(p.ancientTreePosition.y)})` : 'MISSING'}`);
+    console.log(`      - Ancient Tree Scale: ${p.ancientTreeScale !== undefined ? p.ancientTreeScale : 'MISSING'}`);
+    console.log(`      - Items: ${p.items.length}`);
+  });
+};
 
 window.showSavePresetModal = showSavePresetModal;
 window.savePreset = savePreset;
