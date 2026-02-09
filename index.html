@@ -9644,14 +9644,31 @@ function loadPresetByIndex(index, presets){
     
     // Set terrain
     terrainType = preset.terrainType || 'hills';
+    console.log(`🌍 Set terrain type to: ${terrainType}`);
     
     // Restore coal mine position and discovered state if it exists
     coalMinePosition = preset.coalMinePosition || null;
     coalMineDiscovered = preset.coalMineDiscovered || false;
+    console.log(`🏭 Coal mine from preset: position=${coalMinePosition ? `(${Math.round(coalMinePosition.x)},${Math.round(coalMinePosition.y)})` : 'NULL'}, discovered=${coalMineDiscovered}`);
+    
+    // If terrain is coalmine but no position exists, generate one
+    if(terrainType === 'coalmine' && !coalMinePosition){
+      coalMinePosition = {x: W * 0.5, y: H * 0.6};
+      coalMineDiscovered = false;
+      console.log('🏭 Generated coal mine position for legacy preset:', coalMinePosition);
+    }
     
     // Restore ancient tree position and discovered state if it exists
     ancientTreePosition = preset.ancientTreePosition || null;
     ancientTreeDiscovered = preset.ancientTreeDiscovered || false;
+    console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}`);
+    
+    // If terrain is ancientforest but no position exists, generate one
+    if(terrainType === 'ancientforest' && !ancientTreePosition){
+      ancientTreePosition = {x: W * 0.5, y: H * 0.5};
+      ancientTreeDiscovered = false;
+      console.log('🌳 Generated ancient tree position for legacy preset:', ancientTreePosition);
+    }
     
     // Save and close
     saveSettings();
