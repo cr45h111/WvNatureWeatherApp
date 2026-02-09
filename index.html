@@ -5803,9 +5803,6 @@ class Item{
   }
   
   drawShadow(light){
-    // Skip shadows for bushes - they're decorative foreground/upper elements
-    if(this.isBush) return;
-    
     const shadowOpacity = light > 0.5 ? 0.4 : light > 0.2 ? 0.25 : 0.15;
     
     const dx = this.screenX - lightSourceX;
@@ -5819,11 +5816,11 @@ class Item{
     const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
     let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength * 0.5;
     
-    // Get terrain at object location
+    // Get terrain at shadow position
     const terrainY = getTerrainY(this.baseX);
     
-    // Only draw shadow if object is close to the ground (within 100px)
-    if(this.screenY > terrainY + 100) return; // Object is floating too high
+    // Don't draw shadow if object is floating high in the sky (more than 200px above terrain)
+    if(this.screenY < terrainY - 200) return;
     
     // Clamp shadow to terrain level - never draw above ground
     shadowEndY = Math.max(shadowEndY, terrainY); // Keep shadow AT or BELOW terrain
