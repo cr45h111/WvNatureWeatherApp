@@ -5807,30 +5807,28 @@ class Item{
     
     // Ensure light source is valid (fallback to reasonable default if not set)
     const lsx = lightSourceX !== undefined && lightSourceX !== null ? lightSourceX : W * 0.5;
-    const lsy = lightSourceY !== undefined && lightSourceY !== null ? lightSourceY : H * 0.3;
     
+    // Calculate shadow based on HORIZONTAL angle only
+    // Shadows extend horizontally on the ground, away from light source
     const dx = this.screenX - lsx;
-    const dy = this.screenY - lsy;
-    const shadowAngle = Math.atan2(dy, dx);
+    const shadowAngle = dx > 0 ? 0 : Math.PI; // Right if object is right of light, left otherwise
     
     const sunAltClamped = Math.max(-10, Math.min(85, lightSourceAlt));
     const sunZenith = 90 - sunAltClamped;
     const shadowLength = Math.max(6, Math.min(200, Math.tan(sunZenith * Math.PI / 180) * 60));
     
-    // Shadow extends directly away from light source
-    const shadowEndX = this.screenX + Math.cos(shadowAngle) * shadowLength;
-    let shadowEndY = this.screenY + Math.sin(shadowAngle) * shadowLength;
+    // Shadow extends horizontally away from light source
+    // Sign of dx determines direction: positive dx = shadow goes right, negative = goes left
+    const shadowEndX = this.screenX + Math.sign(dx) * shadowLength;
+    
+    // Shadow stays at ground level (object's Y position)
+    const shadowEndY = this.screenY;
     
     // Get terrain at object position
     const terrainY = getTerrainY(this.baseX);
     
     // Don't draw shadow if object is floating extremely high in the sky (way above terrain)
-    // Use a large threshold to allow trees on distant hills to have shadows
     if(this.screenY < terrainY - 500) return;
-    
-    // Clamp shadow to the object's own ground level (depth layer)
-    // Each object is at its own depth, so shadow should stay at that depth
-    shadowEndY = Math.max(shadowEndY, this.screenY - 10);
     
     ctx.save();
     ctx.globalAlpha = shadowOpacity;
@@ -5838,14 +5836,14 @@ class Item{
     
     if(this.type === 'accessory'){
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, shadowEndY, 15, 8, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, 15, 8, 0, 0, Math.PI * 2);
       ctx.fill();
     }else{
       const growth = Math.min(1, this.age / this.maxAge);
       const shadowW = this.trunkW * growth * 2;
       
       ctx.beginPath();
-      ctx.ellipse(shadowEndX, shadowEndY, shadowW * 3, shadowW * 1.5, shadowAngle, 0, Math.PI * 2);
+      ctx.ellipse(shadowEndX, shadowEndY, shadowW * 3, shadowW * 1.5, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     
