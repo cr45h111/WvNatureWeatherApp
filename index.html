@@ -6039,10 +6039,11 @@ class Item{
       const leafDensity = winterSparseCanopy ? 0.35 : 1;
       const shouldDrawLeaf = (leaf, index) => {
         if(!winterSparseCanopy) return true;
-        const stride = Math.max(1, Math.round(1 / leafDensity));
-        const offsetSeed = (Math.sin(leaf.angle * 11 + leaf.dist * 0.3) * 0.5) + 0.5;
-        const offset = Math.floor(offsetSeed * stride);
-        return ((index + offset) % stride) === 0;
+        const noise =
+          Math.sin(leaf.angle * 7.3 + leaf.dist * 0.18) * 0.5 +
+          Math.sin(leaf.angle * 13.7 + leaf.dist * 0.08 + index * 0.35) * 0.5;
+        const keep = (noise * 0.5) + 0.5;
+        return keep < leafDensity;
       };
       
       if(this.isWillow){
