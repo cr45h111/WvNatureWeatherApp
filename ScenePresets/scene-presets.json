@@ -7,6 +7,11 @@
       "description": "Explore me.",
       "createdAt": "2026-02-02T14:36:39.860Z",
       "terrainType": "coalmine",
+      "coalMinePosition": {
+        "x": 1051.4248078260202,
+        "y": 257.78501748216536
+      },
+      "coalMineDiscovered": true,
       "items": [
         {
           "baseX": 821.5505627690005,
