@@ -5769,6 +5769,11 @@ class Item{
       if(this.age < this.maxAge) this.age++;
       return;
     }
+
+    if(this.subtype === 'blueberry'){
+      this.age = this.maxAge;
+      return;
+    }
     
     // Real-time plant growth based on actual days
     const plant = PLANT_CATALOG[this.subtype];
