@@ -4665,6 +4665,24 @@ function draw(){
           ctx.closePath();
           ctx.fill();
         }
+        if(isWinter && !isEvergreen){
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-out';
+          const holeCount = 3 + Math.floor(s * 4);
+          for(let i = 0; i < holeCount; i++){
+            const base = (s * 1000) + (layer * 100) + (i * 37.77);
+            const rx = (Math.sin(base) * 0.5) + 0.5;
+            const ry = (Math.sin(base * 1.7) * 0.5) + 0.5;
+            const rr = (Math.sin(base * 2.3) * 0.5) + 0.5;
+            const holeX = xPos + (rx - 0.5) * treeW * 1.1;
+            const holeY = yPos - treeH * (0.25 + (ry * 0.6));
+            const holeR = (treeW * 0.18) * (0.6 + rr * 0.8);
+            ctx.beginPath();
+            ctx.arc(holeX, holeY, holeR, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
         // Add darkened snow on tree top
         if(snowCover > 0.02){
           const snowDarken = 1 - (darken * 0.6);
