@@ -531,7 +531,6 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="document.getElementById('locationModal').classList.add('visible');document.getElementById('quickActionsModal').classList.remove('visible')">Location</button>
       <button class="modal-btn" onclick="document.getElementById('alarmModal').classList.add('visible');document.getElementById('quickActionsModal').classList.remove('visible')">Alarm</button>
       <button id="openBirdGuideBtn" class="modal-btn">Open Bird Guide</button>
-      <button class="modal-btn" onclick="spawnBird(true)">🕊️ Spawn Bird (Test)</button>
       <button id="openFishGuideBtn" class="modal-btn">Open Fish Guide</button>
       <button id="openTreeGuideBtn" class="modal-btn">Open Tree Guide</button>
       <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
@@ -3764,20 +3763,16 @@ function updateWeatherEffects(){
   }
 }
 
-function spawnBird(force = false){
-  // Only active from dawn through dusk unless forced
-  const birdLimit = force ? 18 : 12;
-  if(birds.length > birdLimit) return;
-  if(!force && (sunAlt <= -6 || sunAlt >= 89)) return; // leave at dusk (sunAlt<=-6), return at dawn (>-6), no zenith overflow
+function spawnBird(){
+  // Only active from dawn through dusk
+  if(birds.length > 12 || sunAlt <= -6 || sunAlt >= 89) return; // leave at dusk (sunAlt<=-6), return at dawn (>-6), no zenith overflow
   const x = Math.random() < 0.5 ? -50 : W + 50;
   const y = H * 0.15 + Math.random() * H * 0.25;
   const types = ['cardinal', 'robin', 'generic', 'generic'];
   
   const targetTree = items.find(item => item.type === 'plant' && !item.isBush && Math.random() < 0.3);
   
-  const b = new Bird(x, y, types[Math.floor(Math.random() * types.length)], targetTree);
-  b.forceVisible = force;
-  birds.push(b);
+  birds.push(new Bird(x, y, types[Math.floor(Math.random() * types.length)], targetTree));
 }
 
 function spawnCrow(){
@@ -4863,7 +4858,7 @@ function draw(){
   for(let i = birds.length - 1; i >= 0; i--){
     const b = birds[i];
     // Remove and skip birds after dark
-    if(sunAlt < 0 && !b.forceVisible){
+    if(sunAlt < 0){
       birds.splice(i, 1);
       continue;
     }
