@@ -4169,15 +4169,26 @@ function draw(){
     ctx.fill();
   }
   
-  // Light source preference: sun when above horizon; otherwise moon when above horizon; fallback stays as set earlier
+  // Light source preference: sun when above horizon; otherwise moon when above horizon.
+  // Smooth transitions to prevent sudden shadow jumps at handoff times.
+  let targetLight = null;
   if(sunAlt > -0.5 && sunPos.visible){
-    lightSourceX = sunPos.x;
-    lightSourceY = sunPos.y;
-    lightSourceAlt = sunAlt;
+    targetLight = {x: sunPos.x, y: sunPos.y, alt: sunAlt};
   }else if(moonPos.visible && moonAlt > -0.5){
-    lightSourceX = moonPos.x;
-    lightSourceY = moonPos.y;
-    lightSourceAlt = moonAlt;
+    targetLight = {x: moonPos.x, y: moonPos.y, alt: moonAlt};
+  }
+  if(targetLight){
+    if(lightSourceX === undefined || lightSourceY === undefined){
+      lightSourceX = targetLight.x;
+      lightSourceY = targetLight.y;
+      lightSourceAlt = targetLight.alt;
+    }else{
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const smooth = 0.04;
+      lightSourceX = lerp(lightSourceX, targetLight.x, smooth);
+      lightSourceY = lerp(lightSourceY, targetLight.y, smooth);
+      lightSourceAlt = lerp(lightSourceAlt, targetLight.alt, smooth);
+    }
   }
   
   if(lightning.active && lightning.intensity > 0.3){
