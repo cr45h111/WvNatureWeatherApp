@@ -536,6 +536,16 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
       <button class="modal-btn" onclick="showSavePresetModal()">🎨 Save Preset</button>
+      <!-- Artifact placement + size tools are intentionally disabled in Quick Actions -->
+      <!--
+      <button class="modal-btn" onclick="startPlacingCoalMine()">⛏️ Place Coal Mine</button>
+      <button class="modal-btn" onclick="startPlacingAncientTree()">🌳 Place Ancient Tree</button>
+      <div style="padding:8px;border:1px solid rgba(0,255,255,0.2);border-radius:6px;background:rgba(0,0,0,0.2)">
+        <div style="font-size:12px;margin-bottom:6px;color:#aaf;">Ancient Tree Size: <span id="ancientTreeScaleDisplay">140%</span></div>
+        <input id="ancientTreeScaleSettings" type="range" min="0.5" max="3" step="0.05" value="1.4" oninput="previewAncientTreeScale(this.value)" style="width:100%;">
+        <button class="modal-btn" style="margin-top:6px;width:100%;" onclick="applyAncientTreeScale()">Apply Size</button>
+      </div>
+      -->
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
     </div>
   </div>
@@ -630,7 +640,11 @@ canvas:fullscreen{background:#000;}
       <h3>🔍 Hidden Discoveries</h3>
       <div style="font-size:11px;color:#aaa;margin-bottom:6px">Place secret items to discover</div>
       <div class="item-grid">
+        <!-- Artifact placement tools are intentionally disabled in the store -->
+        <!--
+        <button id="placeCoalMineBtn" onclick="startPlacingCoalMine()" style="display:none;background:rgba(90,90,90,0.3);border-color:#5a5a5a;color:#ddd;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #5a5a5a;font-weight:bold;">⛏️ Place Coal Mine</button>
         <button id="placeAncientTreeBtn" onclick="enableAncientTreePlacement()" style="display:none;background:rgba(139,69,19,0.3);border-color:#8B4513;color:#D2B48C;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #8B4513;font-weight:bold;">🌳 Place Ancient Tree</button>
+        -->
       </div>
     </div>
     
@@ -2677,6 +2691,7 @@ function getCelestialRadiusPx(){
   const pixelsPerDegree = (H * 0.6) / 90; // matches altAzToScreen vertical mapping
   return pixelsPerDegree * angularRadiusDeg;
 }
+
 document.getElementById('hideBtn').addEventListener('click', () => {
   controlsHidden = !controlsHidden;
   const btns = document.querySelectorAll('.btn:not(#hideBtn)');
@@ -2832,13 +2847,11 @@ document.querySelectorAll('.item').forEach(item => {
       generateGrassPatches();
       saveSettings();
       
-      // Show ancient tree placement button if Ancient Forest
-      const btn = document.getElementById('placeAncientTreeBtn');
-      if(subtype === 'ancientforest' && btn){
-        btn.style.display = 'block';
-      } else if(btn){
-        btn.style.display = 'none';
-      }
+      // Show artifact placement buttons when relevant terrain is selected
+      const ancientBtn = document.getElementById('placeAncientTreeBtn');
+      const coalBtn = document.getElementById('placeCoalMineBtn');
+      if(ancientBtn) ancientBtn.style.display = (subtype === 'ancientforest') ? 'block' : 'none';
+      if(coalBtn) coalBtn.style.display = (subtype === 'coalmine') ? 'block' : 'none';
       
       return;
     }
@@ -9588,7 +9601,11 @@ function loadPresetsIntoStore(){
     const saved = localStorage.getItem('scenePresets');
     if(saved){
       const parsed = JSON.parse(saved);
-      if(Array.isArray(parsed)) localPresets = parsed;
+      if(Array.isArray(parsed)){
+        localPresets = parsed;
+      }else if(parsed && Array.isArray(parsed.presets)){
+        localPresets = parsed.presets;
+      }
       console.log(`Loaded ${localPresets.length} presets from localStorage`);
     }
   }catch(e){
@@ -9604,19 +9621,19 @@ function loadPresetsIntoStore(){
     .then(data => {
       console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
-        const merged = mergePresetsByName(data.presets, localPresets);
+        const merged = mergePresetsByName(localPresets, data.presets);
         displayPresets(merged);
         saveMergedIfNeeded(merged);
         console.log(`Displaying ${merged.length} presets`);
         return;
       }
-      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
     })
     .catch(err => {
       console.log('Using default presets:', err.message);
-      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
     });
@@ -9676,19 +9693,30 @@ function loadPresetByIndex(index, presets){
     if(accessories.length === 0){
       console.warn('⚠️ No accessories found in loaded items! Check if they were filtered out during creation.');
     };
+
+    const inferPositionFromItem = (subtype) => {
+      const marker = items.find(i => i.subtype === subtype);
+      return marker ? {x: marker.baseX, y: marker.baseY} : null;
+    };
     
     // Set terrain
     terrainType = preset.terrainType || 'hills';
     console.log(`🌍 Set terrain type to: ${terrainType}`);
     
     // Restore coal mine position and discovered state if it exists
-    coalMinePosition = preset.coalMinePosition || null;
-    coalMineDiscovered = preset.coalMineDiscovered || false;
+    const inferredCoalMinePosition = (!preset.coalMinePosition && preset.terrainType === 'coalmine')
+      ? inferPositionFromItem('laurelclue')
+      : null;
+    coalMinePosition = preset.coalMinePosition || inferredCoalMinePosition || null;
+    coalMineDiscovered = preset.coalMineDiscovered || !!coalMinePosition;
     console.log(`🏭 Coal mine from preset: position=${coalMinePosition ? `(${Math.round(coalMinePosition.x)},${Math.round(coalMinePosition.y)})` : 'NULL'}, discovered=${coalMineDiscovered}`);
     
     // Restore ancient tree position, discovered state, and scale if it exists
-    ancientTreePosition = preset.ancientTreePosition || null;
-    ancientTreeDiscovered = preset.ancientTreeDiscovered || false;
+    const inferredAncientTreePosition = (!preset.ancientTreePosition && preset.terrainType === 'ancientforest')
+      ? inferPositionFromItem('poplarclue')
+      : null;
+    ancientTreePosition = preset.ancientTreePosition || inferredAncientTreePosition || null;
+    ancientTreeDiscovered = preset.ancientTreeDiscovered || !!ancientTreePosition;
     ancientTreeScale = preset.ancientTreeScale !== undefined ? preset.ancientTreeScale : 1.4;
     pendingAncientTreeScale = ancientTreeScale;
     console.log(`🌳 Ancient tree from preset: position=${ancientTreePosition ? `(${Math.round(ancientTreePosition.x)},${Math.round(ancientTreePosition.y)})` : 'NULL'}, discovered=${ancientTreeDiscovered}, scale=${ancientTreeScale}`);
