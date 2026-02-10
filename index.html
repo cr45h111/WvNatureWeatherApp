@@ -6442,7 +6442,7 @@ class Bird{
     let birdDarken = darken;
     let birdColor = this.color;
     
-    if(isInFrontOfSun && isAgainstSky && !isOnGround){
+    if(!isOnGround && (isAgainstSky || isInFrontOfSun)){
       birdColor = 'rgba(0,0,0,0.8)';
     }else{
       birdColor = this.color;
