@@ -526,6 +526,12 @@
       "description": "",
       "createdAt": "2026-02-03T15:20:04.390Z",
       "terrainType": "ancientforest",
+      "ancientTreePosition": {
+        "x": 1062.418793459182,
+        "y": 152.87251036733062
+      },
+      "ancientTreeDiscovered": true,
+      "ancientTreeScale": 2,
       "items": [
         {
           "baseX": 1114.390361906856,
