@@ -9609,19 +9609,19 @@ function loadPresetsIntoStore(){
     .then(data => {
       console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
-        const merged = mergePresetsByName(data.presets, localPresets);
+        const merged = mergePresetsByName(localPresets, data.presets);
         displayPresets(merged);
         saveMergedIfNeeded(merged);
         console.log(`Displaying ${merged.length} presets`);
         return;
       }
-      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
     })
     .catch(err => {
       console.log('Using default presets:', err.message);
-      const merged = mergePresetsByName(DEFAULT_PRESETS, localPresets);
+      const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
     });
