@@ -5960,7 +5960,11 @@ class Item{
       return;
     }
     
-    const growth = Math.min(1, this.age / this.maxAge);
+    let growth = Math.min(1, this.age / this.maxAge);
+    if(this.type === 'plant' && this.subtype === 'blueberry'){
+      // Keep new blueberry plantings visible while still using real-time growth.
+      growth = Math.max(growth, 0.18);
+    }
     const h = this.maxH * growth;
     const windBend = weatherData.windSpeed > 15 ? weatherData.windSpeed * 0.15 : weatherData.windSpeed * 0.08;
     const windSway = Math.sin(animTime * 0.08) * windBend * growth;
@@ -7052,7 +7056,7 @@ init();
     
     // Fruits
     strawberry: {name:'Strawberry', type:'fruit', icon:'🍓', minTemp:50, maxTemp:80, water:6, daysToMaturity:90},
-    blueberry: {name:'Blueberry', type:'fruit', icon:'🫐', minTemp:40, maxTemp:85, water:7, daysToMaturity:730},
+    blueberry: {name:'Blueberry', type:'fruit', icon:'🫐', minTemp:40, maxTemp:85, water:7, daysToMaturity:180},
     
     // Herbs & Cover Crops
     microgreens: {name:'Microgreens', type:'herb', icon:'🌱', minTemp:60, maxTemp:75, water:5, daysToMaturity:10},
