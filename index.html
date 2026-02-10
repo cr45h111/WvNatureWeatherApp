@@ -6036,7 +6036,7 @@ class Item{
       ctx.fillStyle = this.getSeasonalColor();
       const isEvergreen = this.isPine || this.subtype === 'laurel';
       const winterSparseCanopy = (season === 'winter' && !isEvergreen && !this.isBush);
-      const leafDensity = winterSparseCanopy ? 0.4 : 1;
+      const leafDensity = winterSparseCanopy ? 0.35 : 1;
       const shouldDrawLeaf = (leaf, index) => {
         if(!winterSparseCanopy) return true;
         const seed = (leaf.angle * 1000) + (leaf.dist * 10) + (index * 31.7);
