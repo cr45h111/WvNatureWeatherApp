@@ -6429,13 +6429,20 @@ class Bird{
   }
   
   draw(light, darken, sunPos){
+    let horizonY = H * 0.35;
+    if(bgTerrain && bgTerrain[0] && bgTerrain[0].length){
+      const idx = Math.max(0, Math.min(bgTerrain[0].length - 1, Math.floor((this.x + W * 0.3) / 4)));
+      const pt = bgTerrain[0][idx];
+      if(pt && typeof pt.y === 'number') horizonY = pt.y;
+    }
+    const isAgainstSky = this.y < (horizonY - 6);
     const isOnGround = this.state === 'landed' || this.state === 'nesting';
     const isInFrontOfSun = sunPos.visible && Math.abs(this.x - sunPos.x) < 120 && Math.abs(this.y - sunPos.y) < 120;
     
     let birdDarken = darken;
     let birdColor = this.color;
     
-    if(isInFrontOfSun && !isOnGround){
+    if(isInFrontOfSun && isAgainstSky && !isOnGround){
       birdColor = 'rgba(0,0,0,0.8)';
     }else{
       birdColor = this.color;
