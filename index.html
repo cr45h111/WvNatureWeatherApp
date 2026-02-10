@@ -6429,7 +6429,6 @@ class Bird{
   }
   
   draw(light, darken, sunPos){
-    const isOverDarkTerrain = this.x < W * 0.25;
     const isOnGround = this.state === 'landed' || this.state === 'nesting';
     const isInFrontOfSun = sunPos.visible && Math.abs(this.x - sunPos.x) < 120 && Math.abs(this.y - sunPos.y) < 120;
     
@@ -6438,12 +6437,9 @@ class Bird{
     
     if(isInFrontOfSun && !isOnGround){
       birdColor = 'rgba(0,0,0,0.8)';
-    }else if(isOnGround){
-      birdColor = this.color;
-      birdDarken = isOverDarkTerrain ? Math.max(darken, 0.6) : darken;
     }else{
-      birdDarken = isOverDarkTerrain ? Math.max(darken, 0.6) : darken;
-      if(!isOnGround) birdColor = isOverDarkTerrain ? `rgba(0,0,0,${0.7*(1-light*0.3)})` : this.color;
+      birdColor = this.color;
+      birdDarken = darken;
     }
     
     ctx.save();
@@ -6506,7 +6502,7 @@ class Bird{
       ctx.lineTo(this.x - facing * this.size * 0.5, this.y + this.size * 0.4);
       ctx.fill();
       
-      if(!isOverDarkTerrain && !isInFrontOfSun){
+      if(!isInFrontOfSun){
         ctx.fillStyle = this.type === 'cardinal' || this.type === 'robin' ? '#FFA500' : '#000';
         ctx.beginPath();
         ctx.moveTo(this.x + facing * this.size * 0.8, this.y - this.size * 0.2);
