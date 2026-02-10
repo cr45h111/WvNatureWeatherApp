@@ -531,6 +531,7 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="document.getElementById('locationModal').classList.add('visible');document.getElementById('quickActionsModal').classList.remove('visible')">Location</button>
       <button class="modal-btn" onclick="document.getElementById('alarmModal').classList.add('visible');document.getElementById('quickActionsModal').classList.remove('visible')">Alarm</button>
       <button id="openBirdGuideBtn" class="modal-btn">Open Bird Guide</button>
+      <button class="modal-btn" onclick="spawnBird(true)">🕊️ Spawn Bird (Test)</button>
       <button id="openFishGuideBtn" class="modal-btn">Open Fish Guide</button>
       <button id="openTreeGuideBtn" class="modal-btn">Open Tree Guide</button>
       <button class="modal-btn" onclick="captureScreenshot()">📸 Screenshot</button>
@@ -1325,6 +1326,16 @@ function createCrowCaw(mode = 'single'){
     crowCawAudio.play().catch(() => {});
   }
 }
+function stopCrowAudio(){
+  if(crowCawAudio){
+    crowCawAudio.pause();
+    crowCawAudio.currentTime = 0;
+  }
+  if(crowMurderAudio){
+    crowMurderAudio.pause();
+    crowMurderAudio.currentTime = 0;
+  }
+}
 function updateCloudPreview(){
   document.getElementById('startRVal').textContent = document.getElementById('startR').value;
   document.getElementById('startGVal').textContent = document.getElementById('startG').value;
@@ -2096,6 +2107,9 @@ function updateWeatherSounds(){
 
 function scheduleSounds(){
   if(!soundEnabled) return;
+  if(sunAlt <= -6){
+    stopCrowAudio();
+  }
   if(sunAlt > 0 && Math.random() < 0.08){
     const types = ['chirp', 'cardinal', 'robin'];
     setTimeout(() => {
@@ -2103,7 +2117,7 @@ function scheduleSounds(){
     }, Math.random() * 8000);
   }
   
-  if(sunAlt > -10 && Math.random() < 0.03){
+  if(sunAlt > -6 && Math.random() < 0.03){
     setTimeout(() => {
       if(soundEnabled) createCrowCaw();
     }, Math.random() * 5000);
@@ -3750,9 +3764,11 @@ function updateWeatherEffects(){
   }
 }
 
-function spawnBird(){
-  // Only active from dawn through dusk
-  if(birds.length > 12 || sunAlt <= -6 || sunAlt >= 89) return; // leave at dusk (sunAlt<=-6), return at dawn (>-6), no zenith overflow
+function spawnBird(force = false){
+  // Only active from dawn through dusk unless forced
+  const birdLimit = force ? 18 : 12;
+  if(birds.length > birdLimit) return;
+  if(!force && (sunAlt <= -6 || sunAlt >= 89)) return; // leave at dusk (sunAlt<=-6), return at dawn (>-6), no zenith overflow
   const x = Math.random() < 0.5 ? -50 : W + 50;
   const y = H * 0.15 + Math.random() * H * 0.25;
   const types = ['cardinal', 'robin', 'generic', 'generic'];
@@ -6308,7 +6324,7 @@ class Bird{
     
     if(type === 'cardinal') this.color = '#d32f2f';
     else if(type === 'robin') this.color = '#ff5722';
-    else this.color = ['#4169E1', '#1E90FF', '#000', '#8B4513'][Math.floor(Math.random() * 4)];
+    else this.color = ['#4169E1', '#1E90FF', '#3a3a3a', '#8B4513'][Math.floor(Math.random() * 4)];
     
     this.chirpTimer = Math.random() * 300;
     this.nextChirp = 200 + Math.random() * 500;
@@ -6446,7 +6462,7 @@ class Bird{
       birdColor = 'rgba(0,0,0,0.8)';
     }else{
       birdColor = this.color;
-      birdDarken = darken;
+      birdDarken = Math.min(darken, 0.2);
     }
     
     ctx.save();
