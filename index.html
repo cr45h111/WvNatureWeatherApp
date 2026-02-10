@@ -482,6 +482,7 @@ canvas:fullscreen{background:#000;}
         <li>Cardinal — Photo by <a href="https://unsplash.com/@jcotten" target="_blank" rel="noopener">Joshua J. Cotten</a> on <a href="https://unsplash.com/photos/oKTGgL5qRwA" target="_blank" rel="noopener">Unsplash</a></li>
         <li>Catfish — Photo by <a href="https://unsplash.com/@lauraespana" target="_blank" rel="noopener">Laura España</a> on <a href="https://unsplash.com/photos/aOQ4hX4KCyk" target="_blank" rel="noopener">Unsplash</a></li>
         <li>Crow — Photo by <a href="https://unsplash.com/@dshap" target="_blank" rel="noopener">Daniel Shapiro</a> on <a href="https://unsplash.com/photos/d-vBDK5rqR0" target="_blank" rel="noopener">Unsplash</a></li>
+        <li>Owl — Photo by <a href="https://unsplash.com/@sonderquest" target="_blank" rel="noopener">Sonder Quest</a> on <a href="https://unsplash.com/photos/black-and-brown-owl-UTw183oZPf0" target="_blank" rel="noopener">Unsplash</a></li>
         <li>Robin — Photo by <a href="https://unsplash.com/@famouswebsites" target="_blank" rel="noopener">A Perry</a> on <a href="https://unsplash.com/photos/OjhSUsHUIYM" target="_blank" rel="noopener">Unsplash</a></li>
         <li>Sparrow — Photo by <a href="https://unsplash.com/@andyjh07" target="_blank" rel="noopener">Andy Holmes</a> on <a href="https://unsplash.com/photos/i-7HDFvmI6E" target="_blank" rel="noopener">Unsplash</a></li>
         <li>Trout — Photo by <a href="https://unsplash.com/@stereophototyp" target="_blank" rel="noopener">Sara Kurfeß</a> on <a href="https://unsplash.com/photos/E8AabnQlTlQ" target="_blank" rel="noopener">Unsplash</a></li>
@@ -6748,18 +6749,20 @@ init();
   function openBirdGuide(){
     const birdArray = Array.isArray(window.birds) ? window.birds : [];
     const types = Array.from(new Set(birdArray.map(b=>b.type||'Unknown')));
-    if(!types.length) types.push('cardinal','sparrow','robin','crow');
+    if(!types.length) types.push('cardinal','sparrow','robin','crow','owl');
     const descriptions = {
       'robin':'Small red-breasted songbird often found on lawns. Eats worms and insects.',
       'crow':'Large omnivorous bird, black plumage, loud caws. Highly social and intelligent.',
       'cardinal':'West Virginia\'s State Bird! Males are vivid red with a crest; females are tan/olive with red accents. Found in woodlands, gardens, and thickets year-round.',
-      'sparrow':'Small brownish bird; often found near human habitation.'
+      'sparrow':'Small brownish bird; often found near human habitation.',
+      'owl':'Nocturnal raptor with silent flight and keen hearing; often active at dusk and night.'
     };
     const birdImages = {
       robin:{src:'images/birds/robin.jpg', fallback:'./WestVirginia game data/robin.jpg'},
       crow:{src:'images/birds/crow.jpg', fallback:'./WestVirginia game data/crow.jpg'},
       cardinal:{src:'images/birds/cardinals.jpg', fallback:'./WestVirginia game data/cardinals.jpg'},
-      sparrow:{src:'images/birds/sparrow.jpg', fallback:'./WestVirginia game data/sparrow.jpg'}
+      sparrow:{src:'images/birds/sparrow.jpg', fallback:'./WestVirginia game data/sparrow.jpg'},
+      owl:{src:'images/birds/owl.jpg', fallback:'./WestVirginia game data/owl.jpg'}
     };
     if(birdGuideContent) {
       birdGuideContent.innerHTML = types.map(t=>{
