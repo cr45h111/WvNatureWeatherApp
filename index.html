@@ -551,34 +551,6 @@ canvas:fullscreen{background:#000;}
     </div>
   </div>
 </div>
-<div id="savePresetModal" class="modal" style="display:none">
-  <div class="modal-header">
-    <h2>🎨 Save Scene as Preset</h2>
-    <div class="modal-controls">
-      <button class="modal-btn" onclick="document.getElementById('savePresetModal').style.display='none'">✕</button>
-    </div>
-  </div>
-  <div class="modal-body">
-    <p style="margin-bottom:12px;color:#0cf;font-size:12px;">Save your current scene design to reuse later or share with others.</p>
-    <div class="form-group" style="margin-bottom:12px">
-      <label for="presetName">Preset Name:</label>
-      <input id="presetName" type="text" placeholder="e.g., Autumn River, Winter Forest" style="width:100%;padding:8px;background:rgba(0,0,0,0.3);border:1px solid #0cf;color:#0ff;border-radius:3px;margin-top:6px;">
-    </div>
-    <div class="form-group" style="margin-bottom:12px">
-      <label for="presetDescription">Description (optional):</label>
-      <textarea id="presetDescription" placeholder="Describe your scene..." style="width:100%;padding:8px;background:rgba(0,0,0,0.3);border:1px solid #0cf;color:#0ff;border-radius:3px;margin-top:6px;min-height:60px;resize:vertical;"></textarea>
-    </div>
-    <div style="margin-bottom:12px;padding:10px;background:rgba(0,150,200,0.15);border-radius:4px;font-size:11px;color:#aaf;">
-      <strong>Scene Info:</strong><br>
-      <span id="presetItemCount">0 items</span> • Terrain: <span id="presetTerrain">-</span>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="modal-btn" onclick="savePreset()" style="flex:1;background:rgba(0,200,100,0.3);">💾 Save Preset</button>
-      <button class="modal-btn" onclick="document.getElementById('savePresetModal').style.display='none'" style="flex:1;">Cancel</button>
-    </div>
-    <div id="presetSaveStatus" style="margin-top:12px;padding:8px;border-radius:4px;display:none;"></div>
-  </div>
-</div>
 <div id="store" class="modal">
   <div class="modal-header">
     <h2>🏪 Store</h2>
@@ -9475,99 +9447,6 @@ function showNotification(message){
 }
 
 // ===== SCENE PRESET SYSTEM =====
-function showSavePresetModal(){
-  const modal = document.getElementById('savePresetModal');
-  const itemCount = document.getElementById('presetItemCount');
-  const terrainSpan = document.getElementById('presetTerrain');
-  
-  // Update scene info
-  itemCount.textContent = `${items.length} items`;
-  terrainSpan.textContent = terrainType;
-  
-  // Clear previous inputs
-  document.getElementById('presetName').value = '';
-  document.getElementById('presetDescription').value = '';
-  document.getElementById('presetSaveStatus').style.display = 'none';
-  
-  modal.style.display = 'block';
-  document.getElementById('quickActionsModal').classList.remove('visible');
-}
-
-function savePreset(){
-  const name = document.getElementById('presetName').value.trim();
-  const description = document.getElementById('presetDescription').value.trim();
-  const statusDiv = document.getElementById('presetSaveStatus');
-  
-  if(!name){
-    statusDiv.textContent = '❌ Please enter a preset name';
-    statusDiv.style.background = 'rgba(200,0,0,0.3)';
-    statusDiv.style.color = '#f88';
-    statusDiv.style.display = 'block';
-    return;
-  }
-  
-  // Create preset object
-  const preset = {
-    name: name,
-    description: description,
-    createdAt: new Date().toISOString(),
-    terrainType: terrainType,
-    coalMinePosition: coalMinePosition,
-    coalMineDiscovered: coalMineDiscovered,
-    ancientTreePosition: ancientTreePosition,
-    ancientTreeDiscovered: ancientTreeDiscovered,
-    ancientTreeScale: ancientTreeScale,
-    rampPodScale: rampPodScale,
-    items: items.map(item => ({
-      baseX: item.baseX,
-      baseY: item.baseY,
-      type: item.type,
-      subtype: item.subtype,
-      age: item.age,
-      customText: item.customText
-    }))
-  };
-  
-  // Load existing presets
-  let presets = [];
-  try{
-    const saved = localStorage.getItem('scenePresets');
-    if(saved) presets = JSON.parse(saved);
-  }catch(e){
-    console.error('Error loading presets:', e);
-  }
-  
-  // Check for duplicate name
-  const existingIndex = presets.findIndex(p => p.name === name);
-  if(existingIndex >= 0){
-    if(!confirm(`A preset named "${name}" already exists. Overwrite it?`)){
-      return;
-    }
-    presets[existingIndex] = preset;
-  }else{
-    presets.push(preset);
-  }
-  
-  // Save to localStorage
-  try{
-    localStorage.setItem('scenePresets', JSON.stringify(presets));
-    statusDiv.textContent = `✅ Preset "${name}" saved successfully!`;
-    statusDiv.style.background = 'rgba(0,200,100,0.3)';
-    statusDiv.style.color = '#0f8';
-    statusDiv.style.display = 'block';
-    
-    setTimeout(() => {
-      document.getElementById('savePresetModal').style.display = 'none';
-      loadPresetsIntoStore(); // Refresh the store to show the new preset
-    }, 1500);
-  }catch(e){
-    statusDiv.textContent = '❌ Error saving preset: ' + e.message;
-    statusDiv.style.background = 'rgba(200,0,0,0.3)';
-    statusDiv.style.color = '#f88';
-    statusDiv.style.display = 'block';
-  }
-}
-
 function startPlacingCoalMine(){
   if(terrainType !== 'coalmine'){
     alert('⛏️ Switch to Coal Mine terrain first to place the coal mine.');
@@ -9629,6 +9508,7 @@ function loadPresetsIntoStore(){
   const container = document.getElementById('scenePresetsList');
   if(!container) return;
   
+<<<<<<< HEAD
   let localPresets = [];
   const mergePresetsByName = (basePresets, overridePresets) => {
     const map = new Map();
@@ -9662,6 +9542,8 @@ function loadPresetsIntoStore(){
     console.error('Error loading local presets:', e);
   }
   
+=======
+>>>>>>> main
   // Try to load from JSON file
   fetch('ScenePresets/scene-presets.json')
     .then(response => {
@@ -9671,6 +9553,7 @@ function loadPresetsIntoStore(){
     .then(data => {
       console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
+<<<<<<< HEAD
         const merged = mergePresetsByName(localPresets, data.presets);
         displayPresets(merged);
         saveMergedIfNeeded(merged);
@@ -9686,6 +9569,17 @@ function loadPresetsIntoStore(){
       const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
+=======
+        displayPresets(data.presets);
+        console.log(`Displaying ${data.presets.length} presets`);
+        return;
+      }
+      displayPresets(DEFAULT_PRESETS);
+    })
+    .catch(err => {
+      console.log('Using default presets:', err.message);
+      displayPresets(DEFAULT_PRESETS);
+>>>>>>> main
     });
 }
 
@@ -9694,7 +9588,7 @@ function displayPresets(presets){
   if(!container) return;
   
   if(presets.length === 0){
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;font-size:11px;">No presets saved yet. Create one from Quick Actions!</div>';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;font-size:11px;">No presets available.</div>';
     return;
   }
   
@@ -9785,27 +9679,6 @@ function loadPresetByIndex(index, presets){
   }
 }
 
-// Debug function to check saved presets
-window.checkSavedPresets = function(){
-  const saved = localStorage.getItem('scenePresets');
-  if(!saved){
-    console.log('❌ No presets saved in localStorage');
-    return;
-  }
-  const presets = JSON.parse(saved);
-  console.log('📋 Saved Presets:');
-  presets.forEach((p, i) => {
-    console.log(`  [${i}] ${p.name}:`);
-    console.log(`      - Terrain: ${p.terrainType}`);
-    console.log(`      - Coal Mine Position: ${p.coalMinePosition ? `(${Math.round(p.coalMinePosition.x)},${Math.round(p.coalMinePosition.y)})` : 'MISSING'}`);
-    console.log(`      - Ancient Tree Position: ${p.ancientTreePosition ? `(${Math.round(p.ancientTreePosition.x)},${Math.round(p.ancientTreePosition.y)})` : 'MISSING'}`);
-    console.log(`      - Ancient Tree Scale: ${p.ancientTreeScale !== undefined ? p.ancientTreeScale : 'MISSING'}`);
-    console.log(`      - Items: ${p.items.length}`);
-  });
-};
-
-window.showSavePresetModal = showSavePresetModal;
-window.savePreset = savePreset;
 window.loadPresetsIntoStore = loadPresetsIntoStore;
 window.loadPresetByIndex = loadPresetByIndex;
 
