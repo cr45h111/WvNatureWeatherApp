@@ -536,6 +536,14 @@ canvas:fullscreen{background:#000;}
       <button class="modal-btn" onclick="showSaveSceneModal()">💾 Save Scene</button>
       <button class="modal-btn" onclick="showLoadSceneModal()">📂 Load Scene</button>
       <button class="modal-btn" onclick="showSavePresetModal()">🎨 Save Preset</button>
+      <button class="modal-btn" onclick="startPlacingCoalMine()">⛏️ Place Coal Mine</button>
+      <button class="modal-btn" onclick="startPlacingAncientTree()">🌳 Place Ancient Tree</button>
+      <div style="padding:8px;border:1px solid rgba(0,255,255,0.2);border-radius:6px;background:rgba(0,0,0,0.2)">
+        <div style="font-size:12px;margin-bottom:6px;color:#aaf;">Ancient Tree Size: <span id="ancientTreeScaleDisplay">140%</span></div>
+        <input id="ancientTreeScaleSettings" type="range" min="0.5" max="3" step="0.05" value="1.4" oninput="previewAncientTreeScale(this.value)" style="width:100%;">
+        <button class="modal-btn" style="margin-top:6px;width:100%;" onclick="applyAncientTreeScale()">Apply Size</button>
+      </div>
+      <button class="modal-btn" onclick="showArtifactPlacement()">📍 Show Artifact Values</button>
       <button class="modal-btn" onclick="showTutorial()">📚 Tutorial</button>
     </div>
   </div>
@@ -630,6 +638,7 @@ canvas:fullscreen{background:#000;}
       <h3>🔍 Hidden Discoveries</h3>
       <div style="font-size:11px;color:#aaa;margin-bottom:6px">Place secret items to discover</div>
       <div class="item-grid">
+        <button id="placeCoalMineBtn" onclick="startPlacingCoalMine()" style="display:none;background:rgba(90,90,90,0.3);border-color:#5a5a5a;color:#ddd;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #5a5a5a;font-weight:bold;">⛏️ Place Coal Mine</button>
         <button id="placeAncientTreeBtn" onclick="enableAncientTreePlacement()" style="display:none;background:rgba(139,69,19,0.3);border-color:#8B4513;color:#D2B48C;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #8B4513;font-weight:bold;">🌳 Place Ancient Tree</button>
       </div>
     </div>
@@ -2833,13 +2842,11 @@ document.querySelectorAll('.item').forEach(item => {
       generateGrassPatches();
       saveSettings();
       
-      // Show ancient tree placement button if Ancient Forest
-      const btn = document.getElementById('placeAncientTreeBtn');
-      if(subtype === 'ancientforest' && btn){
-        btn.style.display = 'block';
-      } else if(btn){
-        btn.style.display = 'none';
-      }
+      // Show artifact placement buttons when relevant terrain is selected
+      const ancientBtn = document.getElementById('placeAncientTreeBtn');
+      const coalBtn = document.getElementById('placeCoalMineBtn');
+      if(ancientBtn) ancientBtn.style.display = (subtype === 'ancientforest') ? 'block' : 'none';
+      if(coalBtn) coalBtn.style.display = (subtype === 'coalmine') ? 'block' : 'none';
       
       return;
     }
@@ -9767,10 +9774,25 @@ function showAncientTreeModal(){
   document.getElementById('ancientTreeModal').style.display = 'block';
 }
 
+function showArtifactPlacement(){
+  const payload = {
+    terrainType,
+    coalMinePosition,
+    coalMineDiscovered,
+    ancientTreePosition,
+    ancientTreeDiscovered,
+    ancientTreeScale
+  };
+  const text = JSON.stringify(payload, null, 2);
+  console.log('📍 Artifact placement:', payload);
+  alert(text);
+}
+
 window.showCoalMineWarning = showCoalMineWarning;
 window.showLaurelClueModal = showLaurelClueModal;
 window.showPoplarClueModal = showPoplarClueModal;
 window.showAncientTreeModal = showAncientTreeModal;
+window.showArtifactPlacement = showArtifactPlacement;
 
 // Initialize features on load
 window.addEventListener('load', function(){
