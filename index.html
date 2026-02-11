@@ -4819,41 +4819,55 @@ function draw(){
     }
   }
   
-  // Terrain - patchy, not solid: blend green and brown using pseudo-noise for patchiness
+  // Terrain - base green, then overlay amoeba-like brown patches (trapezoids)
   let terrainDarkenFactor = foregroundDarken > 0.92 ? 0.92 : foregroundDarken * 0.7;
   let isLateWinter = (season === 'winter' && (new Date().getMonth() === 1)); // February
   let isWinter = (season === 'winter');
   if(sunAlt < -6) terrainDarkenFactor = Math.max(terrainDarkenFactor, 0.55);
-  // Define two main colors: brown and greenish, then blend per-x using noise
-  let brown = isLateWinter ? [120, 80, 40] : isWinter ? [110, 85, 60] : [120, 90, 50];
-  let green = isLateWinter ? [150, 120, 60] : isWinter ? [110, 100, 70] : [90, 140, 70];
-  // Patchiness: use a simple pseudo-noise (sin/cos) for blending
+  let baseGreen = isWinter ? 90 : Math.floor(120 * Math.pow(1 - terrainDarkenFactor, 1.2));
+  let baseR = isWinter ? 90 : Math.floor(70 * Math.pow(1 - terrainDarkenFactor, 1.2));
+  let baseB = isWinter ? 60 : Math.floor(40 * Math.pow(1 - terrainDarkenFactor, 1.3));
+  if(isLateWinter) { baseGreen = 80; baseR = 120; baseB = 55; }
+  // Draw main terrain base
+  ctx.fillStyle = `rgb(${Math.max(0, baseR)},${Math.max(0, baseGreen)},${Math.max(0, baseB)})`;
   ctx.beginPath();
   ctx.moveTo(0, H);
   for(let t of terrain) ctx.lineTo(t.x, t.y);
   ctx.lineTo(W, H);
   ctx.closePath();
-  // Draw patchy terrain by painting vertical strips
-  let step = 4;
-  for(let x = 0; x < W; x += step) {
-    // Use a pseudo-noise function for patchiness
-    let noise = Math.sin(x * 0.025 + Math.cos(x * 0.007 + (isLateWinter ? 1.5 : 0))) * 0.5 + 0.5;
-    // Add some randomness for more irregularity
-    noise += (Math.sin(x * 0.09 + 13) * 0.2 + Math.cos(x * 0.13 - 7) * 0.13);
-    noise = Math.max(0, Math.min(1, noise));
-    // Blend between brown and green
-    let r = Math.round(brown[0] * noise + green[0] * (1 - noise));
-    let g = Math.round(brown[1] * noise + green[1] * (1 - noise));
-    let b = Math.round(brown[2] * noise + green[2] * (1 - noise));
-    // Apply darkening
-    r = Math.floor(r * (1 - terrainDarkenFactor));
-    g = Math.floor(g * (1 - terrainDarkenFactor));
-    b = Math.floor(b * (1 - terrainDarkenFactor));
-    // Find top and bottom y for this x
-    let tIdx = Math.floor(x / step);
-    let y = terrain[tIdx] ? terrain[tIdx].y : H;
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(x, y, step + 1, H - y);
+  ctx.fill();
+  // Overlay amoeba-like brown patches (trapezoids)
+  let patchCount = Math.floor(W / 80);
+  for(let i=0; i<patchCount; i++) {
+    // Random position within terrain
+    let px = Math.random() * (W - 60) + 30;
+    let tIdx = Math.floor(px / 4);
+    let py = terrain[tIdx] ? terrain[tIdx].y + 20 + Math.random()*40 : H - 60;
+    // Trapezoid shape
+    let w = 60 + Math.random()*40;
+    let h = 30 + Math.random()*30;
+    let topOffset = Math.random()*w*0.3;
+    let bottomOffset = Math.random()*w*0.3;
+    // Amoeba-like: perturb corners
+    let points = [
+      [px - w/2 + Math.random()*10, py + Math.random()*10],
+      [px + w/2 - Math.random()*10, py + Math.random()*10],
+      [px + w/2 - bottomOffset, py + h + Math.random()*10],
+      [px - w/2 + topOffset, py + h + Math.random()*10]
+    ];
+    // Color: random light/dark brown
+    let brownR = 110 + Math.floor(Math.random()*60);
+    let brownG = 80 + Math.floor(Math.random()*50);
+    let brownB = 40 + Math.floor(Math.random()*30);
+    ctx.save();
+    ctx.globalAlpha = 0.22 + Math.random()*0.18;
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1]);
+    for(let j=1;j<points.length;j++) ctx.lineTo(points[j][0], points[j][1]);
+    ctx.closePath();
+    ctx.fillStyle = `rgb(${brownR},${brownG},${brownB})`;
+    ctx.fill();
+    ctx.restore();
   }
   
   if(snowCover > 0.02){
