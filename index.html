@@ -4571,8 +4571,8 @@ function draw(){
     ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
     ctx.filter = 'none';
 
-      // Draw smaller, darker amoeba-like patches on the bottom quarter of the stump
-      const patchCount = 8 + Math.floor(imgSize/22);
+      // Draw more, larger, higher-contrast amoeba-like patches on the bottom quarter of the stump
+      const patchCount = 14 + Math.floor(imgSize/14);
       for(let i=0;i<patchCount;i++){
         // Deterministic seed for patch placement
         const seed = i*1234 + Math.floor(treeX*7) + Math.floor(treeBaseY*3);
@@ -4581,29 +4581,29 @@ function draw(){
           return x - Math.floor(x);
         }
         // Patch center: within bottom quarter
-        const px = treeX + (seededRand(seed+1)-0.5)*imgSize*0.28;
-        const py = treeBaseY - imgSize*0.25 + seededRand(seed+2)*imgSize*0.13;
-        // Patch size: smaller, amoeba-like
-        const patchW = imgSize*0.07 + seededRand(seed+3)*imgSize*0.04;
-        const patchH = imgSize*0.05 + seededRand(seed+4)*imgSize*0.03;
-        // Patch color: olive-drab-green or gray, but darker
+        const px = treeX + (seededRand(seed+1)-0.5)*imgSize*0.32;
+        const py = treeBaseY - imgSize*0.22 + seededRand(seed+2)*imgSize*0.18;
+        // Patch size: larger, amoeba-like
+        const patchW = imgSize*0.11 + seededRand(seed+3)*imgSize*0.07;
+        const patchH = imgSize*0.08 + seededRand(seed+4)*imgSize*0.05;
+        // Patch color: olive-drab-green or gray, higher contrast
         const colorPick = seededRand(seed+5);
         let patchColor;
         if(colorPick < 0.5){
-          // Dark olive drab green
-          patchColor = `rgba(${55+Math.floor(seededRand(seed+6)*20)},${70+Math.floor(seededRand(seed+7)*18)},${35+Math.floor(seededRand(seed+8)*15)},0.82)`;
+          // Olive drab green, higher contrast
+          patchColor = `rgba(${70+Math.floor(seededRand(seed+6)*40)},${110+Math.floor(seededRand(seed+7)*30)},${40+Math.floor(seededRand(seed+8)*25)},0.93)`;
         }else{
-          // Dark gray
-          const gray = 40+Math.floor(seededRand(seed+9)*40);
-          patchColor = `rgba(${gray},${gray},${gray-8},0.78)`;
+          // Gray, higher contrast
+          const gray = 70+Math.floor(seededRand(seed+9)*80);
+          patchColor = `rgba(${gray},${gray},${gray-12},0.91)`;
         }
         ctx.save();
         ctx.beginPath();
-        // Amoeba shape: 5-6 points, random angles
-        const points = 5 + Math.floor(seededRand(seed+10)*2);
+        // Amoeba shape: 6-7 points, random angles
+        const points = 6 + Math.floor(seededRand(seed+10)*2);
         for(let j=0;j<points;j++){
-          const ang = (Math.PI*2)*(j/points) + seededRand(seed+11+j)*0.14;
-          const rad = patchW*0.7 + seededRand(seed+12+j)*patchW*0.3;
+          const ang = (Math.PI*2)*(j/points) + seededRand(seed+11+j)*0.18;
+          const rad = patchW*0.7 + seededRand(seed+12+j)*patchW*0.4;
           const x = px + Math.cos(ang)*rad;
           const y = py + Math.sin(ang)*patchH*0.7;
           if(j===0) ctx.moveTo(x,y);
@@ -4611,7 +4611,7 @@ function draw(){
         }
         ctx.closePath();
         ctx.fillStyle = patchColor;
-        ctx.globalAlpha = 0.92;
+        ctx.globalAlpha = 0.97;
         ctx.fill();
         ctx.restore();
       }
