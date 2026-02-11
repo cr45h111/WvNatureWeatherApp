@@ -6184,15 +6184,24 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // TEST: Paint bottom quarter of trunk solid red (centered on trunk)
-      ctx.save();
-      ctx.globalAlpha = 0.5;
-      // Center at x=0, y=-(h*0.125) (just above base), height = h*0.25, width = trunkW*0.7
-      ctx.beginPath();
-      ctx.ellipse(0, -h*0.125, this.trunkW*0.7, h*0.25, 0, 0, Math.PI*2);
-      ctx.fillStyle = 'red';
-      ctx.fill();
-      ctx.restore();
+      // PATCH TEXTURE: bottom quarter of trunk, centered on trunk
+      const patchCount = 7;
+      for(let i=0;i<patchCount;i++){
+        // Deterministic placement
+        const seed = Math.sin(this.baseX*0.13 + this.baseY*0.17 + i*2.1);
+        // Center patches horizontally on trunk, vertically in bottom quarter
+        const px = (Math.sin(i*1.3+this.baseX*0.02)*0.3) * this.trunkW;
+        const py = -h*0.12 + (h*0.13) * (i/(patchCount-1) - 0.5);
+        const patchW = this.trunkW * (0.28 + 0.13*Math.abs(Math.sin(i*2.3)));
+        const patchH = (h*0.22) * (0.18 + 0.12*Math.abs(Math.cos(i*1.9)));
+        ctx.save();
+        ctx.globalAlpha = 0.38;
+        ctx.beginPath();
+        ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
+        ctx.fillStyle = i%2===0 ? '#556b2f' : '#888a8a'; // Olive-drab green, gray
+        ctx.fill();
+        ctx.restore();
+      }
 
       // Draw leafy canopy (same as broadleaf trees)
       ctx.globalAlpha = 0.88 * (1 - darken * 0.4);
