@@ -6184,11 +6184,12 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // TEST: Paint bottom quarter of trunk solid red
+      // TEST: Paint bottom quarter of trunk solid red (centered on trunk)
       ctx.save();
       ctx.globalAlpha = 0.5;
+      // Center at x=0, y=-(h*0.125) (just above base), height = h*0.25, width = trunkW*0.7
       ctx.beginPath();
-      ctx.ellipse(0, h*0.125, this.trunkW*0.9, h*0.25, 0, 0, Math.PI*2);
+      ctx.ellipse(0, -h*0.125, this.trunkW*0.7, h*0.25, 0, 0, Math.PI*2);
       ctx.fillStyle = 'red';
       ctx.fill();
       ctx.restore();
