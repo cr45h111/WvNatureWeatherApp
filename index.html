@@ -4819,42 +4819,41 @@ function draw(){
     }
   }
   
-  // Terrain - apply darkening and seasonal brown/patchy effect
+  // Terrain - patchy, not solid: blend green and brown using pseudo-noise for patchiness
   let terrainDarkenFactor = foregroundDarken > 0.92 ? 0.92 : foregroundDarken * 0.7;
-  // In winter/late winter, reduce green and add more brown
   let isLateWinter = (season === 'winter' && (new Date().getMonth() === 1)); // February
   let isWinter = (season === 'winter');
-  // At night, don't let terrain get too dark (preserve texture)
   if(sunAlt < -6) terrainDarkenFactor = Math.max(terrainDarkenFactor, 0.55);
-  let baseGreen = isWinter ? 90 : Math.floor(120 * Math.pow(1 - terrainDarkenFactor, 1.2));
-  let baseR = isWinter ? 90 : Math.floor(70 * Math.pow(1 - terrainDarkenFactor, 1.2));
-  let baseB = isWinter ? 60 : Math.floor(40 * Math.pow(1 - terrainDarkenFactor, 1.3));
-  if(isLateWinter) { baseGreen = 80; baseR = 120; baseB = 55; }
-  // Draw main terrain base
-  ctx.fillStyle = `rgb(${Math.max(0, baseR)},${Math.max(0, baseGreen)},${Math.max(0, baseB)})`;
+  // Define two main colors: brown and greenish, then blend per-x using noise
+  let brown = isLateWinter ? [120, 80, 40] : isWinter ? [110, 85, 60] : [120, 90, 50];
+  let green = isLateWinter ? [150, 120, 60] : isWinter ? [110, 100, 70] : [90, 140, 70];
+  // Patchiness: use a simple pseudo-noise (sin/cos) for blending
   ctx.beginPath();
   ctx.moveTo(0, H);
   for(let t of terrain) ctx.lineTo(t.x, t.y);
   ctx.lineTo(W, H);
   ctx.closePath();
-  ctx.fill();
-  // Add random brown blotches/patches for realism
-  let patchCount = Math.floor(W / 60);
-  for(let i=0; i<patchCount; i++) {
-    let px = Math.random() * W;
-    let py = H - 40 - Math.random() * 60;
-    let pr = 30 + Math.random() * 30;
-    let brownR = 120 + Math.floor(Math.random()*40);
-    let brownG = 90 + Math.floor(Math.random()*30);
-    let brownB = 50 + Math.floor(Math.random()*20);
-    ctx.save();
-    ctx.globalAlpha = 0.18 + Math.random()*0.13;
-    ctx.beginPath();
-    ctx.ellipse(px, py, pr, pr*0.5, Math.random()*Math.PI, 0, Math.PI*2);
-    ctx.closePath();
-    ctx.fillStyle = `rgb(${brownR},${brownG},${brownB})`;
-    ctx.fill();
-    ctx.restore();
+  // Draw patchy terrain by painting vertical strips
+  let step = 4;
+  for(let x = 0; x < W; x += step) {
+    // Use a pseudo-noise function for patchiness
+    let noise = Math.sin(x * 0.025 + Math.cos(x * 0.007 + (isLateWinter ? 1.5 : 0))) * 0.5 + 0.5;
+    // Add some randomness for more irregularity
+    noise += (Math.sin(x * 0.09 + 13) * 0.2 + Math.cos(x * 0.13 - 7) * 0.13);
+    noise = Math.max(0, Math.min(1, noise));
+    // Blend between brown and green
+    let r = Math.round(brown[0] * noise + green[0] * (1 - noise));
+    let g = Math.round(brown[1] * noise + green[1] * (1 - noise));
+    let b = Math.round(brown[2] * noise + green[2] * (1 - noise));
+    // Apply darkening
+    r = Math.floor(r * (1 - terrainDarkenFactor));
+    g = Math.floor(g * (1 - terrainDarkenFactor));
+    b = Math.floor(b * (1 - terrainDarkenFactor));
+    // Find top and bottom y for this x
+    let tIdx = Math.floor(x / step);
+    let y = terrain[tIdx] ? terrain[tIdx].y : H;
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(x, y, step + 1, H - y);
   }
   
   if(snowCover > 0.02){
