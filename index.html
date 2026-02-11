@@ -4571,14 +4571,7 @@ function draw(){
     ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
     ctx.filter = 'none';
 
-      // Paint the entire stump area bright red with full opacity to test overlay visibility
-      ctx.save();
-      ctx.globalAlpha = 1.0;
-      ctx.beginPath();
-      ctx.rect(treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
-      ctx.fillStyle = 'red';
-      ctx.fill();
-      ctx.restore();
+      // ...existing code...
     
     // Check if ancient tree is covered by vegetation
     let isCovered = false;
@@ -6180,17 +6173,38 @@ class Item{
     
     ctx.save();
     ctx.translate(this.screenX, this.screenY);
-    
-    // Use trunk color directly without darkening
+
+    // Draw sycamore trunk with patch overlays
     ctx.strokeStyle = this.trunk;
     ctx.lineWidth = this.trunkW * growth;
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    if(this.isPine){
+    if(this.subtype === 'sycamore'){
+      ctx.lineTo(windSway * 0.3, -h * 0.5);
+      ctx.stroke();
+
+      // PATCH OVERLAY: bottom quarter of trunk
+      const patchCount = 6;
+      for(let i=0;i<patchCount;i++){
+        // Deterministic placement
+        const seed = Math.sin(this.baseX*0.13 + this.baseY*0.17 + i*2.1);
+        const px = (seed*0.5 + 0.5) * this.trunkW * 0.7 - this.trunkW * 0.35;
+        const py = (h*0.25) * (0.7 + 0.3*Math.sin(i*1.7+this.baseX*0.01)) + 2;
+        const patchW = this.trunkW * (0.5 + 0.15*Math.sin(i*2.3));
+        const patchH = (h*0.25) * (0.18 + 0.12*Math.cos(i*1.9));
+        ctx.save();
+        ctx.globalAlpha = 0.38;
+        ctx.beginPath();
+        ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
+        ctx.fillStyle = i%2===0 ? '#556b2f' : '#888a8a'; // Olive-drab green, gray
+        ctx.fill();
+        ctx.restore();
+      }
+    }else if(this.isPine){
       ctx.lineTo(windSway * 0.4, -h * 0.65);
       ctx.stroke();
-      
+
       // Use foliage color directly without darkening
       ctx.fillStyle = this.getSeasonalColor();
       const layers = 12;
@@ -6198,14 +6212,14 @@ class Item{
         const progress = i / layers;
         const layerY = -h * 0.2 - (h * 0.8) * progress;
         const layerW = (layers - i) * 10 * growth;
-        
+
         ctx.beginPath();
         ctx.moveTo(windSway * progress, layerY - (h * 0.8) / layers * 1.2);
         ctx.lineTo(-layerW + windSway * progress, layerY);
         ctx.lineTo(layerW + windSway * progress, layerY);
         ctx.closePath();
         ctx.fill();
-        
+
         for(let j = 0; j < 3; j++){
           const offset = (j - 1) * layerW * 0.6;
           ctx.beginPath();
@@ -6219,7 +6233,7 @@ class Item{
     }else{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
-      
+
       ctx.globalAlpha = 0.88 * (1 - darken * 0.4);
       // Use leaf color directly without darkening
       ctx.fillStyle = this.getSeasonalColor();
@@ -6234,7 +6248,7 @@ class Item{
         const keep = (noise * 0.5) + 0.5;
         return keep < leafDensity;
       };
-      
+
       if(this.isWillow){
         for(let i = 0; i < this.leaves.length; i++){
           const leaf = this.leaves[i];
@@ -6244,7 +6258,7 @@ class Item{
           const swayAmount = Math.sin(leaf.sway + weatherData.windSpeed * 0.03) * leafWind;
           const lx = Math.cos(leaf.angle) * leaf.dist * growth + swayAmount + windSway;
           const ly = -h * 0.6 + leaf.yOffset * growth + Math.sin(leaf.angle) * 10;
-          
+
           ctx.beginPath();
           ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 1.2, leaf.angle, 0, Math.PI * 2);
           ctx.fill();
@@ -6255,7 +6269,7 @@ class Item{
           const swayAmount = Math.sin(leaf.sway + weatherData.windSpeed * 0.03) * 4;
           const lx = Math.cos(leaf.angle) * leaf.dist * 0.5 * growth + swayAmount;
           const ly = -h * 0.6 + Math.sin(leaf.angle) * leaf.dist * 0.4 * growth;
-          
+
           ctx.beginPath();
           ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 0.7, leaf.angle, 0, Math.PI * 2);
           ctx.fill();
@@ -6269,7 +6283,7 @@ class Item{
           const swayAmount = Math.sin(leaf.sway + weatherData.windSpeed * 0.03) * leafWind;
           const lx = Math.cos(leaf.angle) * leaf.dist * growth + swayAmount + windSway * 0.5;
           const ly = -h * 0.75 + Math.sin(leaf.angle) * leaf.dist * growth * 0.5;
-          
+
           ctx.beginPath();
           ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 0.65, leaf.angle, 0, Math.PI * 2);
           ctx.fill();
