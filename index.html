@@ -885,6 +885,7 @@ function loadRampPodAsset(){
 }
 
 let items = [], birds = [], clouds = [], stars = [], raindrops = [], snowflakes = [];
+const STAR_UPDATE_MS = 300000;
 let grassPatches = [], terrain = [], bgTerrain = [[], [], []], bgDetails = [[],[],[]], river = [];
 let creatures = [], splashes = [], cloudShadows = [];
 let weatherData = {temp:70, condition:'Clear', windSpeed:5, precipitation:0, humidity:50, cloudCover:20};
@@ -3244,7 +3245,21 @@ function buildTerrain(){
   }
 }
 
+function getStarInterpolatedPosition(star, nowMs){
+  if(!star || !star.bright || star.startTime === undefined) return {x: star.x, y: star.y};
+  const duration = Math.max(1, star.endTime - star.startTime);
+  const t = Math.min(1, Math.max(0, (nowMs - star.startTime) / duration));
+  return {
+    x: star.startX + (star.endX - star.startX) * t,
+    y: star.startY + (star.endY - star.startY) * t
+  };
+}
+
 function generateStars(){
+  const prevBrightStars = stars.filter(s => s.bright);
+  const prevBrightByName = new Map(prevBrightStars.map(s => [s.name, s]));
+  const nowMs = Date.now();
+  const nextUpdateMs = nowMs + STAR_UPDATE_MS;
   stars = [];
   for(let i = 0; i < 200; i++){
     stars.push({
@@ -3302,9 +3317,17 @@ function generateStars(){
       const pos = altAzToScreen(alt, az);
       if(pos.x > 0 && pos.x < W && pos.y > 0 && pos.y < H * 0.6){
         const size = Math.max(1.5, 3.2 - star.mag * 0.35); // scale by brightness
+        const prevStar = prevBrightByName.get(star.name);
+        const prevPos = prevStar ? getStarInterpolatedPosition(prevStar, nowMs) : {x: pos.x, y: pos.y};
         stars.push({
-          x: pos.x,
-          y: pos.y,
+          x: prevPos.x,
+          y: prevPos.y,
+          startX: prevPos.x,
+          startY: prevPos.y,
+          endX: pos.x,
+          endY: pos.y,
+          startTime: nowMs,
+          endTime: nextUpdateMs,
           size,
           alpha: 0,
           speed: 0.02,
@@ -3895,7 +3918,7 @@ function init(){
     // Sound is always OFF on page load - user must click to enable (browser requirement)
     
     setInterval(updateAstronomy, 60000);
-    setInterval(generateStars, 300000); // Update star positions every 5 minutes
+    setInterval(generateStars, STAR_UPDATE_MS); // Update star positions every 5 minutes
     setInterval(fetchWeather, 60000); // Update weather every 1 minute
     setInterval(updateClock, 1000);
     setInterval(spawnBird, 8000);
@@ -4001,9 +4024,15 @@ function draw(){
   }
   
   const starVis = Math.max(0, 1 - light * 5) * (1 - weatherData.cloudCover / 100 * 0.8);
+  const nowMs = Date.now();
   for(let s of stars){
     if(starVis > 0.1){
       s.alpha += s.speed;
+      if(s.bright && s.startTime !== undefined){
+        const pos = getStarInterpolatedPosition(s, nowMs);
+        s.x = pos.x;
+        s.y = pos.y;
+      }
       const tw = s.bright ? 1 : Math.sin(s.alpha) * 0.3 + 0.7;
       const brightness = s.bright ? 1.2 : 1;
       ctx.fillStyle = `rgba(${255*brightness},${255*brightness},${255*brightness},${starVis*tw})`;
