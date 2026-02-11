@@ -4725,34 +4725,29 @@ function draw(){
         ctx.beginPath();
         ctx.ellipse(xPos - rockW * 0.28, yPos - rockH * 0.6, rockW * 0.38, rockH * 0.38, 0, 0, Math.PI * 2);
         ctx.fill();
-         // Draw tall grass tufts around rock base and sides
-         let tuftCount = 6 + Math.floor(Math.random()*4);
-         for (let t=0; t<tuftCount; t++) {
-           let side = t % 3;
-           let tx, ty;
-           if (side === 0) { // left side
-             tx = xPos - rockW * 0.7 + Math.random()*6;
-             ty = yPos + Math.random()*4;
-           } else if (side === 1) { // right side
-             tx = xPos + rockW * 0.7 - Math.random()*6;
-             ty = yPos + Math.random()*4;
-           } else { // bottom edge
-             tx = xPos + (Math.random()-0.5)*rockW*1.2;
-             ty = yPos + rockH * 0.5 + Math.random()*6;
+         // Only some rocks get tufts, fewer tufts, random placement
+         if(Math.random() < 0.45) { // ~45% of rocks get tufts
+           let tuftCount = 2 + Math.floor(Math.random()*2); // 2-3 tufts
+           for (let t=0; t<tuftCount; t++) {
+             // Randomly place around rock base/sides
+             let angle = Math.random() * Math.PI * 2;
+             let radius = rockW * (0.6 + Math.random()*0.4);
+             let tx = xPos + Math.cos(angle) * radius;
+             let ty = yPos + Math.sin(angle) * (rockH * 0.5 + Math.random()*6);
+             // Golden-brown color logic (late winter)
+             let grassR = 180 + Math.floor(Math.random()*40);
+             let grassG = 140 + Math.floor(Math.random()*30);
+             let grassB = 60 + Math.floor(Math.random()*20);
+             ctx.save();
+             ctx.beginPath();
+             ctx.moveTo(tx, ty);
+             ctx.lineTo(tx + Math.random()*4 - 2, ty - 16 - Math.random()*8);
+             ctx.lineWidth = 2.2 + Math.random()*1.2;
+             ctx.strokeStyle = `rgb(${grassR},${grassG},${grassB})`;
+             ctx.globalAlpha = 0.85;
+             ctx.stroke();
+             ctx.restore();
            }
-           // Golden-brown color logic (late winter)
-           let grassR = 180 + Math.floor(Math.random()*40);
-           let grassG = 140 + Math.floor(Math.random()*30);
-           let grassB = 60 + Math.floor(Math.random()*20);
-           ctx.save();
-           ctx.beginPath();
-           ctx.moveTo(tx, ty);
-           ctx.lineTo(tx + Math.random()*4 - 2, ty - 16 - Math.random()*8);
-           ctx.lineWidth = 2.2 + Math.random()*1.2;
-           ctx.strokeStyle = `rgb(${grassR},${grassG},${grassB})`;
-           ctx.globalAlpha = 0.85;
-           ctx.stroke();
-           ctx.restore();
          }
       }else{
         const logL = 10 + s * 20;
