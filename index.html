@@ -4612,10 +4612,25 @@ function draw(){
   ctx.globalAlpha = 1;
 
   // draw deterministic background details per-layer (opaque)
+  // Determine if we should flatten depth shading (noon or sundown)
+  // Noon: sunAlt > 70°; Sundown: sunAzimuth between 150° and 210° (behind user)
+  let flattenDepth = false;
+  if (typeof sunAlt === 'number' && typeof sunAzimuth === 'number') {
+    if (sunAlt > 70) flattenDepth = true;
+    // sunAzimuth is 0° at north, 90° east, 180° south (behind user), 270° west
+    if (sunAzimuth > 150 && sunAzimuth < 210) flattenDepth = true;
+  }
   for(let layer = 0; layer <= 2; layer++){
-    // Normalize daylight so clear daytime returns full color
-    const daylight = Math.max(0, Math.min(1, (light - 0.25) / 0.65));
-    const layerDark = 1 - daylight;
+    let daylight, layerDark;
+    if(flattenDepth){
+      // All layers get the same brightness
+      daylight = Math.max(0, Math.min(1, (light - 0.25) / 0.65));
+      layerDark = 1 - daylight;
+    }else{
+      // Default: background darkest, foreground lightest
+      daylight = Math.max(0, Math.min(1, (light - 0.25 + layer * 0.13) / 0.65));
+      layerDark = 1 - daylight;
+    }
     ctx.globalCompositeOperation = 'source-over';
     for(let det of bgDetails[layer]){
       const xPos = det.x;
