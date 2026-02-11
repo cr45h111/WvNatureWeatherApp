@@ -3770,9 +3770,10 @@ function spawnBird(){
 
 function spawnCrow(){
   // spawn either a lone crow or a small 'murder' group
-  if(birds.length > 18) return;
+  if(birds.length > 10) return; // Lower max crows
   if(sunAlt <= -6 || sunAlt >= 89) return; // civil dawn/dusk window only
-  const mode = Math.random() < 0.6 ? 'single' : 'murder';
+  // Reduce frequency of murder groups
+  const mode = Math.random() < 0.8 ? 'single' : 'murder';
   if(mode === 'single'){
     const x = Math.random() < 0.5 ? -80 : W + 80;
     const y = H * 0.12 + Math.random() * H * 0.18;
@@ -3781,7 +3782,7 @@ function spawnCrow(){
     birds.push(c);
     if(soundEnabled) setTimeout(() => createCrowCaw('single'), Math.random() * 600);
   }else{
-    const count = 3 + Math.floor(Math.random() * 4);
+    const count = 2 + Math.floor(Math.random() * 2); // Fewer crows in a group
     const startX = Math.random() < 0.5 ? -100 : W + 100;
     const baseY = H * 0.12 + Math.random() * H * 0.18;
     for(let i = 0; i < count; i++){
@@ -3920,7 +3921,7 @@ function init(){
     setInterval(fetchWeather, 60000); // Update weather every 1 minute
     setInterval(updateClock, 1000);
     setInterval(spawnBird, 15000); // Less frequent bird spawns
-    setInterval(spawnCrow, 45000);
+    setInterval(spawnCrow, 90000); // Less frequent crow spawns
     setInterval(updateWeatherEffects, 100);
     setInterval(updateCreatures, 5000);
     setInterval(checkAlarm, 10000);
