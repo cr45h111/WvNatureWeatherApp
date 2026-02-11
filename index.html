@@ -6201,6 +6201,33 @@ class Item{
         ctx.fill();
         ctx.restore();
       }
+
+      // Draw leafy canopy (same as broadleaf trees)
+      ctx.globalAlpha = 0.88 * (1 - darken * 0.4);
+      ctx.fillStyle = this.getSeasonalColor();
+      const isEvergreen = false;
+      const winterSparseCanopy = (season === 'winter');
+      const leafDensity = winterSparseCanopy ? 0.35 : 1;
+      const shouldDrawLeaf = (leaf, index) => {
+        if(!winterSparseCanopy) return true;
+        const noise =
+          Math.sin(leaf.angle * 7.3 + leaf.dist * 0.18) * 0.5 +
+          Math.sin(leaf.angle * 13.7 + leaf.dist * 0.08 + index * 0.35) * 0.5;
+        const keep = (noise * 0.5) + 0.5;
+        return keep < leafDensity;
+      };
+      for(let i = 0; i < this.leaves.length; i++){
+        const leaf = this.leaves[i];
+        if(!shouldDrawLeaf(leaf, i)) continue;
+        leaf.sway += leaf.speed;
+        const leafWind = weatherData.windSpeed > 15 ? weatherData.windSpeed * 0.25 : weatherData.windSpeed * 0.15;
+        const swayAmount = Math.sin(leaf.sway + weatherData.windSpeed * 0.03) * leafWind;
+        const lx = Math.cos(leaf.angle) * leaf.dist * growth + swayAmount + windSway * 0.5;
+        const ly = -h * 0.75 + Math.sin(leaf.angle) * leaf.dist * growth * 0.5;
+        ctx.beginPath();
+        ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 0.65, leaf.angle, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }else if(this.isPine){
       ctx.lineTo(windSway * 0.4, -h * 0.65);
       ctx.stroke();
