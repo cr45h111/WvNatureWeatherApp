@@ -4836,31 +4836,35 @@ function draw(){
   ctx.lineTo(W, H);
   ctx.closePath();
   ctx.fill();
-  // Overlay amoeba-like brown patches (trapezoids)
+  // Overlay amoeba-like brown patches (trapezoids) - deterministic per frame
   let patchCount = Math.floor(W / 80);
+  // Use a seeded pseudo-random function for repeatability per frame
+  function seededRand(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+  let patchSeed = 12345; // could use a hash of date/season for seasonal variation
   for(let i=0; i<patchCount; i++) {
-    // Random position within terrain
-    let px = Math.random() * (W - 60) + 30;
+    let s = patchSeed + i * 17;
+    let px = seededRand(s) * (W - 60) + 30;
     let tIdx = Math.floor(px / 4);
-    let py = terrain[tIdx] ? terrain[tIdx].y + 20 + Math.random()*40 : H - 60;
-    // Trapezoid shape
-    let w = 60 + Math.random()*40;
-    let h = 30 + Math.random()*30;
-    let topOffset = Math.random()*w*0.3;
-    let bottomOffset = Math.random()*w*0.3;
-    // Amoeba-like: perturb corners
+    let py = terrain[tIdx] ? terrain[tIdx].y + 20 + seededRand(s+1)*40 : H - 60;
+    let w = 60 + seededRand(s+2)*40;
+    let h = 30 + seededRand(s+3)*30;
+    let topOffset = seededRand(s+4)*w*0.3;
+    let bottomOffset = seededRand(s+5)*w*0.3;
     let points = [
-      [px - w/2 + Math.random()*10, py + Math.random()*10],
-      [px + w/2 - Math.random()*10, py + Math.random()*10],
-      [px + w/2 - bottomOffset, py + h + Math.random()*10],
-      [px - w/2 + topOffset, py + h + Math.random()*10]
+      [px - w/2 + seededRand(s+6)*10, py + seededRand(s+7)*10],
+      [px + w/2 - seededRand(s+8)*10, py + seededRand(s+9)*10],
+      [px + w/2 - bottomOffset, py + h + seededRand(s+10)*10],
+      [px - w/2 + topOffset, py + h + seededRand(s+11)*10]
     ];
-    // Color: random light/dark brown
-    let brownR = 110 + Math.floor(Math.random()*60);
-    let brownG = 80 + Math.floor(Math.random()*50);
-    let brownB = 40 + Math.floor(Math.random()*30);
+    let brownR = 110 + Math.floor(seededRand(s+12)*60);
+    let brownG = 80 + Math.floor(seededRand(s+13)*50);
+    let brownB = 40 + Math.floor(seededRand(s+14)*30);
+    let alpha = 0.22 + seededRand(s+15)*0.18;
     ctx.save();
-    ctx.globalAlpha = 0.22 + Math.random()*0.18;
+    ctx.globalAlpha = alpha;
     ctx.beginPath();
     ctx.moveTo(points[0][0], points[0][1]);
     for(let j=1;j<points.length;j++) ctx.lineTo(points[j][0], points[j][1]);
