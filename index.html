@@ -4837,29 +4837,43 @@ function draw(){
   ctx.closePath();
   ctx.fill();
   // Overlay amoeba-like brown patches: generate blobby shape in square, map to trapezoid for 3D look
-  let patchCount = Math.floor(W / 80);
+  // Improved: more patches, mostly smaller, no overlap, cover full foreground
+  let patchCount = Math.floor(W / 16); // many more patches
   function seededRand(seed) {
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
   }
   let patchSeed = 12345;
-  for(let i=0; i<patchCount; i++) {
-    let s = patchSeed + i * 17;
-    let px = seededRand(s) * (W - 60) + 30;
+  let placed = [];
+  let maxTries = patchCount * 3;
+  let tries = 0;
+  while (placed.length < patchCount && tries < maxTries) {
+    let i = placed.length;
+    let s = patchSeed + i * 17 + tries * 13;
+    let px = seededRand(s) * (W - 20) + 10;
+    // Find y range for this x (use terrain profile)
     let tIdx = Math.floor(px / 4);
-    let py = terrain[tIdx] ? terrain[tIdx].y + 20 + seededRand(s+1)*40 : H - 60;
-    let w = 60 + seededRand(s+2)*40;
-    let h = 30 + seededRand(s+3)*30;
-    // Trapezoid corners (for mapping):
-    // TL, TR, BR, BL (top left, top right, bottom right, bottom left)
-    let trapTop = w * (0.7 + seededRand(s+4)*0.3); // top width
-    let trapBot = w * (0.9 + seededRand(s+5)*0.2); // bottom width
+    let minY = Math.min(...terrain.map(t => t.y));
+    let maxY = Math.max(...terrain.map(t => t.y));
+    // Spread patches from top to bottom of foreground
+    let py = minY + seededRand(s+1) * (maxY - minY - 10);
+    // Bias to smaller sizes
+    let w = 16 + Math.pow(seededRand(s+2), 2) * 38; // 16-54px, mostly small
+    let h = 8 + Math.pow(seededRand(s+3), 2) * 22;  // 8-30px, mostly small
+    // Trapezoid corners (for mapping)
+    let trapTop = w * (0.7 + seededRand(s+4)*0.3);
+    let trapBot = w * (0.9 + seededRand(s+5)*0.2);
     let trapHeight = h;
     let trapTL = [px - trapTop/2, py];
     let trapTR = [px + trapTop/2, py];
     let trapBR = [px + trapBot/2, py + trapHeight];
     let trapBL = [px - trapBot/2, py + trapHeight];
-    // Generate amoeba points in unit square (0,0)-(1,1)
+    // Overlap check (bounding box)
+    let bbox = [px-w/2, py, px+w/2, py+h];
+    let overlaps = placed.some(p => !(bbox[2]<p[0]||bbox[0]>p[2]||bbox[3]<p[1]||bbox[1]>p[3]));
+    if (overlaps) { tries++; continue; }
+    placed.push(bbox);
+    // Generate amoeba points in unit square
     let amoebaPoints = [];
     let pointCount = 12;
     let rBase = 0.45, rVar = 0.18;
@@ -4870,15 +4884,12 @@ function draw(){
       let y = 0.5 + Math.sin(ang)*rad;
       amoebaPoints.push([x, y]);
     }
-    // Map amoeba points from square to trapezoid
     function mapToTrapezoid(pt) {
       let [u, v] = pt;
-      // Interpolate top and bottom edges
       let topX = trapTL[0] + (trapTR[0] - trapTL[0]) * u;
       let topY = trapTL[1] + (trapTR[1] - trapTL[1]) * u;
       let botX = trapBL[0] + (trapBR[0] - trapBL[0]) * u;
       let botY = trapBL[1] + (trapBR[1] - trapBL[1]) * u;
-      // Interpolate between top and bottom
       let x = topX + (botX - topX) * v;
       let y = topY + (botY - topY) * v;
       return [x, y];
@@ -4897,6 +4908,7 @@ function draw(){
     ctx.fillStyle = `rgb(${brownR},${brownG},${brownB})`;
     ctx.fill();
     ctx.restore();
+    tries++;
   }
   
   if(snowCover > 0.02){
