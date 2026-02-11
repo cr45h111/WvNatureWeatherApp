@@ -4849,7 +4849,7 @@ function draw(){
   ctx.restore();
 
   // Improved: more patches, mostly smaller, robust overlap, cover all terrain
-  let patchCount = Math.floor(W / 16);
+  let patchCount = Math.floor(W / 8); // much denser coverage
   function seededRand(seed) {
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
