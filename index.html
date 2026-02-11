@@ -4725,24 +4725,30 @@ function draw(){
         ctx.beginPath();
         ctx.ellipse(xPos - rockW * 0.28, yPos - rockH * 0.6, rockW * 0.38, rockH * 0.38, 0, 0, Math.PI * 2);
         ctx.fill();
+         // Deterministic pseudo-random for stable tufts
+         function seededRand(seed) {
+           let x = Math.sin(seed) * 10000;
+           return x - Math.floor(x);
+         }
          // Only some rocks get tufts, fewer tufts, random placement
-         if(Math.random() < 0.45) { // ~45% of rocks get tufts
-           let tuftCount = 2 + Math.floor(Math.random()*2); // 2-3 tufts
+         let rockSeed = Math.floor(xPos*100 + yPos*10 + rockW*3 + rockH*7);
+         if(seededRand(rockSeed) < 0.45) { // ~45% of rocks get tufts
+           let tuftCount = 2 + Math.floor(seededRand(rockSeed+1)*2); // 2-3 tufts
            for (let t=0; t<tuftCount; t++) {
              // Randomly place around rock base/sides
-             let angle = Math.random() * Math.PI * 2;
-             let radius = rockW * (0.6 + Math.random()*0.4);
+             let angle = seededRand(rockSeed+10+t) * Math.PI * 2;
+             let radius = rockW * (0.6 + seededRand(rockSeed+20+t)*0.4);
              let tx = xPos + Math.cos(angle) * radius;
-             let ty = yPos + Math.sin(angle) * (rockH * 0.5 + Math.random()*6);
+             let ty = yPos + Math.sin(angle) * (rockH * 0.5 + seededRand(rockSeed+30+t)*6);
              // Golden-brown color logic (late winter)
-             let grassR = 180 + Math.floor(Math.random()*40);
-             let grassG = 140 + Math.floor(Math.random()*30);
-             let grassB = 60 + Math.floor(Math.random()*20);
+             let grassR = 180 + Math.floor(seededRand(rockSeed+40+t)*40);
+             let grassG = 140 + Math.floor(seededRand(rockSeed+50+t)*30);
+             let grassB = 60 + Math.floor(seededRand(rockSeed+60+t)*20);
              ctx.save();
              ctx.beginPath();
              ctx.moveTo(tx, ty);
-             ctx.lineTo(tx + Math.random()*4 - 2, ty - 16 - Math.random()*8);
-             ctx.lineWidth = 2.2 + Math.random()*1.2;
+             ctx.lineTo(tx + seededRand(rockSeed+70+t)*4 - 2, ty - 16 - seededRand(rockSeed+80+t)*8);
+             ctx.lineWidth = 2.2 + seededRand(rockSeed+90+t)*1.2;
              ctx.strokeStyle = `rgb(${grassR},${grassG},${grassB})`;
              ctx.globalAlpha = 0.85;
              ctx.stroke();
