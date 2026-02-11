@@ -5379,8 +5379,11 @@ function draw(){
       }
     }
 
+    const daylightFeeding = sunAlt > 0;
+    const canFeedNow = isCatfish ? catfishFeedingTime : (allowedJump && daylightFeeding);
+
     // start jump with small probability when allowed (catfish only jump during feeding time)
-    if(f.jumpState === 'idle' && allowedJump && (!isCatfish || catfishFeedingTime)){
+    if(f.jumpState === 'idle' && canFeedNow){
       if(f.isSmall && Math.random() < 0.003){
         f.jumpState = 'surface';
         f.jumpTimer = 0;
@@ -5413,7 +5416,7 @@ function draw(){
         splashes.push({x: f.x, y: waterY + Math.sin(f.x * 0.01) * 5, radius: 3 + Math.random()*3, alpha:0.6, life:16, speed:1.8});
         createSplashSound(); // Play splash sound when fish surfaces
         // Only larger fish (not minnows) make eating sounds
-        if(f.type !== 'minnow' && Math.random() < 0.3) createFishEatingSound();
+        if(sunAlt > 0 && f.type !== 'minnow' && Math.random() < 0.3) createFishEatingSound();
       }
     }else if(f.jumpState === 'arch'){
       const t = f.jumpTimer / f.jumpDuration;
