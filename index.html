@@ -4837,29 +4837,52 @@ function draw(){
   ctx.closePath();
   ctx.fill();
   // Overlay amoeba-like brown patches: generate blobby shape in square, map to trapezoid for 3D look
-  // Improved: more patches, mostly smaller, no overlap, cover full foreground
-  let patchCount = Math.floor(W / 16); // many more patches
+  // Set base terrain color to green before patches
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(terrain[0].x, terrain[0].y);
+  for(let i=1;i<terrain.length;i++) ctx.lineTo(terrain[i].x, terrain[i].y);
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = 'rgb(70,120,60)'; // green undercoat
+  ctx.globalAlpha = 1.0;
+  ctx.fill();
+  ctx.restore();
+
+  // Improved: more patches, mostly smaller, robust overlap, cover all terrain
+  let patchCount = Math.floor(W / 16);
   function seededRand(seed) {
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
   }
   let patchSeed = 12345;
   let placed = [];
-  let maxTries = patchCount * 3;
+  let maxTries = patchCount * 8;
   let tries = 0;
+  // Helper: get y for given x on terrain
+  function getTerrainY(x) {
+    let idx = Math.floor(x/4);
+    if (idx < 0) idx = 0;
+    if (idx >= terrain.length) idx = terrain.length-1;
+    return terrain[idx].y;
+  }
+  // Helper: ellipse overlap
+  function ellipsesOverlap(a, b) {
+    let dx = a.cx - b.cx, dy = a.cy - b.cy;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    return dist < (a.rx + b.rx)*0.7 && dist < (a.ry + b.ry)*0.7;
+  }
   while (placed.length < patchCount && tries < maxTries) {
     let i = placed.length;
     let s = patchSeed + i * 17 + tries * 13;
     let px = seededRand(s) * (W - 20) + 10;
-    // Find y range for this x (use terrain profile)
-    let tIdx = Math.floor(px / 4);
-    let minY = Math.min(...terrain.map(t => t.y));
-    let maxY = Math.max(...terrain.map(t => t.y));
-    // Spread patches from top to bottom of foreground
-    let py = minY + seededRand(s+1) * (maxY - minY - 10);
+    // Place patches from top to bottom of terrain at px
+    let terrainY = getTerrainY(px);
+    let baseY = terrainY;
+    let fgBottom = H;
+    let py = baseY + seededRand(s+1) * (fgBottom - baseY - 10); // anywhere from top to bottom of terrain
     // Bias to smaller sizes
-    let w = 16 + Math.pow(seededRand(s+2), 2) * 38; // 16-54px, mostly small
-    let h = 8 + Math.pow(seededRand(s+3), 2) * 22;  // 8-30px, mostly small
+    let w = 16 + Math.pow(seededRand(s+2), 2) * 38;
+    let h = 8 + Math.pow(seededRand(s+3), 2) * 22;
     // Trapezoid corners (for mapping)
     let trapTop = w * (0.7 + seededRand(s+4)*0.3);
     let trapBot = w * (0.9 + seededRand(s+5)*0.2);
@@ -4868,11 +4891,11 @@ function draw(){
     let trapTR = [px + trapTop/2, py];
     let trapBR = [px + trapBot/2, py + trapHeight];
     let trapBL = [px - trapBot/2, py + trapHeight];
-    // Overlap check (bounding box)
-    let bbox = [px-w/2, py, px+w/2, py+h];
-    let overlaps = placed.some(p => !(bbox[2]<p[0]||bbox[0]>p[2]||bbox[3]<p[1]||bbox[1]>p[3]));
+    // Overlap check (ellipse, more robust)
+    let ellipse = {cx: px, cy: py + h/2, rx: w/2, ry: h/2};
+    let overlaps = placed.some(e => ellipsesOverlap(e, ellipse));
     if (overlaps) { tries++; continue; }
-    placed.push(bbox);
+    placed.push(ellipse);
     // Generate amoeba points in unit square
     let amoebaPoints = [];
     let pointCount = 12;
