@@ -4571,50 +4571,14 @@ function draw(){
     ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
     ctx.filter = 'none';
 
-      // Draw more, larger, higher-contrast amoeba-like patches on the bottom quarter of the stump
-      const patchCount = 14 + Math.floor(imgSize/14);
-      for(let i=0;i<patchCount;i++){
-        // Deterministic seed for patch placement
-        const seed = i*1234 + Math.floor(treeX*7) + Math.floor(treeBaseY*3);
-        function seededRand(n){
-          let x = Math.sin(n)*10000;
-          return x - Math.floor(x);
-        }
-        // Patch center: within bottom quarter
-        const px = treeX + (seededRand(seed+1)-0.5)*imgSize*0.32;
-        const py = treeBaseY - imgSize*0.22 + seededRand(seed+2)*imgSize*0.18;
-        // Patch size: larger, amoeba-like
-        const patchW = imgSize*0.11 + seededRand(seed+3)*imgSize*0.07;
-        const patchH = imgSize*0.08 + seededRand(seed+4)*imgSize*0.05;
-        // Patch color: olive-drab-green or gray, higher contrast
-        const colorPick = seededRand(seed+5);
-        let patchColor;
-        if(colorPick < 0.5){
-          // Olive drab green, higher contrast
-          patchColor = `rgba(${70+Math.floor(seededRand(seed+6)*40)},${110+Math.floor(seededRand(seed+7)*30)},${40+Math.floor(seededRand(seed+8)*25)},0.93)`;
-        }else{
-          // Gray, higher contrast
-          const gray = 70+Math.floor(seededRand(seed+9)*80);
-          patchColor = `rgba(${gray},${gray},${gray-12},0.91)`;
-        }
-        ctx.save();
-        ctx.beginPath();
-        // Amoeba shape: 6-7 points, random angles
-        const points = 6 + Math.floor(seededRand(seed+10)*2);
-        for(let j=0;j<points;j++){
-          const ang = (Math.PI*2)*(j/points) + seededRand(seed+11+j)*0.18;
-          const rad = patchW*0.7 + seededRand(seed+12+j)*patchW*0.4;
-          const x = px + Math.cos(ang)*rad;
-          const y = py + Math.sin(ang)*patchH*0.7;
-          if(j===0) ctx.moveTo(x,y);
-          else ctx.lineTo(x,y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = patchColor;
-        ctx.globalAlpha = 0.97;
-        ctx.fill();
-        ctx.restore();
-      }
+      // Paint the bottom quarter of the stump solid black to test overlay rendering
+      ctx.save();
+      ctx.globalAlpha = 0.95;
+      ctx.beginPath();
+      ctx.rect(treeX - imgSize/2, treeBaseY - imgSize*0.25, imgSize, imgSize*0.25);
+      ctx.fillStyle = 'black';
+      ctx.fill();
+      ctx.restore();
     
     // Check if ancient tree is covered by vegetation
     let isCovered = false;
