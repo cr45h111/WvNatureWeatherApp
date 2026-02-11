@@ -4735,11 +4735,14 @@ function draw(){
          if(seededRand(rockSeed) < 0.45) { // ~45% of rocks get tufts
            let tuftCount = 2 + Math.floor(seededRand(rockSeed+1)*2); // 2-3 tufts
            for (let t=0; t<tuftCount; t++) {
-             // Randomly place around rock base/sides
-             let angle = seededRand(rockSeed+10+t) * Math.PI * 2;
-             let radius = rockW * (0.6 + seededRand(rockSeed+20+t)*0.4);
+             // Only place tufts in front or beside, not on top/behind
+             let angle = (seededRand(rockSeed+10+t) * Math.PI * 1.2) - Math.PI*0.6; // -0.6π to +0.6π (front/sides only)
+             let radius = rockW * (0.7 + seededRand(rockSeed+20+t)*0.5);
              let tx = xPos + Math.cos(angle) * radius;
-             let ty = yPos + Math.sin(angle) * (rockH * 0.5 + seededRand(rockSeed+30+t)*6);
+             // Place base at or just below bottom edge of rock
+             let ty = yPos + rockH * 0.5 + 2 + seededRand(rockSeed+30+t)*4;
+             // If tuft would be behind the rock (angle > 0.5π or < -0.5π), skip
+             if (angle < -Math.PI/2 || angle > Math.PI/2) continue;
              // Golden-brown color logic (late winter)
              let grassR = 180 + Math.floor(seededRand(rockSeed+40+t)*40);
              let grassG = 140 + Math.floor(seededRand(rockSeed+50+t)*30);
