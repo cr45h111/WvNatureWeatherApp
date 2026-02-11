@@ -822,7 +822,7 @@ const CONFIG = {
     BIRD_VOLUME: 0.025
   },
   SPAWN_RATES: {
-    BIRD_INTERVAL: 8000,
+    BIRD_INTERVAL: 15000, // Less frequent bird spawns
     FIREFLY_CHANCE: 0.4,
     OWL_HOURS: [2, 7]
   }
@@ -3760,13 +3760,11 @@ function updateWeatherEffects(){
 
 function spawnBird(){
   // Only active from dawn through dusk
-  if(birds.length > 12 || sunAlt <= -6 || sunAlt >= 89) return; // leave at dusk (sunAlt<=-6), return at dawn (>-6), no zenith overflow
+  if(birds.length > 7 || sunAlt <= -6 || sunAlt >= 89) return; // Fewer birds at once
   const x = Math.random() < 0.5 ? -50 : W + 50;
   const y = H * 0.15 + Math.random() * H * 0.25;
   const types = ['cardinal', 'robin', 'generic', 'generic'];
-  
   const targetTree = items.find(item => item.type === 'plant' && !item.isBush && Math.random() < 0.3);
-  
   birds.push(new Bird(x, y, types[Math.floor(Math.random() * types.length)], targetTree));
 }
 
@@ -3921,7 +3919,7 @@ function init(){
     setInterval(generateStars, STAR_UPDATE_MS); // Update star positions every 5 minutes
     setInterval(fetchWeather, 60000); // Update weather every 1 minute
     setInterval(updateClock, 1000);
-    setInterval(spawnBird, 8000);
+    setInterval(spawnBird, 15000); // Less frequent bird spawns
     setInterval(spawnCrow, 45000);
     setInterval(updateWeatherEffects, 100);
     setInterval(updateCreatures, 5000);
