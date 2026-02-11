@@ -6452,17 +6452,17 @@ class Bird{
       const pt = bgTerrain[0][idx];
       if(pt && typeof pt.y === 'number') horizonY = pt.y;
     }
-    const skyCutoff = Math.min(horizonY - 30, H * 0.28);
+    const skyCutoff = Math.min(horizonY - 40, H * 0.24);
     const isAgainstSky = this.y < skyCutoff;
     const isOnGround = this.state === 'landed' || this.state === 'nesting';
     const isInFrontOfSun = sunPos.visible && Math.abs(this.x - sunPos.x) < 80 && Math.abs(this.y - sunPos.y) < 80;
-    const canSilhouette = sunAlt > -2 && light > 0.25;
+    const canSilhouette = sunAlt > 8 && light > 0.35;
     
     let birdDarken = darken;
     let birdColor = this.color;
     
     if(!isOnGround && canSilhouette && (isAgainstSky || isInFrontOfSun)){
-      birdColor = 'rgba(50,50,50,0.8)';
+      birdColor = 'rgba(60,60,60,0.9)';
     }else{
       birdColor = this.color;
       birdDarken = Math.min(darken, 0.2);
