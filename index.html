@@ -4819,11 +4819,18 @@ function draw(){
     }
   }
   
-  // Terrain - apply darkening
-  const terrainDarkenFactor = foregroundDarken > 0.95 ? 0.95 : foregroundDarken * 0.8;
-  const baseGreen = Math.floor(150 * Math.pow(1 - terrainDarkenFactor, 1.2));
-  const baseR = Math.floor(50 * Math.pow(1 - terrainDarkenFactor, 1.2));
-  const baseB = Math.floor(30 * Math.pow(1 - terrainDarkenFactor, 1.3));
+  // Terrain - apply darkening and seasonal brown/patchy effect
+  let terrainDarkenFactor = foregroundDarken > 0.92 ? 0.92 : foregroundDarken * 0.7;
+  // In winter/late winter, reduce green and add more brown
+  let isLateWinter = (season === 'winter' && (new Date().getMonth() === 1)); // February
+  let isWinter = (season === 'winter');
+  // At night, don't let terrain get too dark (preserve texture)
+  if(sunAlt < -6) terrainDarkenFactor = Math.max(terrainDarkenFactor, 0.55);
+  let baseGreen = isWinter ? 90 : Math.floor(120 * Math.pow(1 - terrainDarkenFactor, 1.2));
+  let baseR = isWinter ? 90 : Math.floor(70 * Math.pow(1 - terrainDarkenFactor, 1.2));
+  let baseB = isWinter ? 60 : Math.floor(40 * Math.pow(1 - terrainDarkenFactor, 1.3));
+  if(isLateWinter) { baseGreen = 80; baseR = 120; baseB = 55; }
+  // Draw main terrain base
   ctx.fillStyle = `rgb(${Math.max(0, baseR)},${Math.max(0, baseGreen)},${Math.max(0, baseB)})`;
   ctx.beginPath();
   ctx.moveTo(0, H);
@@ -4831,6 +4838,24 @@ function draw(){
   ctx.lineTo(W, H);
   ctx.closePath();
   ctx.fill();
+  // Add random brown blotches/patches for realism
+  let patchCount = Math.floor(W / 60);
+  for(let i=0; i<patchCount; i++) {
+    let px = Math.random() * W;
+    let py = H - 40 - Math.random() * 60;
+    let pr = 30 + Math.random() * 30;
+    let brownR = 120 + Math.floor(Math.random()*40);
+    let brownG = 90 + Math.floor(Math.random()*30);
+    let brownB = 50 + Math.floor(Math.random()*20);
+    ctx.save();
+    ctx.globalAlpha = 0.18 + Math.random()*0.13;
+    ctx.beginPath();
+    ctx.ellipse(px, py, pr, pr*0.5, Math.random()*Math.PI, 0, Math.PI*2);
+    ctx.closePath();
+    ctx.fillStyle = `rgb(${brownR},${brownG},${brownB})`;
+    ctx.fill();
+    ctx.restore();
+  }
   
   if(snowCover > 0.02){
     ctx.save();
