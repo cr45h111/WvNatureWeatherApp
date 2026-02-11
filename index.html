@@ -4571,12 +4571,12 @@ function draw(){
     ctx.drawImage(discoveryAssets.ancientTree, treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
     ctx.filter = 'none';
 
-      // Paint the bottom quarter of the stump solid black to test overlay rendering
+      // Paint the entire stump area bright red with full opacity to test overlay visibility
       ctx.save();
-      ctx.globalAlpha = 0.95;
+      ctx.globalAlpha = 1.0;
       ctx.beginPath();
-      ctx.rect(treeX - imgSize/2, treeBaseY - imgSize*0.25, imgSize, imgSize*0.25);
-      ctx.fillStyle = 'black';
+      ctx.rect(treeX - imgSize/2, treeBaseY - imgSize, imgSize, imgSize);
+      ctx.fillStyle = 'red';
       ctx.fill();
       ctx.restore();
     
