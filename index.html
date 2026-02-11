@@ -4855,15 +4855,23 @@ function draw(){
     ctx.restore();
   }
   
-  const grassGreen = Math.floor(140 * (1 - foregroundDarken * 0.5));
-  ctx.strokeStyle = `rgba(${40*(1-foregroundDarken*0.5)},${grassGreen},${35*(1-foregroundDarken*0.6)},0.7)`;
-  ctx.lineWidth = 1.5;
-  
+  // Tall grass at the top edge of the foreground should be golden-brown in late winter (February)
+  // Golden-brown: #b8860b (darkgoldenrod) or #c2b280 (dry grass), not green
+  // We'll use a golden-brown shade, slightly varied for realism
+  const grassBaseR = 184, grassBaseG = 134, grassBaseB = 11; // #b8860b
+  const grassDryR = 194, grassDryG = 178, grassDryB = 128;   // #c2b280
   for(let gp of grassPatches){
     for(let blade of gp.blades){
       blade.sway += blade.speed;
       const windBend = weatherData.windSpeed > 10 ? weatherData.windSpeed * 0.3 : 1;
       const bend = Math.sin(blade.sway + weatherData.windSpeed * 0.05) * 3 * Math.min(1, windBend / 10);
+      // Slight color variation per blade
+      const t = (blade.ox % 1 + 1) * 0.5;
+      const r = Math.round(grassBaseR * (1-t) + grassDryR * t);
+      const g = Math.round(grassBaseG * (1-t) + grassDryG * t);
+      const b = Math.round(grassBaseB * (1-t) + grassDryB * t);
+      ctx.strokeStyle = `rgba(${r},${g},${b},0.82)`;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(gp.x + blade.ox, gp.y);
       ctx.lineTo(gp.x + blade.ox + bend, gp.y - blade.height);
