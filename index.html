@@ -9564,7 +9564,6 @@ function loadPresetsIntoStore(){
   const container = document.getElementById('scenePresetsList');
   if(!container) return;
   
-<<<<<<< HEAD
   let localPresets = [];
   const mergePresetsByName = (basePresets, overridePresets) => {
     const map = new Map();
@@ -9598,8 +9597,6 @@ function loadPresetsIntoStore(){
     console.error('Error loading local presets:', e);
   }
   
-=======
->>>>>>> main
   // Try to load from JSON file
   fetch('ScenePresets/scene-presets.json')
     .then(response => {
@@ -9609,7 +9606,6 @@ function loadPresetsIntoStore(){
     .then(data => {
       console.log('Loaded presets from JSON file');
       if(data.presets && Array.isArray(data.presets)){
-<<<<<<< HEAD
         const merged = mergePresetsByName(localPresets, data.presets);
         displayPresets(merged);
         saveMergedIfNeeded(merged);
@@ -9625,17 +9621,6 @@ function loadPresetsIntoStore(){
       const merged = mergePresetsByName(localPresets, DEFAULT_PRESETS);
       displayPresets(merged);
       saveMergedIfNeeded(merged);
-=======
-        displayPresets(data.presets);
-        console.log(`Displaying ${data.presets.length} presets`);
-        return;
-      }
-      displayPresets(DEFAULT_PRESETS);
-    })
-    .catch(err => {
-      console.log('Using default presets:', err.message);
-      displayPresets(DEFAULT_PRESETS);
->>>>>>> main
     });
 }
 
