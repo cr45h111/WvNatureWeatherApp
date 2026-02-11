@@ -6184,15 +6184,15 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // PATCH TEXTURE: top of trunk, centered
+      // PATCH TEXTURE: upper third of trunk, centered
       const patchCountTop = 7;
       for(let i=0;i<patchCountTop;i++){
         const seed = Math.sin(this.baseX*0.13 + this.baseY*0.17 + i*2.1);
-        // Center patches horizontally, vertically in top quarter
+        // Center patches horizontally, vertically in upper third
         const px = (Math.sin(i*1.3+this.baseX*0.02)*0.3) * this.trunkW;
-        const py = -h*0.85 + (h*0.13) * (i/(patchCountTop-1) - 0.5);
+        const py = -h*0.55 + (h*0.18) * (i/(patchCountTop-1) - 0.5);
         const patchW = this.trunkW * (0.28 + 0.13*Math.abs(Math.sin(i*2.3)));
-        const patchH = (h*0.22) * (0.18 + 0.12*Math.abs(Math.cos(i*1.9)));
+        const patchH = (h*0.18) * (0.18 + 0.12*Math.abs(Math.cos(i*1.9)));
         ctx.save();
         ctx.globalAlpha = 0.38;
         ctx.beginPath();
@@ -6202,13 +6202,13 @@ class Item{
         ctx.restore();
       }
 
-      // PATCH TEXTURE: bottom quarter, smaller shapes
-      const patchCountBottom = 6;
+      // PATCH TEXTURE: bottom quarter, more and wider shapes
+      const patchCountBottom = 10;
       for(let i=0;i<patchCountBottom;i++){
         const seed = Math.sin(this.baseX*0.23 + this.baseY*0.27 + i*1.7);
-        const px = (Math.sin(i*1.7+this.baseX*0.03)*0.22) * this.trunkW;
+        const px = (Math.sin(i*1.7+this.baseX*0.03)*0.32) * this.trunkW;
         const py = -h*0.12 + (h*0.13) * (i/(patchCountBottom-1) - 0.5);
-        const patchW = this.trunkW * (0.14 + 0.09*Math.abs(Math.sin(i*2.7)));
+        const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
         const patchH = (h*0.13) * (0.13 + 0.09*Math.abs(Math.cos(i*2.1)));
         ctx.save();
         ctx.globalAlpha = 0.38;
