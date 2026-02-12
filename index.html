@@ -6233,9 +6233,9 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // PATCH TEXTURE: single band, slid downward by ~10px (relative to trunk height)
-      // 10px relative to trunk height: offset = 10 / h
-      const offset = 10 / (h || 1); // avoid div by zero
+      // PATCH TEXTURE: single band, slid downward by ~20px (relative to trunk height)
+      // 20px relative to trunk height: offset = 20 / h
+      const offset = 20 / (h || 1); // avoid div by zero
       const patchCount = 20;
       for(let i=0;i<patchCount;i++){
         // Blend the two previous patch logics for variety
@@ -6245,11 +6245,32 @@ class Item{
         const py = (-h*0.32 + (h*0.4) * (i/(patchCount-1) - 0.5)) + offset * h;
         const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
         const patchH = (h*0.16) * (0.15 + 0.11*Math.abs(Math.cos(i*2.1)));
+        // Calculate gradient darkness: 1 at bottom, 0 at top
+        const gradT = i/(patchCount-1);
+        // Darkest at bottom, lighter at top
+        const darkColor = '#2d3a1a'; // very dark olive
+        const midColor = '#556b2f';
+        const lightColor = '#888a8a';
+        // Interpolate color: bottom = darkColor, top = lightColor, middle = midColor
+        let fillStyle;
+        if(gradT < 0.3) {
+          // Blend darkColor to midColor
+          const t = gradT/0.3;
+          fillStyle = `rgb(${Math.round(45 + (85-45)*t)},${Math.round(58 + (107-58)*t)},${Math.round(26 + (47-26)*t)})`;
+        } else if(gradT < 0.7) {
+          // Blend midColor to lightColor
+          const t = (gradT-0.3)/0.4;
+          fillStyle = `rgb(${Math.round(85 + (136-85)*t)},${Math.round(107 + (138-107)*t)},${Math.round(47 + (138-47)*t)})`;
+        } else {
+          // Top: mostly lightColor
+          const t = (gradT-0.7)/0.3;
+          fillStyle = `rgb(${Math.round(136 + (136-136)*t)},${Math.round(138 + (138-138)*t)},${Math.round(138 + (138-138)*t)})`;
+        }
         ctx.save();
-        ctx.globalAlpha = 0.38;
+        ctx.globalAlpha = 0.44 - gradT*0.18; // more opaque at bottom, lighter at top
         ctx.beginPath();
         ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
-        ctx.fillStyle = i%2===0 ? '#556b2f' : '#888a8a';
+        ctx.fillStyle = fillStyle;
         ctx.fill();
         ctx.restore();
       }
