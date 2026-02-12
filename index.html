@@ -6369,13 +6369,16 @@ class Item{
       // Draw triangle base for all store-planted trees
       if(this.type === 'plant' && !this.isBush && !this.isPine && !this.isWillow) {
         const triW = this.trunkW * 2;
-        const triH = this.trunkW * 1.2;
+        // Make the triangle taller so its sides reach the widest part of the stump
+        const triH = this.trunkW * 2.2;
+        // Move the triangle up so it overlaps the stump and its sides touch the widest part
+        const yOffset = -this.trunkW * 0.7;
         ctx.save();
         ctx.globalAlpha = 0.55;
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(-triW/2, triH);
-        ctx.lineTo(triW/2, triH);
+        ctx.moveTo(0, yOffset);
+        ctx.lineTo(-triW/2, triH + yOffset);
+        ctx.lineTo(triW/2, triH + yOffset);
         ctx.closePath();
         ctx.fillStyle = shadeColor(this.trunk, -40);
         ctx.fill();
