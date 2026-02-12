@@ -6233,9 +6233,9 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // PATCH TEXTURE: single band, slid downward by ~20px (relative to trunk height)
-      // 20px relative to trunk height: offset = 20 / h
-      const offset = 20 / (h || 1); // avoid div by zero
+      // PATCH TEXTURE: single band, slid downward by ~15px (relative to trunk height)
+      // 15px relative to trunk height: offset = 15 / h
+      const offset = 15 / (h || 1); // avoid div by zero
       const patchCount = 20;
       for(let i=0;i<patchCount;i++){
         // Blend the two previous patch logics for variety
