@@ -6322,6 +6322,21 @@ class Item{
         ctx.fillStyle = shadeColor(this.trunk, -40);
         ctx.fillRect(-this.trunkW/2, yOffset, this.trunkW, triH * 0.18);
         ctx.restore();
+
+        // Draw triangle at the top of the stump (no overlay, 3x width)
+        const topTriW = this.trunkW * 3;
+        const topTriH = this.trunkW * 1.2;
+        const topYOffset = -this.trunkW * 2.2; // Position above stump
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, topYOffset);
+        ctx.lineTo(-topTriW/2, topYOffset - topTriH);
+        ctx.lineTo(topTriW/2, topYOffset - topTriH);
+        ctx.closePath();
+        ctx.fillStyle = this.trunk;
+        ctx.fill();
+        ctx.restore();
       }
       ctx.globalAlpha = 0.88 * (1 - darken * 0.4);
       // Use leaf color directly without darkening
