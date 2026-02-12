@@ -6308,7 +6308,7 @@ class Item{
         ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 0.65, leaf.angle, 0, Math.PI * 2);
         ctx.fill();
       }
-    }
+    }else if(this.isPine){
       ctx.lineTo(windSway * 0.4, -h * 0.65);
       ctx.stroke();
 
