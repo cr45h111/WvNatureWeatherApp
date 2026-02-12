@@ -9,40 +9,66 @@
   // Sort items by screenY (higher = farther, lower = nearer)
   items.forEach(item => { item.grow(); item.updateScreenPosition(); });
   const sortedItems = items.slice().sort((a, b) => a.screenY - b.screenY);
-  for(let item of sortedItems){
-    const itemY = item.screenY;
-    // ...existing code for coal mine and ancient tree drawing...
-    // Draw coal mine if this item is below it (higher y-value = further down screen)
-    if(coalMineY !== null && itemY > coalMineY && !window._coalMineDrawn){
-      // ...existing code...
-    }
-    const ancientTreeY = (terrainType === 'ancientforest' && ancientTreePosition) ? ancientTreePosition.y : null;
-    if(ancientTreeY !== null && itemY > ancientTreeY && !window._ancientTreeDrawn && discoveryAssets.ancientTree){
-      // ...existing code...
-    }
-    let targetCtx;
-    let layerName = 'unknown';
-    if(itemY < animalWalkY - 50){
-      targetCtx = originalCtx;
-      layerName = 'base (z:1, background)';
-    } else if(itemY < animalWalkY + 10){
-      targetCtx = ctxLayer1;
-      layerName = 'layer1 (z:3, behind animals)';
-    } else {
-      targetCtx = ctxLayer1;
-      layerName = 'layer1 (z:3, behind animals - foreground blocked)';
-    }
-    window.ctx = targetCtx;
+
+  // Clear all layers before drawing
+  originalCtx.clearRect(0, 0, W, H);
+  ctxLayer1.clearRect(0, 0, W, H);
+  ctxLayer2.clearRect(0, 0, W, H);
+
+  // Define screenY bands for three layers
+  const bgBand = animalWalkY - 50;
+  const mgBand = animalWalkY + 10;
+
+  // Group items by layer
+  const backgroundItems = sortedItems.filter(item => item.screenY < bgBand);
+  const midgroundItems = sortedItems.filter(item => item.screenY >= bgBand && item.screenY < mgBand);
+  const foregroundItems = sortedItems.filter(item => item.screenY >= mgBand);
+
+  // Draw background items
+  for(let item of backgroundItems){
+    window.ctx = originalCtx;
     item.drawShadow(foregroundLight);
     item.draw(foregroundLight, foregroundDarken, snowCover);
     if(typeof hoveredPlant !== 'undefined' && hoveredPlant && hoveredPlant === item){
-      targetCtx.save();
-      targetCtx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
-      targetCtx.lineWidth = 2;
-      targetCtx.beginPath();
-      targetCtx.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
-      targetCtx.stroke();
-      targetCtx.restore();
+      originalCtx.save();
+      originalCtx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+      originalCtx.lineWidth = 2;
+      originalCtx.beginPath();
+      originalCtx.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
+      originalCtx.stroke();
+      originalCtx.restore();
+    }
+  }
+
+  // Draw midground items
+  for(let item of midgroundItems){
+    window.ctx = ctxLayer1;
+    item.drawShadow(foregroundLight);
+    item.draw(foregroundLight, foregroundDarken, snowCover);
+    if(typeof hoveredPlant !== 'undefined' && hoveredPlant && hoveredPlant === item){
+      ctxLayer1.save();
+      ctxLayer1.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+      ctxLayer1.lineWidth = 2;
+      ctxLayer1.beginPath();
+      ctxLayer1.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
+      ctxLayer1.stroke();
+      ctxLayer1.restore();
+    }
+  }
+
+  // Draw foreground items
+  for(let item of foregroundItems){
+    window.ctx = ctxLayer2;
+    item.drawShadow(foregroundLight);
+    item.draw(foregroundLight, foregroundDarken, snowCover);
+    if(typeof hoveredPlant !== 'undefined' && hoveredPlant && hoveredPlant === item){
+      ctxLayer2.save();
+      ctxLayer2.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+      ctxLayer2.lineWidth = 2;
+      ctxLayer2.beginPath();
+      ctxLayer2.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
+      ctxLayer2.stroke();
+      ctxLayer2.restore();
     }
   }
 canvas:fullscreen{background:#000;}
