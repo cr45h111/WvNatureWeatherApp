@@ -6261,9 +6261,10 @@ class Item{
           }
         } else {
           // Birch colors: dark brown (top), mid brown (middle), tan (bottom), all darker
-          const darkBrown = {r:70, g:40, b:15};   // top (darkest)
-          const midBrown = {r:120, g:80, b:40};   // middle
-          const tan = {r:170, g:130, b:70};       // bottom (lightest, but still dark)
+          // 30% darker
+          const darkBrown = {r:Math.round(70*0.7), g:Math.round(40*0.7), b:Math.round(15*0.7)};   // top (darkest)
+          const midBrown = {r:Math.round(120*0.7), g:Math.round(80*0.7), b:Math.round(40*0.7)};   // middle
+          const tan = {r:Math.round(170*0.7), g:Math.round(130*0.7), b:Math.round(70*0.7)};       // bottom (lightest, but still dark)
           if(gradT < 0.3) {
             const t = gradT/0.3;
             fillStyle = `rgb(${Math.round(darkBrown.r + (midBrown.r-darkBrown.r)*t)},${Math.round(darkBrown.g + (midBrown.g-darkBrown.g)*t)},${Math.round(darkBrown.b + (midBrown.b-darkBrown.b)*t)})`;
