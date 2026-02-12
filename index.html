@@ -4034,6 +4034,41 @@ function draw(){
       ctx.fillStyle = fogGrad;
       ctx.fillRect(0, H * 0.35, W, H * 0.5);
       ctx.restore();
+          // Add triangle features for birch and sycamore
+          if(['birch','sycamore'].includes(this.subtype)) {
+            // Bottom triangle
+            const triW = this.trunkW * 2;
+            const triH = this.trunkW * 2.2;
+            const yOffset = -this.trunkW * 1.1;
+            ctx.save();
+            ctx.globalAlpha = 0.55;
+            ctx.beginPath();
+            ctx.moveTo(0, yOffset);
+            ctx.lineTo(-triW/2, triH + yOffset);
+            ctx.lineTo(triW/2, triH + yOffset);
+            ctx.closePath();
+            ctx.fillStyle = shadeColor(this.trunk, -40);
+            ctx.fill();
+            ctx.globalAlpha = 0.65;
+            ctx.fillStyle = shadeColor(this.trunk, -40);
+            ctx.fillRect(-this.trunkW/2, yOffset, this.trunkW, triH * 0.18);
+            ctx.restore();
+
+            // Top triangle (no overlay, 3x width, moved up 22px)
+            const topTriW = this.trunkW * 3;
+            const topTriH = this.trunkW * 1.2;
+            const topYOffset = -this.trunkW * 2.2 - 22;
+            ctx.save();
+            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, topYOffset);
+            ctx.lineTo(-topTriW/2, topYOffset - topTriH);
+            ctx.lineTo(topTriW/2, topYOffset - topTriH);
+            ctx.closePath();
+            ctx.fillStyle = this.trunk;
+            ctx.fill();
+            ctx.restore();
+          }
     }
   }
   
