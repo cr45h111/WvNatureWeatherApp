@@ -5777,6 +5777,27 @@ function draw(){
   
   document.getElementById('itemCount').textContent = items.length;
   document.getElementById('birds').textContent = birds.length;
+
+    // Dramatic sundown shadow effect
+    // Shadow rises from the bottom as sun sets, soft edges, covers all terrain/items except sky
+    if(typeof sunAlt === 'number' && sunAlt <= 6 && sunAlt > -12) {
+      // Shadow progress: 0 (sunAlt=6, no shadow) to 1 (sunAlt=-12, full shadow)
+      const shadowProgress = Math.min(1, Math.max(0, (6 - sunAlt) / 18));
+      if(shadowProgress > 0.01) {
+        const shadowHeight = H * shadowProgress;
+        const grad = ctx.createLinearGradient(0, H - shadowHeight, 0, H);
+        grad.addColorStop(0, `rgba(30,30,40,${0.0})`);
+        grad.addColorStop(0.25, `rgba(30,30,40,${0.18 * shadowProgress})`);
+        grad.addColorStop(0.6, `rgba(30,30,40,${0.38 * shadowProgress})`);
+        grad.addColorStop(1, `rgba(30,30,40,${0.65 * shadowProgress})`);
+        ctx.save();
+        ctx.globalAlpha = 0.92 * shadowProgress;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, H - shadowHeight, W, shadowHeight);
+        ctx.restore();
+      }
+    }
   
   // when snow is accumulating or persisting, draw a full-scene overlay so snow covers background and foreground
   if(snowCover > 0.02){
