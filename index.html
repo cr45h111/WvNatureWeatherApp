@@ -4802,7 +4802,8 @@ function draw(){
   }
   // at night, ensure foreground is very dark, nearly matching the background sky
   if(sunAlt < -6){
-    foregroundLight = Math.max(0.005, light * 0.03); // Much darker at night
+    // Make foreground 30% darker at night
+    foregroundLight = Math.max(0.005, light * 0.03 * 0.7);
   }
   const foregroundDarken = 1 - foregroundLight;
   
