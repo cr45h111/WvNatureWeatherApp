@@ -6,104 +6,45 @@
 <meta name="author" content="Chris Fisher">
 <meta property="og:title" content="West Virginia Nature Simulation">
 <meta property="og:description" content="Experience the beauty of West Virginia nature">
-<meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0a1628">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="WV Nature & Weather">
-<meta name="application-name" content="WV Nature & Weather">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>West Virginia Nature Simulation</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{overflow:hidden;background:#000;font-family:'Courier New',monospace;}
-canvas{display:block;width:100vw;height:100vh;cursor:crosshair;}
-.btn{position:absolute;background:rgba(0,255,255,0.2);border:2px solid #0ff;color:#0ff;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;text-shadow:0 0 10px rgba(0,255,255,0.8);transition:all 0.3s;z-index:100;}
-.btn:hover{background:rgba(0,255,255,0.4);box-shadow:0 0 20px rgba(0,255,255,0.6);}
-.btn.active{background:rgba(0,255,255,0.4);}
-.btn.hidden{opacity:0;pointer-events:none;}
-#quickActionsBtn{top:20px;right:470px;}
-#fullscreenBtn{top:20px;right:320px;}
-#settingsBtn{top:20px;right:170px;}
-#hideBtn{top:20px;right:20px;}
-#soundBtn{top:70px;right:470px;}
-#storeBtn{top:70px;right:320px;}
-#infoPanelBtn{top:70px;right:170px;}
-#clockBtn{top:70px;right:20px;}
-#plantHealthBtn{top:120px;right:320px;}
-#birdGuideBtn{top:120px;right:170px;}
-#supportBtn{top:120px;right:20px;}
-#alarmBtn{display:none;}
-#locationBtn{display:none;}
-#forecastBtn{display:none;}
-#moonBtn{display:none;}
-
-#ui{position:absolute;bottom:20px;right:20px;color:#0ff;font-size:11px;background:rgba(0,0,0,0.88);padding:14px 18px;border-radius:10px;line-height:2;text-shadow:0 0 12px rgba(0,255,255,0.7);text-align:right;border:1px solid rgba(0,255,255,0.3);max-width:280px;transition:opacity 0.3s;z-index:100;}
-#ui.hidden{opacity:0;pointer-events:none;}
-#adBanner{position:fixed;left:12px;bottom:12px;z-index:120;width:min(340px,90vw);min-height:50px;background:rgba(0,0,0,0.65);border:1px solid rgba(0,255,255,0.2);border-radius:8px;padding:6px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(0,255,255,0.25);}
-#adBanner.ad-hidden{display:none;}
-#fpsCounter{position:absolute;top:10px;left:10px;color:#0ff;font-size:12px;background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:5px;border:1px solid rgba(0,255,255,0.3);display:none;z-index:100;text-shadow:0 0 8px rgba(0,255,255,0.6);}
-#fpsCounter.visible{display:block;}
-#tutorialOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);display:none;z-index:300;align-items:center;justify-content:center;}
-#tutorialOverlay.visible{display:flex;}
-#tutorialContent{background:rgba(0,30,40,0.98);border:3px solid #0ff;border-radius:15px;padding:20px;max-width:450px;max-height:60vh;overflow-y:auto;box-shadow:0 0 50px rgba(0,255,255,0.8);color:#0ff;font-family:'Courier New',monospace;}
-#tutorialContent h2{font-size:20px;margin:0 0 15px 0;text-shadow:0 0 20px rgba(0,255,255,0.6);}
-#tutorialContent p{margin:8px 0;font-size:12px;line-height:1.5;color:#0cf;}
-.tutorial-section{margin:12px 0;padding:10px;background:rgba(0,100,120,0.3);border-left:4px solid #0aa;border-radius:5px;}
-.tutorial-buttons{display:flex;gap:8px;margin-top:15px;justify-content:center;flex-wrap:wrap;}
-.tutorial-btn{background:rgba(0,255,255,0.2);border:2px solid #0ff;color:#0ff;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;transition:all 0.3s;}
-.tutorial-btn:hover{background:rgba(0,255,255,0.4);box-shadow:0 0 15px rgba(0,255,255,0.5);}
-#sceneNotification{position:fixed;top:100px;left:50%;transform:translateX(-50%);background:rgba(0,150,180,0.95);border:2px solid #0ff;border-radius:8px;padding:12px 20px;color:#0ff;font-family:'Courier New',monospace;font-size:12px;display:none;z-index:250;animation:slideDown 0.4s ease-out;}
-#sceneNotification.visible{display:block;}
-@keyframes slideDown{from{transform:translateX(-50%) translateY(-30px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
-#plantTooltip{position:absolute;background:rgba(0,30,40,0.95);border:2px solid #0ff;border-radius:8px;padding:10px 12px;color:#0ff;font-family:'Courier New',monospace;font-size:11px;display:none;z-index:150;pointer-events:none;max-width:150px;text-align:center;line-height:1.4;box-shadow:0 0 15px rgba(0,255,255,0.4);}
-#seasonalAlert{position:fixed;top:100px;right:20px;background:rgba(100,150,50,0.95);border:2px solid #88ff00;border-radius:10px;padding:15px 20px;color:#00ff00;font-family:'Courier New',monospace;font-size:12px;display:none;z-index:250;max-width:280px;box-shadow:0 0 20px rgba(100,200,0,0.6);animation:slideIn 0.4s ease-out;}
-#seasonalAlert.visible{display:block;}
-@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
-.label{color:#0cf;opacity:0.8;}
-.modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,30,40,0.98);border:3px solid #0ff;border-radius:12px;box-shadow:0 0 50px rgba(0,255,255,0.8);display:none;z-index:200;}
-.modal.visible{display:block;}
-.modal-header{background:rgba(0,100,120,0.5);padding:12px 20px;border-bottom:2px solid #0ff;display:flex;justify-content:space-between;align-items:center;border-radius:8px 8px 0 0;}
-.modal-header h2{color:#0ff;font-size:18px;margin:0;}
-.modal-controls{display:flex;gap:8px;}
-.modal-controls button{background:rgba(0,255,255,0.3);border:1px solid #0ff;color:#0ff;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:14px;line-height:1;}
-.modal-controls button:hover{background:rgba(0,255,255,0.5);}
-.modal-body{padding:20px;max-width:90vw;max-height:70vh;overflow-y:auto;color:#0ff;}
-#store .modal-body{max-width:800px;}
-.store-category{margin-bottom:25px;}
-.store-category h3{color:#0cf;margin-bottom:12px;font-size:16px;border-bottom:2px solid #0cf;padding-bottom:5px;}
-.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;}
-.item{background:rgba(0,50,70,0.6);border:2px solid #0aa;padding:10px;border-radius:8px;cursor:pointer;transition:all 0.3s;text-align:center;}
-.item:hover{background:rgba(0,80,100,0.8);border-color:#0ff;transform:scale(1.05);box-shadow:0 0 20px rgba(0,255,255,0.4);}
-.item.selected{background:rgba(0,100,120,0.9);border-color:#0ff;box-shadow:0 0 25px rgba(0,255,255,0.6);}
-.item.remove-mode{background:rgba(100,20,20,0.6);border-color:#f00;}
-.item-name{color:#0ff;font-size:11px;font-weight:bold;margin-top:5px;}
-.item-icon{font-size:28px;}
-#removeModeBtn{background:rgba(255,100,0,0.3);border-color:#ff6600;color:#ff6600;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #ff6600;}
-#removeModeBtn.active{background:rgba(255,50,0,0.5);}
-#clearToolBtn{background:rgba(100,100,100,0.3);border-color:#888;color:#888;width:100%;padding:10px;margin-bottom:15px;border-radius:6px;cursor:pointer;border:2px solid #888;}
-#clearToolBtn.active{background:rgba(100,100,100,0.6);}
-#clock{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);font-size:80px;color:rgba(0,255,255,0.9);text-shadow:0 0 30px rgba(0,100,150,0.8);font-weight:bold;pointer-events:none;display:none;font-family:'Courier New',monospace;z-index:50;text-align:center;background:rgba(0,50,80,0.85);padding:20px 40px;border-radius:15px;border:2px solid rgba(0,255,255,0.4);}
-#clock.visible{display:block;}
-#clockTemp{font-size:32px;margin-top:10px;}
-#weatherAlert{position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,100,0,0.95);border:3px solid #ff6600;border-radius:10px;padding:15px 20px;display:none;box-shadow:0 0 40px rgba(255,100,0,0.6);z-index:250;color:#fff;max-width:400px;}
-#weatherAlert.visible{display:block;}
-#closeAlert{float:right;background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer;margin:-5px -5px 0 10px;}
-input,select{background:rgba(0,50,70,0.8);border:2px solid #0aa;color:#0ff;padding:8px;margin:8px 0;border-radius:5px;font-size:14px;width:100%;}
-.form-group{margin:15px 0;}
-.form-group label{display:block;margin-bottom:5px;color:#0cf;}
-.modal-btn-wrapper{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
-.modal-btn{background:rgba(0,255,255,0.2);border:2px solid #0ff;color:#0ff;padding:10px 16px;border-radius:6px;cursor:pointer;font-family:'Courier New',monospace;font-size:12px;width:100%;transition:all 0.3s;}
-.modal-btn:hover{background:rgba(0,255,255,0.4);box-shadow:0 0 15px rgba(0,255,255,0.5);}
-.modal-btn.danger{background:rgba(255,0,0,0.2);border-color:#f00;color:#f00;}
-.modal-btn.danger:hover{background:rgba(255,0,0,0.4);}
-canvas:-webkit-full-screen{background:#000;}
-canvas:-moz-full-screen{background:#000;}
+  // Sort items by screenY (higher = farther, lower = nearer)
+  items.forEach(item => { item.grow(); item.updateScreenPosition(); });
+  const sortedItems = items.slice().sort((a, b) => a.screenY - b.screenY);
+  for(let item of sortedItems){
+    const itemY = item.screenY;
+    // ...existing code for coal mine and ancient tree drawing...
+    // Draw coal mine if this item is below it (higher y-value = further down screen)
+    if(coalMineY !== null && itemY > coalMineY && !window._coalMineDrawn){
+      // ...existing code...
+    }
+    const ancientTreeY = (terrainType === 'ancientforest' && ancientTreePosition) ? ancientTreePosition.y : null;
+    if(ancientTreeY !== null && itemY > ancientTreeY && !window._ancientTreeDrawn && discoveryAssets.ancientTree){
+      // ...existing code...
+    }
+    let targetCtx;
+    let layerName = 'unknown';
+    if(itemY < animalWalkY - 50){
+      targetCtx = originalCtx;
+      layerName = 'base (z:1, background)';
+    } else if(itemY < animalWalkY + 10){
+      targetCtx = ctxLayer1;
+      layerName = 'layer1 (z:3, behind animals)';
+    } else {
+      targetCtx = ctxLayer1;
+      layerName = 'layer1 (z:3, behind animals - foreground blocked)';
+    }
+    window.ctx = targetCtx;
+    item.drawShadow(foregroundLight);
+    item.draw(foregroundLight, foregroundDarken, snowCover);
+    if(typeof hoveredPlant !== 'undefined' && hoveredPlant && hoveredPlant === item){
+      targetCtx.save();
+      targetCtx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+      targetCtx.lineWidth = 2;
+      targetCtx.beginPath();
+      targetCtx.arc(item.screenX, item.screenY, 45, 0, Math.PI * 2);
+      targetCtx.stroke();
+      targetCtx.restore();
+    }
+  }
 canvas:fullscreen{background:#000;}
 #loader{position:fixed;top:0;left:0;width:100vw;height:100vh;background:linear-gradient(135deg,#0a1628 0%,#1a2a45 100%);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.5s,visibility 0.5s;}
 #loader.hidden{opacity:0;visibility:hidden;}
