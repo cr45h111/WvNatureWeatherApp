@@ -6369,19 +6369,22 @@ class Item{
       // Draw triangle base for all store-planted trees
       if(this.type === 'plant' && !this.isBush && !this.isPine && !this.isWillow) {
         const triW = this.trunkW * 2;
-        // Make the triangle taller so its sides reach the widest part of the stump
         const triH = this.trunkW * 2.2;
-        // Move the triangle up so it overlaps the stump and its sides touch the widest part
-        const yOffset = -this.trunkW * 0.7;
+        // Move the triangle up so its top is hidden behind the trunk
+        const yOffset = -this.trunkW * 1.1;
         ctx.save();
         ctx.globalAlpha = 0.55;
         ctx.beginPath();
-        ctx.moveTo(0, yOffset);
+        ctx.moveTo(0, yOffset); // Top point hidden behind trunk
         ctx.lineTo(-triW/2, triH + yOffset);
         ctx.lineTo(triW/2, triH + yOffset);
         ctx.closePath();
         ctx.fillStyle = shadeColor(this.trunk, -40);
         ctx.fill();
+        // Blend: draw a small rectangle at the base of the trunk to smooth the transition
+        ctx.globalAlpha = 0.65;
+        ctx.fillStyle = shadeColor(this.trunk, -40);
+        ctx.fillRect(-this.trunkW/2, yOffset, this.trunkW, triH * 0.18);
         ctx.restore();
       }
       ctx.globalAlpha = 0.88 * (1 - darken * 0.4);
