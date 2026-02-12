@@ -6229,43 +6229,52 @@ class Item{
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    if(this.subtype === 'sycamore'){
+    if(this.subtype === 'sycamore' || this.subtype === 'birch'){
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // PATCH TEXTURE: single band, slid downward by ~15px (relative to trunk height)
-      // 15px relative to trunk height: offset = 15 / h
-      const offset = 15 / (h || 1); // avoid div by zero
+      // PATCH TEXTURE: single band, slid downward by ~10px (relative to trunk height)
+      const offset = 10 / (h || 1);
       const patchCount = 20;
       for(let i=0;i<patchCount;i++){
-        // Blend the two previous patch logics for variety
         const seed = Math.sin(this.baseX*0.13 + this.baseY*0.17 + i*2.1);
         const px = (Math.sin(i*1.3+this.baseX*0.02)*0.32) * this.trunkW;
-        // Slide the band downward by offset
         const py = (-h*0.32 + (h*0.4) * (i/(patchCount-1) - 0.5)) + offset * h;
         const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
         const patchH = (h*0.16) * (0.15 + 0.11*Math.abs(Math.cos(i*2.1)));
-        // Invert gradient: 0 at top, 1 at bottom
         const gradT = 1 - (i/(patchCount-1));
-        // Darkest at bottom, lightest at top
-        const darkColor = {r:45, g:58, b:26}; // very dark olive
-        const midColor = {r:85, g:107, b:47};
-        const lightColor = {r:136, g:138, b:138};
         let fillStyle;
-        if(gradT < 0.3) {
-          // Blend lightColor to midColor (top to middle)
-          const t = gradT/0.3;
-          fillStyle = `rgb(${Math.round(lightColor.r + (midColor.r-lightColor.r)*t)},${Math.round(lightColor.g + (midColor.g-lightColor.g)*t)},${Math.round(lightColor.b + (midColor.b-lightColor.b)*t)})`;
-        } else if(gradT < 0.7) {
-          // Blend midColor to darkColor (middle to bottom)
-          const t = (gradT-0.3)/0.4;
-          fillStyle = `rgb(${Math.round(midColor.r + (darkColor.r-midColor.r)*t)},${Math.round(midColor.g + (darkColor.g-midColor.g)*t)},${Math.round(midColor.b + (darkColor.b-midColor.b)*t)})`;
+        if(this.subtype === 'sycamore'){
+          // Sycamore colors
+          const darkColor = {r:45, g:58, b:26};
+          const midColor = {r:85, g:107, b:47};
+          const lightColor = {r:136, g:138, b:138};
+          if(gradT < 0.3) {
+            const t = gradT/0.3;
+            fillStyle = `rgb(${Math.round(lightColor.r + (midColor.r-lightColor.r)*t)},${Math.round(lightColor.g + (midColor.g-lightColor.g)*t)},${Math.round(lightColor.b + (midColor.b-lightColor.b)*t)})`;
+          } else if(gradT < 0.7) {
+            const t = (gradT-0.3)/0.4;
+            fillStyle = `rgb(${Math.round(midColor.r + (darkColor.r-midColor.r)*t)},${Math.round(midColor.g + (darkColor.g-midColor.g)*t)},${Math.round(midColor.b + (darkColor.b-midColor.b)*t)})`;
+          } else {
+            fillStyle = `rgb(${darkColor.r},${darkColor.g},${darkColor.b})`;
+          }
         } else {
-          // Bottom: mostly darkColor
-          fillStyle = `rgb(${darkColor.r},${darkColor.g},${darkColor.b})`;
+          // Birch colors: tan to brown
+          const lightTan = {r:222, g:202, b:160}; // top
+          const midTan = {r:181, g:140, b:90};   // middle
+          const darkBrown = {r:110, g:70, b:30}; // bottom
+          if(gradT < 0.3) {
+            const t = gradT/0.3;
+            fillStyle = `rgb(${Math.round(lightTan.r + (midTan.r-lightTan.r)*t)},${Math.round(lightTan.g + (midTan.g-lightTan.g)*t)},${Math.round(lightTan.b + (midTan.b-lightTan.b)*t)})`;
+          } else if(gradT < 0.7) {
+            const t = (gradT-0.3)/0.4;
+            fillStyle = `rgb(${Math.round(midTan.r + (darkBrown.r-midTan.r)*t)},${Math.round(midTan.g + (darkBrown.g-midTan.g)*t)},${Math.round(midTan.b + (darkBrown.b-midTan.b)*t)})`;
+          } else {
+            fillStyle = `rgb(${darkBrown.r},${darkBrown.g},${darkBrown.b})`;
+          }
         }
         ctx.save();
-        ctx.globalAlpha = 0.44 - gradT*0.18; // more opaque at bottom, lighter at top
+        ctx.globalAlpha = 0.44 - gradT*0.18;
         ctx.beginPath();
         ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
         ctx.fillStyle = fillStyle;
@@ -6299,7 +6308,7 @@ class Item{
         ctx.ellipse(lx, ly, leaf.size * growth, leaf.size * growth * 0.65, leaf.angle, 0, Math.PI * 2);
         ctx.fill();
       }
-    }else if(this.isPine){
+    }
       ctx.lineTo(windSway * 0.4, -h * 0.65);
       ctx.stroke();
 
