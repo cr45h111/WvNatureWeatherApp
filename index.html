@@ -4657,71 +4657,7 @@ function draw(){
       ctx.globalAlpha = 1; // ensure opaque details
 
       if(det.type === 'tree'){
-        const isWinter = season === 'winter';
-        const isEvergreen = (s > 0.7);
-        const treeH = 12 + (s * 30);
-        const treeW = treeH * 0.38;
-        // Assign distinct colors per tree based on seed and season
-        let treeColorStyle;
-        if(isWinter){
-          if(isEvergreen){
-            // Evergreen trees stay dark green in winter, darkest on distant layer
-            if(layer === 0){
-              treeColorStyle = `rgb(25,45,30)`; // Darkest, touching sky
-            }else if(layer === 1){
-              treeColorStyle = `rgb(35,60,40)`;
-            }else{
-              treeColorStyle = `rgb(45,75,50)`;
-            }
-          }else{
-            // Deciduous trees go gray/brown in winter - darker on distant layer
-            const shade = Math.floor(s * 25);
-            if(layer === 0){
-              treeColorStyle = `rgb(${70+shade},${70+shade},${65+shade})`; // Darker gray
-            }else if(layer === 1){
-              treeColorStyle = `rgb(${90+shade},${90+shade},${85+shade})`;
-            }else{
-              treeColorStyle = `rgb(${110+shade},${110+shade},${105+shade})`;
-            }
-          }
-        }else{
-          // Spring/summer/fall colors - darker greens on distant layer
-          const greenVariation = Math.floor(s * 30);
-          if(layer === 0){
-            treeColorStyle = `rgb(${50+greenVariation},${80+greenVariation},${55+greenVariation})`; // Darkest
-          }else if(layer === 1){
-            treeColorStyle = `rgb(${70+greenVariation},${110+greenVariation},${75+greenVariation})`;
-          }else{
-            treeColorStyle = `rgb(${85+greenVariation},${130+greenVariation},${90+greenVariation})`;
-          }
-        }
-        ctx.fillStyle = treeColorStyle;
-        ctx.beginPath();
-        ctx.moveTo(xPos, yPos - treeH);
-        ctx.lineTo(xPos - treeW, yPos);
-        ctx.lineTo(xPos + treeW, yPos);
-        ctx.closePath();
-        ctx.fill();
-        for(let j = 0; j < 3; j++){
-          const layH = treeH * (0.28 + j * 0.24);
-          ctx.beginPath();
-          ctx.moveTo(xPos, yPos - layH - 4);
-          ctx.lineTo(xPos - treeW * 0.78, yPos - layH);
-          ctx.lineTo(xPos + treeW * 0.78, yPos - layH);
-          ctx.closePath();
-          ctx.fill();
-        }
-        // Add darkened snow on tree top
-        if(snowCover > 0.02){
-          const snowDarken = 1 - (darken * 0.6);
-          ctx.fillStyle = `rgba(${Math.floor(255*snowDarken)},${Math.floor(255*snowDarken)},${Math.floor(255*snowDarken)},${(0.65 + (2-layer)*0.12)*(1-darken*0.4)})`;
-          ctx.beginPath();
-          ctx.moveTo(xPos, yPos - treeH - snowCover*3);
-          ctx.lineTo(xPos - treeW*0.6, yPos - snowCover*2);
-          ctx.lineTo(xPos + treeW*0.6, yPos - snowCover*2);
-          ctx.closePath();
-          ctx.fill();
-        }
+        // Removed background tree decorations
       }else if(det.type === 'rock'){
         const rockW = 8 + s * 18;
         const rockH = 6 + s * 10;
