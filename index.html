@@ -5979,45 +5979,6 @@ class Item{
     // For non-plants, use old system
     if(this.type !== 'plant' || !PLANT_CATALOG[this.subtype]){
       if(this.age < this.maxAge) this.age++;
-      // Draw triangle base for birch and sycamore
-      // (Duplicate block removed)
-      // Draw triangle base for birch and sycamore (adjusted position)
-      const triW = this.trunkW * 2;
-      const triH = this.trunkW * 2.2;
-      const yOffset = 0.15 * h; // Move triangle below trunk
-      ctx.save();
-      ctx.globalAlpha = 0.55;
-      ctx.beginPath();
-      ctx.moveTo(0, yOffset);
-      ctx.lineTo(-triW/2, triH + yOffset);
-      ctx.lineTo(triW/2, triH + yOffset);
-      ctx.closePath();
-      ctx.fillStyle = shadeColor(this.trunk, -40);
-      ctx.fill();
-      ctx.globalAlpha = 0.65;
-      ctx.fillStyle = shadeColor(this.trunk, -40);
-      ctx.fillRect(-this.trunkW/2, yOffset, this.trunkW, triH * 0.18);
-      ctx.restore();
-
-      // Draw triangle at the top of the stump (no overlay, 3x width, above trunk)
-      const topTriW = this.trunkW * 3;
-      const topTriH = this.trunkW * 1.2;
-      const topYOffset = -h * 0.5 - 22;
-      ctx.save();
-      ctx.globalAlpha = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, topYOffset);
-      ctx.lineTo(-topTriW/2, topYOffset - topTriH);
-      ctx.lineTo(topTriW/2, topYOffset - topTriH);
-      ctx.closePath();
-      ctx.fillStyle = this.trunk;
-      ctx.fill();
-      ctx.restore();
-      // Draw triangle base for birch and sycamore
-      // (Duplicate block removed)
-
-      // Draw triangle at the top of the stump (no overlay, 3x width)
-      // (Duplicate block removed)
       ctx.restore();
       return;
     }
