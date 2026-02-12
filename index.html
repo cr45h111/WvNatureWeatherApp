@@ -6245,28 +6245,27 @@ class Item{
         const py = (-h*0.32 + (h*0.4) * (i/(patchCount-1) - 0.5)) + offset * h;
         const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
         const patchH = (h*0.16) * (0.15 + 0.11*Math.abs(Math.cos(i*2.1)));
-        // Calculate gradient lightness: 0 at bottom, 1 at top
-        const gradT = i/(patchCount-1);
-        // Lightest at top, darkest at bottom
+        // Invert gradient: 0 at top, 1 at bottom
+        const gradT = 1 - (i/(patchCount-1));
+        // Darkest at bottom, lightest at top
         const darkColor = {r:45, g:58, b:26}; // very dark olive
         const midColor = {r:85, g:107, b:47};
         const lightColor = {r:136, g:138, b:138};
         let fillStyle;
         if(gradT < 0.3) {
-          // Blend darkColor to midColor (bottom to lower-middle)
+          // Blend lightColor to midColor (top to middle)
           const t = gradT/0.3;
-          fillStyle = `rgb(${Math.round(darkColor.r + (midColor.r-darkColor.r)*t)},${Math.round(darkColor.g + (midColor.g-darkColor.g)*t)},${Math.round(darkColor.b + (midColor.b-darkColor.b)*t)})`;
+          fillStyle = `rgb(${Math.round(lightColor.r + (midColor.r-lightColor.r)*t)},${Math.round(lightColor.g + (midColor.g-lightColor.g)*t)},${Math.round(lightColor.b + (midColor.b-lightColor.b)*t)})`;
         } else if(gradT < 0.7) {
-          // Blend midColor to lightColor (middle to upper-middle)
+          // Blend midColor to darkColor (middle to bottom)
           const t = (gradT-0.3)/0.4;
-          fillStyle = `rgb(${Math.round(midColor.r + (lightColor.r-midColor.r)*t)},${Math.round(midColor.g + (lightColor.g-midColor.g)*t)},${Math.round(midColor.b + (lightColor.b-midColor.b)*t)})`;
+          fillStyle = `rgb(${Math.round(midColor.r + (darkColor.r-midColor.r)*t)},${Math.round(midColor.g + (darkColor.g-midColor.g)*t)},${Math.round(midColor.b + (darkColor.b-midColor.b)*t)})`;
         } else {
-          // Top: mostly lightColor
-          const t = (gradT-0.7)/0.3;
-          fillStyle = `rgb(${lightColor.r},${lightColor.g},${lightColor.b})`;
+          // Bottom: mostly darkColor
+          fillStyle = `rgb(${darkColor.r},${darkColor.g},${darkColor.b})`;
         }
         ctx.save();
-        ctx.globalAlpha = 0.44 - (1-gradT)*0.18; // more opaque at bottom, lighter at top
+        ctx.globalAlpha = 0.44 - gradT*0.18; // more opaque at bottom, lighter at top
         ctx.beginPath();
         ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
         ctx.fillStyle = fillStyle;
