@@ -6017,19 +6017,7 @@ class Item{
       // (Duplicate block removed)
 
       // Draw triangle at the top of the stump (no overlay, 3x width)
-      const topTriW = this.trunkW * 3;
-      const topTriH = this.trunkW * 1.2;
-      const topYOffset = -this.trunkW * 2.2 - 22;
-      ctx.save();
-      ctx.globalAlpha = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, topYOffset);
-      ctx.lineTo(-topTriW/2, topYOffset - topTriH);
-      ctx.lineTo(topTriW/2, topYOffset - topTriH);
-      ctx.closePath();
-      ctx.fillStyle = this.trunk;
-      ctx.fill();
-      ctx.restore();
+      // (Duplicate block removed)
       ctx.restore();
       return;
     }
