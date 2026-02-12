@@ -6303,7 +6303,16 @@ class Item{
       ctx.stroke();
 
       // Draw triangle base for all store-planted trees
-      if(this.type === 'plant' && !this.isBush && !this.isPine && !this.isWillow) {
+      if(
+        this.type === 'plant' &&
+        !this.isBush &&
+        !this.isPine &&
+        !this.isWillow &&
+        (
+          !this.subtype ||
+          ['oak','maple','poplar','birch','sycamore','beech','basswood','walnut','hickory','chestnut'].includes(this.subtype)
+        )
+      ) {
         const triW = this.trunkW * 2;
         const triH = this.trunkW * 2.2;
         // Move the triangle up so its top is hidden behind the trunk
