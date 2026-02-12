@@ -6326,7 +6326,8 @@ class Item{
         // Draw triangle at the top of the stump (no overlay, 3x width)
         const topTriW = this.trunkW * 3;
         const topTriH = this.trunkW * 1.2;
-        const topYOffset = -this.trunkW * 2.2; // Position above stump
+        // Move triangle up by 15px
+        const topYOffset = -this.trunkW * 2.2 - 15;
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.beginPath();
