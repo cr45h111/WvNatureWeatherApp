@@ -6242,7 +6242,8 @@ class Item{
         const py = (-h*0.32 + (h*0.4) * (i/(patchCount-1) - 0.5)) + offset * h;
         const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
         const patchH = (h*0.16) * (0.15 + 0.11*Math.abs(Math.cos(i*2.1)));
-        const gradT = 1 - (i/(patchCount-1));
+        // Flip gradient: gradT = i/(patchCount-1)
+        const gradT = i/(patchCount-1);
         let fillStyle;
         if(this.subtype === 'sycamore'){
           // Sycamore colors
@@ -6259,18 +6260,18 @@ class Item{
             fillStyle = `rgb(${darkColor.r},${darkColor.g},${darkColor.b})`;
           }
         } else {
-          // Birch colors: tan to brown
-          const lightTan = {r:222, g:202, b:160}; // top
-          const midTan = {r:181, g:140, b:90};   // middle
-          const darkBrown = {r:110, g:70, b:30}; // bottom
+          // Birch colors: dark brown (top), mid brown (middle), tan (bottom), all darker
+          const darkBrown = {r:70, g:40, b:15};   // top (darkest)
+          const midBrown = {r:120, g:80, b:40};   // middle
+          const tan = {r:170, g:130, b:70};       // bottom (lightest, but still dark)
           if(gradT < 0.3) {
             const t = gradT/0.3;
-            fillStyle = `rgb(${Math.round(lightTan.r + (midTan.r-lightTan.r)*t)},${Math.round(lightTan.g + (midTan.g-lightTan.g)*t)},${Math.round(lightTan.b + (midTan.b-lightTan.b)*t)})`;
+            fillStyle = `rgb(${Math.round(darkBrown.r + (midBrown.r-darkBrown.r)*t)},${Math.round(darkBrown.g + (midBrown.g-darkBrown.g)*t)},${Math.round(darkBrown.b + (midBrown.b-darkBrown.b)*t)})`;
           } else if(gradT < 0.7) {
             const t = (gradT-0.3)/0.4;
-            fillStyle = `rgb(${Math.round(midTan.r + (darkBrown.r-midTan.r)*t)},${Math.round(midTan.g + (darkBrown.g-midTan.g)*t)},${Math.round(midTan.b + (darkBrown.b-midTan.b)*t)})`;
+            fillStyle = `rgb(${Math.round(midBrown.r + (tan.r-midBrown.r)*t)},${Math.round(midBrown.g + (tan.g-midBrown.g)*t)},${Math.round(midBrown.b + (tan.b-midBrown.b)*t)})`;
           } else {
-            fillStyle = `rgb(${darkBrown.r},${darkBrown.g},${darkBrown.b})`;
+            fillStyle = `rgb(${tan.r},${tan.g},${tan.b})`;
           }
         }
         ctx.save();
