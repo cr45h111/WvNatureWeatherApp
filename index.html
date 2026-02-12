@@ -6237,6 +6237,42 @@ class Item{
     if(this.subtype === 'sycamore' || this.subtype === 'birch'){
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
+      // Draw triangle base for all store-planted trees
+      if(this.type === 'plant' && !this.isBush && !this.isPine && !this.isWillow) {
+        const triW = this.trunkW * 2;
+        const triH = this.trunkW * 1.2;
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-triW/2, triH);
+        ctx.lineTo(triW/2, triH);
+        ctx.closePath();
+        ctx.fillStyle = shadeColor(this.trunk, -40);
+        ctx.fill();
+        ctx.restore();
+      }
+// Helper to shade color hex by percent (negative = darker)
+function shadeColor(color, percent) {
+  let r, g, b;
+  if(color.startsWith('#')) {
+    const hex = color.replace('#','');
+    r = parseInt(hex.substring(0,2),16);
+    g = parseInt(hex.substring(2,4),16);
+    b = parseInt(hex.substring(4,6),16);
+  } else if(color.startsWith('rgb')) {
+    const rgb = color.match(/\d+/g);
+    r = parseInt(rgb[0]);
+    g = parseInt(rgb[1]);
+    b = parseInt(rgb[2]);
+  } else {
+    r = g = b = 80;
+  }
+  r = Math.min(255, Math.max(0, r + percent));
+  g = Math.min(255, Math.max(0, g + percent));
+  b = Math.min(255, Math.max(0, b + percent));
+  return `rgb(${r},${g},${b})`;
+}
 
       // PATCH TEXTURE: single band, slid downward by ~10px (relative to trunk height)
       const offset = 10 / (h || 1);
