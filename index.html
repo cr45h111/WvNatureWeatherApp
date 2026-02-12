@@ -6238,6 +6238,21 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 // Helper to shade color hex by percent (negative = darker)
+// Global color shading utility
+function shadeColor(hex, percent) {
+  try{
+    const h = hex.replace('#','');
+    const r = parseInt(h.substring(0,2),16);
+    const g = parseInt(h.substring(2,4),16);
+    const b = parseInt(h.substring(4,6),16);
+    const t = percent<0?0:255;
+    const p = Math.abs(percent)/100;
+    const R = Math.round((t - r)*p) + r;
+    const G = Math.round((t - g)*p) + g;
+    const B = Math.round((t - b)*p) + b;
+    return '#'+((1<<24) + (R<<16) + (G<<8) + B).toString(16).slice(1);
+  }catch(e){return hex}
+}
 // ...existing code...
 
       // PATCH TEXTURE: single band, slid downward by ~10px (relative to trunk height)
