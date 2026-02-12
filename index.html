@@ -6184,32 +6184,18 @@ class Item{
       ctx.lineTo(windSway * 0.3, -h * 0.5);
       ctx.stroke();
 
-      // PATCH TEXTURE: move top band down to touch bottom, expand bottom band downward
-      const patchCountTop = 7;
-      for(let i=0;i<patchCountTop;i++){
+      // PATCH TEXTURE: single band, slid downward by ~200px (relative to trunk height)
+      // 200px relative to trunk height: offset = 200 / h
+      const offset = 200 / (h || 1); // avoid div by zero
+      const patchCount = 20;
+      for(let i=0;i<patchCount;i++){
+        // Blend the two previous patch logics for variety
         const seed = Math.sin(this.baseX*0.13 + this.baseY*0.17 + i*2.1);
-        // Center patches horizontally, vertically in middle band
-        const px = (Math.sin(i*1.3+this.baseX*0.02)*0.3) * this.trunkW;
-        const py = -h*0.32 + (h*0.18) * (i/(patchCountTop-1) - 0.5);
-        const patchW = this.trunkW * (0.28 + 0.13*Math.abs(Math.sin(i*2.3)));
-        const patchH = (h*0.18) * (0.18 + 0.12*Math.abs(Math.cos(i*1.9)));
-        ctx.save();
-        ctx.globalAlpha = 0.38;
-        ctx.beginPath();
-        ctx.ellipse(px, py, patchW, patchH, seed*2*Math.PI, 0, Math.PI*2);
-        ctx.fillStyle = i%2===0 ? '#556b2f' : '#888a8a';
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // PATCH TEXTURE: bottom band, more and wider shapes, expanded downward
-      const patchCountBottom = 12;
-      for(let i=0;i<patchCountBottom;i++){
-        const seed = Math.sin(this.baseX*0.23 + this.baseY*0.27 + i*1.7);
-        const px = (Math.sin(i*1.7+this.baseX*0.03)*0.32) * this.trunkW;
-        const py = -h*0.18 + (h*0.22) * (i/(patchCountBottom-1) - 0.5);
+        const px = (Math.sin(i*1.3+this.baseX*0.02)*0.32) * this.trunkW;
+        // Slide the band downward by offset
+        const py = (-h*0.32 + (h*0.4) * (i/(patchCount-1) - 0.5)) + offset * h;
         const patchW = this.trunkW * (0.22 + 0.16*Math.abs(Math.sin(i*2.7)));
-        const patchH = (h*0.16) * (0.13 + 0.09*Math.abs(Math.cos(i*2.1)));
+        const patchH = (h*0.16) * (0.15 + 0.11*Math.abs(Math.cos(i*2.1)));
         ctx.save();
         ctx.globalAlpha = 0.38;
         ctx.beginPath();
