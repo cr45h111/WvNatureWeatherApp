@@ -4953,18 +4953,67 @@ function draw(){
       return [x, y];
     }
     let mappedPoints = amoebaPoints.map(mapToTrapezoid);
-    let brownR = 110 + Math.floor(seededRand(s+12)*60);
-    let brownG = 80 + Math.floor(seededRand(s+13)*50);
-    let brownB = 40 + Math.floor(seededRand(s+14)*30);
-    let alpha = 0.22 + seededRand(s+15)*0.18;
+
+    // Weather-based patch color
+    let patchStyle, patchAlpha;
+    if (weatherData && (weatherData.condition || '').toLowerCase().includes('rain')) {
+      // Puddle: blueish, glossy
+      patchStyle = ctx.createLinearGradient(px, py, px, py + h);
+      patchStyle.addColorStop(0, 'rgba(80,180,255,0.45)');
+      patchStyle.addColorStop(1, 'rgba(30,90,160,0.7)');
+      patchAlpha = 0.45 + seededRand(s+15)*0.18;
+    } else if (weatherData && (weatherData.condition || '').toLowerCase().includes('snow')) {
+      // Ice: pale blue/white, semi-transparent
+      patchStyle = ctx.createLinearGradient(px, py, px, py + h);
+      patchStyle.addColorStop(0, 'rgba(200,240,255,0.55)');
+      patchStyle.addColorStop(1, 'rgba(180,220,255,0.7)');
+      patchAlpha = 0.38 + seededRand(s+15)*0.18;
+    } else {
+      // Normal: brown
+      let brownR = 110 + Math.floor(seededRand(s+12)*60);
+      let brownG = 80 + Math.floor(seededRand(s+13)*50);
+      let brownB = 40 + Math.floor(seededRand(s+14)*30);
+      patchStyle = `rgb(${brownR},${brownG},${brownB})`;
+      patchAlpha = 0.22 + seededRand(s+15)*0.18;
+    }
     ctx.save();
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = patchAlpha;
     ctx.beginPath();
     ctx.moveTo(mappedPoints[0][0], mappedPoints[0][1]);
     for(let j=1;j<mappedPoints.length;j++) ctx.lineTo(mappedPoints[j][0], mappedPoints[j][1]);
     ctx.closePath();
-    ctx.fillStyle = `rgb(${brownR},${brownG},${brownB})`;
+    ctx.fillStyle = patchStyle;
     ctx.fill();
+    // Add puddle shine if rain
+    if (weatherData && (weatherData.condition || '').toLowerCase().includes('rain')) {
+      ctx.globalAlpha = patchAlpha * 0.7;
+      ctx.beginPath();
+      for (let j = 0; j < mappedPoints.length; j++) {
+        let [x, y] = mappedPoints[j];
+        let shineX = x + Math.sin(j) * 4;
+        let shineY = y - Math.abs(Math.cos(j)) * 3;
+        if (j === 0) ctx.moveTo(shineX, shineY);
+        else ctx.lineTo(shineX, shineY);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.fill();
+    }
+    // Add ice shine if snow
+    if (weatherData && (weatherData.condition || '').toLowerCase().includes('snow')) {
+      ctx.globalAlpha = patchAlpha * 0.5;
+      ctx.beginPath();
+      for (let j = 0; j < mappedPoints.length; j++) {
+        let [x, y] = mappedPoints[j];
+        let shineX = x + Math.sin(j) * 2;
+        let shineY = y - Math.abs(Math.cos(j)) * 2;
+        if (j === 0) ctx.moveTo(shineX, shineY);
+        else ctx.lineTo(shineX, shineY);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.13)';
+      ctx.fill();
+    }
     ctx.restore();
     tries++;
   }
