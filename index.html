@@ -6224,7 +6224,12 @@ class Item{
     ctx.translate(this.screenX, this.screenY);
 
     // Draw sycamore trunk with patch overlays
-    ctx.strokeStyle = this.trunk;
+    // Use light egg shell color for birch trunk
+    if(this.subtype === 'birch') {
+      ctx.strokeStyle = '#F8F5E6'; // egg shell
+    } else {
+      ctx.strokeStyle = this.trunk;
+    }
     ctx.lineWidth = this.trunkW * growth;
     ctx.lineCap = 'round';
     ctx.beginPath();
